@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui.brand
 
 import android.app.Application
+import com.v2ray.ang.R
 import com.v2ray.ang.ui.base.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,23 +26,30 @@ class RegisterViewModel(application: Application) : BaseViewModel(application) {
         _uiState.value = _uiState.value.copy(password = value, error = null)
     }
 
-    fun register(onSuccess: () -> Unit) {
+    fun register(onSuccess: (role: String) -> Unit) {
         val email = _uiState.value.email.trim()
         val password = _uiState.value.password
         if (email.isEmpty() || password.length < 8) {
-            _uiState.value = _uiState.value.copy(error = "Enter an email and a password of at least 8 characters")
+            _uiState.value = _uiState.value.copy(error = app.getString(R.string.brand_error_invalid_credentials))
             return
         }
 
         launchLoading {
             try {
-                val (token, savedEmail) = ApiClient.register(email, password)
-                AuthStore.saveSession(token, savedEmail)
-                onSuccess()
+                val authResult = ApiClient.register(email, password)
+                if (authResult.role.equals("ADMIN", ignoreCase = true)) {
+                    _uiState.value = _uiState.value.copy(
+                        error = app.getString(R.string.brand_admin_reject)
+                    )
+                    return@launchLoading
+                }
+
+                AuthStore.saveSession(authResult.token, authResult.email, authResult.role)
+                onSuccess(authResult.role)
             } catch (e: ApiException) {
                 _uiState.value = _uiState.value.copy(error = e.message)
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = "Couldn't reach the server — check your connection")
+                _uiState.value = _uiState.value.copy(error = app.getString(R.string.brand_error_connection))
             }
         }
     }

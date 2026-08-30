@@ -41,6 +41,7 @@ object SettingsManager {
         ensureDefaultSettings()
         //ensureDefaultSubscription()
         initRoutingRulesets(context)
+        initAssets(context, context.assets)
         migrateServerListToSubscriptions()
         migrateHysteria2PinSHA256()
     }

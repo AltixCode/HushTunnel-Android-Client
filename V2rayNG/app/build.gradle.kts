@@ -143,7 +143,8 @@ android {
             "fa",
             "ar",
             "bn",
-            "bqi-rIR"
+            "bqi-rIR",
+            "tr"
         )
     }
 
@@ -210,5 +211,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     testImplementation(libs.org.mockito.mockito.inline)
     testImplementation(libs.mockito.kotlin)
+    testImplementation("org.json:json:20240303")
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }

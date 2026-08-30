@@ -38,6 +38,7 @@ class AngApplication : Application() {
         MmkvManager.initialize(this)
 
         AppLocaleManager.initialize(this)
+        com.v2ray.ang.ui.brand.LocaleHelper.initialize(this)
 
         // Initialize WorkManager with the custom configuration
         WorkManager.initialize(this, workManagerConfiguration)

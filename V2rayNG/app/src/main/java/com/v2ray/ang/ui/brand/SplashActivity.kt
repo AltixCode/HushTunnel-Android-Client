@@ -11,15 +11,26 @@ import androidx.compose.ui.Modifier
 import com.v2ray.ang.ui.base.BaseComponentActivity
 
 /**
- * The app's launcher Activity: routes straight to Home (already logged in)
- * or Login — the user never sees v2rayNG's own server-list MainActivity,
- * which is no longer reachable from the manifest's launcher intent-filter.
+ * The app's launcher Activity: routes to ResellerHome (reseller logged in),
+ * Home (user logged in), or Login — rejects admin sessions.
  */
 class SplashActivity : BaseComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val destination = if (AuthStore.isLoggedIn()) HomeActivity::class.java else LoginActivity::class.java
+        val destination = if (AuthStore.isLoggedIn()) {
+            val role = AuthStore.getRole()
+            when {
+                role.equals("RESELLER", ignoreCase = true) -> ResellerHomeActivity::class.java
+                role.equals("ADMIN", ignoreCase = true) -> {
+                    AuthStore.clear()
+                    LoginActivity::class.java
+                }
+                else -> HomeActivity::class.java
+            }
+        } else {
+            LoginActivity::class.java
+        }
         startActivity(Intent(this, destination))
         finish()
     }
