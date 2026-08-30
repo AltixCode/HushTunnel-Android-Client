@@ -1,0 +1,36 @@
+package com.v2ray.ang.ui.brand
+
+import com.v2ray.ang.dto.entities.SubscriptionItem
+import com.v2ray.ang.handler.AngConfigManager
+import com.v2ray.ang.handler.MmkvManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+/**
+ * Bridges our backend's subscription feed into v2rayNG's normal (headless)
+ * subscription-import mechanism, so the user never sees a server list or a
+ * "paste subscription URL" screen — this runs invisibly after login/order.
+ */
+object ProvisionHelper {
+
+    private const val REMARK = "ShadowLink"
+
+    /**
+     * Points the app's single subscription at [subscriptionUrl] and fetches it now.
+     * Returns true if at least one server profile is selected afterwards.
+     */
+    suspend fun provisionSubscription(subscriptionUrl: String): Boolean = withContext(Dispatchers.IO) {
+        val existingGuid = MmkvManager.decodeSubsList().firstOrNull()
+
+        val subItem = SubscriptionItem(
+            remarks = REMARK,
+            url = subscriptionUrl,
+            enabled = true,
+        )
+        MmkvManager.encodeSubscription(existingGuid.orEmpty(), subItem)
+
+        AngConfigManager.updateConfigViaSubAll()
+
+        MmkvManager.getSelectServer()?.isNotBlank() == true
+    }
+}

@@ -61,16 +61,29 @@
                 android:value="true" />
         </service>
 
+        <!-- Brand: sole launcher activity. Routes to Home (logged in) or Login -
+             the stock v2rayNG server-list screen (.ui.main.MainActivity, below)
+             is no longer reachable from app launch; it is kept in the build
+             only because deleting it and everything it depends on is outside
+             this fork's task scope. -->
         <activity
-            android:name=".ui.main.MainActivity"
+            android:name=".ui.brand.SplashActivity"
             android:exported="true"
+            android:theme="@style/AppThemeDayNight.NoActionBar"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity android:name=".ui.brand.LoginActivity" android:exported="false" />
+        <activity android:name=".ui.brand.RegisterActivity" android:exported="false" />
+        <activity android:name=".ui.brand.HomeActivity" android:exported="false" android:launchMode="singleTask" />
+
+        <activity
+            android:name=".ui.main.MainActivity"
+            android:exported="false"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
             </intent-filter>

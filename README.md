@@ -1,90 +1,98 @@
-# v2rayNG
+# ShadowLink Android (v2rayNG fork)
 
-A V2Ray client for Android, support [Xray core](https://github.com/XTLS/Xray-core) and [v2fly core](https://github.com/v2fly/v2ray-core)
+White-label Android client for the ShadowLink VPN billing platform
+(`vpn-billing-dashboard`). Forked from [2dust/v2rayNG](https://github.com/2dust/v2rayNG)
+(original README preserved at `UPSTREAM_README.md`) — the real VPN engine
+(Xray core, tun2socks, VPN service, subscription-import mechanism) is
+untouched. What changed is the front door: instead of v2rayNG's own
+server-list/settings UI, users only ever see **Login → (order) → Connect**.
 
-[![API](https://img.shields.io/badge/API-24%2B-yellow.svg?style=flat)](https://developer.android.com/about/versions/lollipop)
-[![Kotlin Version](https://img.shields.io/badge/Kotlin-2.4.0-blue.svg)](https://kotlinlang.org)
-[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/2dust/v2rayNG)](https://github.com/2dust/v2rayNG/commits/master)
-[![CodeFactor](https://www.codefactor.io/repository/github/2dust/v2rayng/badge)](https://www.codefactor.io/repository/github/2dust/v2rayng)
-[![GitHub Releases](https://img.shields.io/github/downloads/2dust/v2rayNG/latest/total?logo=github)](https://github.com/2dust/v2rayNG/releases)
-[![Chat on Telegram](https://img.shields.io/badge/Chat%20on-Telegram-brightgreen.svg)](https://t.me/v2rayn)
+## What's different from upstream
 
----
+All new code lives in one package, `V2rayNG/app/src/main/java/com/v2ray/ang/ui/brand/`:
 
-## Download / 下载
+- `SplashActivity` — now the app's launcher (`AndroidManifest.xml`). Routes to
+  `HomeActivity` if a session token is stored, else `LoginActivity`.
+- `LoginActivity` / `RegisterActivity` — call the backend's
+  `/api/mobile/{login,register}` and store the returned JWT in a private MMKV
+  store (`AuthStore.kt`).
+- `HomeActivity` — shows subscription status (from `/api/mobile/me`), a single
+  Connect/Disconnect button (drives v2rayNG's real `LauncherManager` /
+  `VpnService` exactly the way the stock `MainActivity` does), and a plan
+  picker that calls `/api/mobile/checkout`. If a real payment gateway is
+  configured server-side, the returned checkout URL is opened in the browser
+  (that's the payment provider's own hosted page, not our site, so no session
+  handoff is needed); otherwise the order just sits pending until an admin
+  confirms it in `/admin/orders`.
+- `ProvisionHelper` — the actual bridge to v2rayNG's engine. After login (or
+  once an order is paid), it points the app's one hidden subscription at
+  `https://<backend>/api/sub/<token>` (a standard v2ray subscription feed —
+  base64 blob of `vless://` links) and calls v2rayNG's own
+  `AngConfigManager.updateConfigViaSubAll()` to fetch, parse, and auto-select
+  a server. The user never sees a subscription URL, a server list, or the
+  settings/routing screens that ship with upstream v2rayNG — those screens
+  still exist in the build (removing them was out of scope for this pass)
+  but are no longer reachable: `MainActivity` lost its launcher intent-filter
+  and nothing in the new flow links to it.
 
-Download the latest release here:
+Nothing under `service/`, `core/`, `handler/` (besides adding the one new
+subscription via its existing public API), or the native submodules was
+touched.
 
-在这里下载最新版本：
+## Before you build
 
-[https://github.com/2dust/v2rayNG/releases](https://github.com/2dust/v2rayNG/releases)
+**I could not compile or run this myself** — no JDK/Android SDK/Gradle/emulator
+were available in the environment this was written in. Everything above was
+written against the real cloned source (file:line references verified against
+`2dust/v2rayNG` at clone time) and follows the project's own
+`AGENTS.md` / `V2rayNG/app/src/main/java/com/v2ray/ang/ui/AGENTS.md` conventions,
+but **the first thing to do is a Gradle sync + build in Android Studio** and
+fix whatever small thing doesn't match (API surface can shift between
+upstream versions).
 
-> [!TIP]
-> v2rayNG is the mobile version. For the desktop version, please visit the v2rayN \
-> v2rayNG 是手机版，电脑版请访问 v2rayN
->
-> https://github.com/2dust/v2rayN
+```sh
+git submodule update --init --recursive
+# AndroidLibXrayLite ships as a prebuilt AAR upstream, not built from source:
+# download a libv2ray.aar release matching the AndroidLibXrayLite submodule's
+# tag from https://github.com/2dust/AndroidLibXrayLite/releases and place it
+# at V2rayNG/app/libs/libv2ray.aar (see .github/workflows/build.yml for the
+# exact logic if you want to automate it).
+./compile-hevtun.sh   # builds the hev-socks5-tunnel native lib into V2rayNG/app/libs
 
----
-
-### Geoip and Geosite
-
-- geoip.dat and geosite.dat files are in `Android/data/com.v2ray.ang/files/assets` (path may differ on some Android device)
-- download feature will get enhanced version in this [repo](https://github.com/Loyalsoldier/v2ray-rules-dat) (note: it needs a working proxy)
-- latest official [domain list](https://github.com/Loyalsoldier/v2ray-rules-dat) and [ip list](https://github.com/Loyalsoldier/geoip) can be imported manually
-- possible to use a third-party dat file in the same folder, like [h2y](https://guide.v2fly.org/routing/sitedata.html#%E5%A4%96%E7%BD%AE%E7%9A%84%E5%9F%9F%E5%90%8D%E6%96%87%E4%BB%B6)
-
-More in our [wiki](https://github.com/2dust/v2rayNG/wiki)
-
-### Geoip 与 Geosite
-
-- geoip.dat 和 geosite.dat 文件位于 `Android/data/com.v2ray.ang/files/assets`（部分设备路径可能不同）
-- 下载功能将获取该 [仓库](https://github.com/Loyalsoldier/v2ray-rules-dat) 中的增强版本（注意：此功能需要一个可用的代理）
-- 最新官方 [域名列表](https://github.com/Loyalsoldier/v2ray-rules-dat) 和 [IP 列表](https://github.com/Loyalsoldier/geoip) 可手动导入
-- 也可在同一文件夹中使用第三方 dat 文件，例如 [h2y](https://guide.v2fly.org/routing/sitedata.html#%E5%A4%96%E7%BD%AE%E7%9A%84%E5%9F%9F%E5%90%8D%E6%96%87%E4%BB%B6)
-
-更多内容请见我们的 [wiki](https://github.com/2dust/v2rayNG/wiki)
-
----
-
-## Development guide / 开发指南
-
-### Note
-
-- Android project under the V2rayNG folder can be compiled directly in Android Studio, or using the Gradle wrapper. But the v2ray core inside the aar is (probably) outdated.
-- The aar can be compiled from the Golang project [AndroidLibV2rayLite](https://github.com/2dust/AndroidLibV2rayLite) or [AndroidLibXrayLite](https://github.com/2dust/AndroidLibXrayLite). For a quick start, read the guides for [Go Mobile](https://github.com/golang/go/wiki/Mobile) and [Makefiles for Go Developers](https://tutorialedge.net/golang/makefiles-for-go-developers/).
-- v2rayNG can run on Android Emulators. For WSA, VPN permission needs to be granted via `appops set [package name] ACTIVATE_VPN allow`.
-
-### 提示
-
-- V2rayNG 文件夹下的 Android 项目可直接在 Android Studio 中编译，或使用 Gradle wrapper 编译。但 aar 内置的 v2ray core（可能）已过时。
-- aar 可由 Golang 项目 [AndroidLibV2rayLite](https://github.com/2dust/AndroidLibV2rayLite) 或 [AndroidLibXrayLite](https://github.com/2dust/AndroidLibXrayLite) 编译而成。快速入门可参考 [Go Mobile](https://github.com/golang/go/wiki/Mobile) 指南和 [Makefiles for Go Developers](https://tutorialedge.net/golang/makefiles-for-go-developers/)。
-- v2rayNG 可在 Android 模拟器上运行。对于 WSA，需要通过 `appops set [package name] ACTIVATE_VPN allow` 授予 VPN 权限。
-
----
-
-
-## GPG Verification / GPG 签名校验
-
-Release files are signed with GPG to verify authenticity and integrity, helping prevent mirror, ISP, or CDN hijacking.
-
-发布文件已使用 GPG 签名，可用于校验文件真实性与完整性，预防镜像站、运营商或 CDN 劫持。
-
-### Fingerprint / 公钥指纹
-
-```text
-7694 5E9F 3E9A 168F 8070 F195 805D 661C
-134D FAF6 8903 C199 463C 31E5 AE90 3AE0
+cd V2rayNG
+echo "sdk.dir=$ANDROID_HOME" > local.properties
+./gradlew assemblePlaystoreDebug
 ```
 
----
+## Before you ship
 
-## Community / 社区
+- **`BrandConfig.API_BASE_URL`** (`ui/brand/BrandConfig.kt`) points at
+  `https://vpn-billing-dashboard.vercel.app` — the Vercel preview alias, since
+  there's no custom domain yet. Vercel deployments can be deleted/recreated;
+  move to a real domain before a public release and update this one constant.
+- **App icon / adaptive icon** (`@mipmap/ic_launcher`) is still v2rayNG's
+  stock icon — swap it for your own before publishing.
+- **`applicationId`** was changed to `com.shadowlink.vpn`
+  (`app/build.gradle.kts`) so this installs as its own app, side by side with
+  real v2rayNG. `namespace` was deliberately left as `com.v2ray.ang` so every
+  existing unqualified `R.xxx` reference in the forked source keeps
+  resolving — don't change `namespace` without also repackaging every file.
+- Upstream `AGENTS.md` recommends tracking `upstream/master` (already set as
+  the `upstream` git remote in this repo) to pull VPN-engine fixes later:
+  `git fetch upstream && git merge upstream/master` (expect conflicts only in
+  `AndroidManifest.xml`, `strings.xml`, and `app/build.gradle.kts` — the three
+  files this fork touched outside the new `ui/brand/` package).
+- No Play Store listing or signing keystore is set up — see
+  `.github/workflows/build.yml` for how upstream signs release builds
+  (`APP_KEYSTORE_*` secrets) if you want the same CI flow.
 
-Telegram Group / Telegram 群组：
+## Backend contract
 
-[https://t.me/v2rayN](https://t.me/v2rayN)
+The five things this app depends on, all in the `vpn-billing-dashboard` repo:
 
-Telegram Channel / Telegram 频道：
-
-[https://t.me/github_2dust](https://t.me/github_2dust)
+- `POST /api/mobile/register`, `POST /api/mobile/login` — `{email,password}` → `{token,email,role}`
+- `GET /api/mobile/me` (Bearer token) → `{email,role,subscriptions:[{id,planName,expiryDate,isActive,usedBytes,totalBytes,subscriptionUrl}]}`
+- `GET /api/mobile/plans` → `{plans:[{id,name,description,priceUsd,durationDays,trafficLimitGb}]}`
+- `POST /api/mobile/checkout` (Bearer token) `{planId,gateway,subscriptionId?}` → `{orderId,checkoutUrl,gateway}`
+- `GET /api/mobile/orders/:id` (Bearer token) → `{id,status,subscriptionId}`
+- `GET /api/sub/:token` (no auth — this is the actual VPN subscription feed) → base64 `vless://` blob + `Subscription-Userinfo` header

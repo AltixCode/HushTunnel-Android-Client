@@ -10,11 +10,15 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.v2ray.ang"
+        // White-label identity. Deliberately different from `namespace` above
+        // (which stays "com.v2ray.ang" so every existing unqualified `R.xxx`
+        // reference in the forked source keeps resolving) so this app installs
+        // as its own product, side by side with real v2rayNG if ever needed.
+        applicationId = "com.shadowlink.vpn"
         minSdk = 24
         targetSdk = 37
-        versionCode = 746
-        versionName = "2.3.6"
+        versionCode = 1
+        versionName = "1.0.0"
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
         splits {
