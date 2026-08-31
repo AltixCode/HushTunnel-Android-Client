@@ -1,3 +1,15 @@
+⚠️ **2026-08-31: read `/Users/atamohammadi/Dev/vpn/HANDOFF.md` FIRST** — it has
+the current session status, a live P1 bug report (VPN connects but DNS/3X-UI
+show it's not really working, plus a background/foreground state-desync
+bug), and the full new-feature backlog (reseller password choice + copy-
+confirm flow, clickable customer detail pages, **sub-reseller management is
+completely missing from this app's UI** even though the backend + Android
+`ApiClient.createSubReseller` already support it, Farsi localization gaps
+including a truncated string on the personal-VPN screen, currency
+localization). This file below is the older architecture/feature reference,
+still accurate for background, but the ecosystem HANDOFF.md is where the
+current task list lives.
+
 # Handoff: HushTunnel Android client
 
 You're continuing a white-label Android VPN client forked from
