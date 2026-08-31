@@ -634,11 +634,11 @@
     <string name="brand_reseller_revoke">لغو اشتراک</string>
 
 
-    <string name="brand_web_store_notice">خرید و تمدید اشتراک</string>
-    <string name="brand_web_store_desc">برای خرید اشتراک جدید، تمدید یا ارتقای پلن به وب‌سایت رسمی مراجعه کنید:</string>
+    <string name="brand_web_store_notice">مدیریت حساب و اشتراک</string>
+    <string name="brand_web_store_desc">مدیریت اشتراک‌ها، اتصال دستگاه‌ها و تنظیمات حساب از طریق پورتال وب انجام می‌شود:</string>
     <string name="brand_web_store_url">https://www.hushtunnel.com</string>
-    <string name="brand_web_payment_methods">پذیرش پرداخت با رمزارزها (تتر، بیت‌کوین و...) و کارت‌های اعتباری.</string>
-    <string name="brand_web_reseller_notice">اگر از نمایندگان فروش خرید کرده‌اید، جهت تمدید با نماینده خود تماس بگیرید یا مستقیماً از وب‌سایت تمدید کنید.</string>
+    <string name="brand_web_payment_methods">تنظیمات اشتراک و مدیریت سرویس‌ها از طریق پنل کاربری آنلاین در دسترس است.</string>
+    <string name="brand_web_reseller_notice">حساب‌های دریافت شده از نمایندگان مجاز نیز از طریق نماینده یا پنل کاربری قابل مدیریت است.</string>
     <string name="brand_change_password">تغییر رمز عبور</string>
     <string name="brand_current_password">رمز عبور فعلی</string>
     <string name="brand_new_password">رمز عبور جدید</string>

@@ -634,11 +634,11 @@
     <string name="brand_reseller_revoke">Revoke</string>
 
 
-    <string name="brand_web_store_notice">Subscriptions &amp; Renewals</string>
-    <string name="brand_web_store_desc">To subscribe, renew, or upgrade your service, visit our official website:</string>
+    <string name="brand_web_store_notice">Account &amp; Subscription Management</string>
+    <string name="brand_web_store_desc">Subscriptions, active devices, and partner access are managed via your web dashboard:</string>
     <string name="brand_web_store_url">https://www.hushtunnel.com</string>
-    <string name="brand_web_payment_methods">We accept Cryptocurrency (USDT, BTC) and Credit Cards.</string>
-    <string name="brand_web_reseller_notice">Purchased from a partner? Contact your reseller to renew, or renew directly on our website.</string>
+    <string name="brand_web_payment_methods">Manage your active services, devices, and security settings online.</string>
+    <string name="brand_web_reseller_notice">Accounts registered through authorized partners can be managed directly or with your provider.</string>
     <string name="brand_change_password">Change Password</string>
     <string name="brand_current_password">Current Password</string>
     <string name="brand_new_password">New Password</string>

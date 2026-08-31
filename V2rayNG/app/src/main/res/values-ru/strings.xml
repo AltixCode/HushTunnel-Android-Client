@@ -634,11 +634,11 @@
     <string name="brand_reseller_revoke">Отозвать</string>
 
 
-    <string name="brand_web_store_notice">Покупка и продление</string>
-    <string name="brand_web_store_desc">Для покупки, продления или смены тарифа перейдите на наш сайт:</string>
+    <string name="brand_web_store_notice">Управление аккаунтом и подпиской</string>
+    <string name="brand_web_store_desc">Управление подписками, устройствами и параметрами доступно на веб-портале:</string>
     <string name="brand_web_store_url">https://www.hushtunnel.com</string>
-    <string name="brand_web_payment_methods">Мы принимаем криптовалюты (USDT, BTC) и банковские карты.</string>
-    <string name="brand_web_reseller_notice">Если вы купили подписку у реселлера, обратитесь к нему для продления или продлите на сайте.</string>
+    <string name="brand_web_payment_methods">Управляйте активными сервисами и настройками безопасности в личном кабинете.</string>
+    <string name="brand_web_reseller_notice">Аккаунты, оформленные через партнеров, можно продлевать у вашего провайдера или онлайн.</string>
     <string name="brand_change_password">Сменить пароль</string>
     <string name="brand_current_password">Текущий пароль</string>
     <string name="brand_new_password">Новый пароль</string>

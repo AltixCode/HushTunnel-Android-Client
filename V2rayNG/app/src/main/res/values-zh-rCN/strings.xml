@@ -634,11 +634,11 @@
     <string name="brand_reseller_revoke">注销订阅</string>
 
 
-    <string name="brand_web_store_notice">购买与续费</string>
-    <string name="brand_web_store_desc">如需购买新套餐、续费或升级服务，请访问官方网站：</string>
+    <string name="brand_web_store_notice">账户与订阅管理</string>
+    <string name="brand_web_store_desc">如需管理订阅、设备接入及账户配置，请访问官方网页控制台：</string>
     <string name="brand_web_store_url">https://www.hushtunnel.com</string>
-    <string name="brand_web_payment_methods">支持加密货币（USDT、BTC）及信用卡支付。</string>
-    <string name="brand_web_reseller_notice">如果您是通过分销商购买的，可联系分销商续费，或在官网上直接在线续费。</string>
+    <string name="brand_web_payment_methods">在在线个人中心管理您的生效服务及安全设置。</string>
+    <string name="brand_web_reseller_notice">通过分销合作伙伴开通的账户，可通过服务商或官方网站进行统一管理。</string>
     <string name="brand_change_password">修改密码</string>
     <string name="brand_current_password">当前密码</string>
     <string name="brand_new_password">新密码</string>

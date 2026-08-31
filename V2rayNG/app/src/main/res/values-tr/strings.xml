@@ -85,11 +85,11 @@
     <string name="brand_reseller_reset_traffic">Trafiği Sıfırla</string>
     <string name="brand_reseller_revoke">İptal Et</string>
 
-    <string name="brand_web_store_notice">Abonelik ve Yenileme</string>
-    <string name="brand_web_store_desc">Yeni paket almak veya sürenizi uzatmak için web sitemizi ziyaret edin:</string>
+    <string name="brand_web_store_notice">Hesap ve Abonelik Yönetimi</string>
+    <string name="brand_web_store_desc">Aboneliklerinizi, cihazlarınızı ve hesap ayarlarınızı web portalımızdan yönetebilirsiniz:</string>
     <string name="brand_web_store_url">https://www.hushtunnel.com</string>
-    <string name="brand_web_payment_methods">Kripto para (USDT, BTC) ve Kredi Kartı ile güvenli ödeme.</string>
-    <string name="brand_web_reseller_notice">Hizmeti bayiden aldıysanız, yenileme için bayinizle görüşebilir veya siteden doğrudan yenileyebilirsiniz.</string>
+    <string name="brand_web_payment_methods">Hizmetlerinizi ve güvenlik ayarlarınızı çevrimiçi kontrol panelinden yönetin.</string>
+    <string name="brand_web_reseller_notice">Yetkili iş ortaklarımız üzerinden açılan hesaplar bayinizden veya web portalından yönetilebilir.</string>
     <string name="brand_change_password">Şifre Değiştir</string>
     <string name="brand_current_password">Mevcut Şifre</string>
     <string name="brand_new_password">Yeni Şifre</string>
