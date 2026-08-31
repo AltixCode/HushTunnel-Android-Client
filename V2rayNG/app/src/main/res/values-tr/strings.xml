@@ -110,4 +110,12 @@
     <string name="brand_sub_resellers">Alt Bayiler</string>
     <string name="brand_new_reseller">Yeni Bayi</string>
     <string name="brand_transfer_success">Transfer başarıyla tamamlandı</string>
+    <string name="brand_my_personal_vpn">Kişisel VPN Bağlantım</string>
+    <string name="brand_open_vpn_dashboard">VPN İstemcisini Aç</string>
+    <string name="brand_personal_vpn_desc">Kişisel cihazlarınız için %1$d%% bayi indirimli yüksek hızlı bağlantı.</string>
+    <string name="brand_buy_personal_vpn">Kişisel VPN Satın Al</string>
+    <string name="brand_renew_personal_vpn">Kişisel VPN Yenile</string>
+    <string name="brand_copy_sub_link">Bağlantıyı Kopyala</string>
+    <string name="brand_copied_to_clipboard">Panoya kopyalandı</string>
+    <string name="brand_reseller_portal_btn">Bayi Paneli</string>
 </resources>

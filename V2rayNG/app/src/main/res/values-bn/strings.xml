@@ -560,4 +560,12 @@
     <string name="brand_sub_resellers">সাব-রিসেলার</string>
     <string name="brand_new_reseller">নতুন রিসেলার</string>
     <string name="brand_transfer_success">স্থানান্তর সফল হয়েছে</string>
+    <string name="brand_my_personal_vpn">আমার ব্যক্তিগত ভিপিএন সংযোগ</string>
+    <string name="brand_open_vpn_dashboard">ভিপিএন ক্লায়েন্ট খুলুন</string>
+    <string name="brand_personal_vpn_desc">আপনার ব্যক্তিগত ডিভাইসের জন্য %1$d%% রিসেলার ছাড়ে হাই-স্পিড স্টেলথ সংযোগ।</string>
+    <string name="brand_buy_personal_vpn">ব্যক্তিগত ভিপিএন কিনুন</string>
+    <string name="brand_renew_personal_vpn">ব্যক্তিগত ভিপিএন নবায়ন করুন</string>
+    <string name="brand_copy_sub_link">লিঙ্ক কপি করুন</string>
+    <string name="brand_copied_to_clipboard">ক্লিপবোর্ডে কপি করা হয়েছে</string>
+    <string name="brand_reseller_portal_btn">রিসেলার পোর্টাল</string>
 </resources>

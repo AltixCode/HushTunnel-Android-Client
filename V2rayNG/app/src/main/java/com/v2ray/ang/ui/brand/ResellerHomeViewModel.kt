@@ -12,6 +12,7 @@ data class ResellerUiState(
     val overview: ResellerOverview = ResellerOverview(0.0, 0, null, null),
     val customers: List<ResellerCustomer> = emptyList(),
     val subscriptions: List<ResellerSubscription> = emptyList(),
+    val personalSubscriptions: List<SubscriptionInfo> = emptyList(),
     val orders: List<ResellerOrder> = emptyList(),
     val deposits: List<ResellerDeposit> = emptyList(),
     val plans: List<PlanInfo> = emptyList(),
@@ -46,6 +47,7 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
                 val overview = try { ApiClient.resellerOverview(token) } catch (_: Exception) { ResellerOverview(0.0, 0, null, null) }
                 val customers = try { ApiClient.resellerCustomers(token) } catch (_: Exception) { emptyList() }
                 val subscriptions = try { ApiClient.resellerSubscriptions(token) } catch (_: Exception) { emptyList() }
+                val personalSubscriptions = try { ApiClient.me(token).subscriptions } catch (_: Exception) { emptyList() }
                 val orders = try { ApiClient.resellerOrders(token) } catch (_: Exception) { emptyList() }
                 val deposits = try { ApiClient.resellerDeposits(token) } catch (_: Exception) { emptyList() }
                 val plans = try { ApiClient.plans() } catch (_: Exception) { emptyList() }
@@ -56,6 +58,7 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
                         overview = overview,
                         customers = customers,
                         subscriptions = subscriptions,
+                        personalSubscriptions = personalSubscriptions,
                         orders = orders,
                         deposits = deposits,
                         plans = plans,
@@ -253,19 +256,6 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
         }
     }
 
-    fun createSelfSubscription(planId: String, subscriptionId: String? = null) {
-        val token = AuthStore.getToken() ?: return
-        launchLoading {
-            try {
-                ApiClient.createSelfSubscription(token, planId, subscriptionId)
-                _uiState.update { it.copy(message = "Personal VPN subscription active!", error = null) }
-                refresh()
-            } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message ?: "Failed to create self subscription") }
-            }
-        }
-    }
-
     fun changePassword(currentPassword: String?, newPassword: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         val token = AuthStore.getToken() ?: return
         launchLoading {
@@ -274,6 +264,36 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
                 onSuccess()
             } catch (e: Exception) {
                 onError(e.message ?: "Failed to change password")
+            }
+        }
+    }
+
+    fun buyPersonalSubscription(planId: String) {
+        val token = AuthStore.getToken() ?: return
+        launchLoading {
+            try {
+                ApiClient.createSelfSubscription(token, planId)
+                _uiState.update { it.copy(message = app.getString(R.string.brand_order_paid_success), error = null) }
+                refresh()
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(error = e.message) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = app.getString(R.string.brand_error_connection)) }
+            }
+        }
+    }
+
+    fun renewPersonalSubscription(subscriptionId: String, planId: String) {
+        val token = AuthStore.getToken() ?: return
+        launchLoading {
+            try {
+                ApiClient.createSelfSubscription(token, planId, subscriptionId)
+                _uiState.update { it.copy(message = app.getString(R.string.brand_order_paid_success), error = null) }
+                refresh()
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(error = e.message) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = app.getString(R.string.brand_error_connection)) }
             }
         }
     }

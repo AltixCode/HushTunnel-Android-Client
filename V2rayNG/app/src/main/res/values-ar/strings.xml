@@ -560,4 +560,12 @@
     <string name="brand_sub_resellers">الموزعون الفرعيون</string>
     <string name="brand_new_reseller">موزع جديد</string>
     <string name="brand_transfer_success">تم التحويل بنجاح</string>
+    <string name="brand_my_personal_vpn">اتصال VPN الشخصي الخاص بي</string>
+    <string name="brand_open_vpn_dashboard">فتح عميل VPN</string>
+    <string name="brand_personal_vpn_desc">اتصال خفي عالي السرعة لأجهزتك الشخصية بخصم %1$d%% كموزع.</string>
+    <string name="brand_buy_personal_vpn">شراء VPN شخصي</string>
+    <string name="brand_renew_personal_vpn">تجديد VPN الشخصي</string>
+    <string name="brand_copy_sub_link">نسخ الرابط</string>
+    <string name="brand_copied_to_clipboard">تم النسخ إلى الحافظة</string>
+    <string name="brand_reseller_portal_btn">لوحة الموزع</string>
 </resources>

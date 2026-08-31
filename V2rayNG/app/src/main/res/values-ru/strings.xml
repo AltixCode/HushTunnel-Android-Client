@@ -659,4 +659,12 @@
     <string name="brand_sub_resellers">Суб-реселлеры</string>
     <string name="brand_new_reseller">Новый реселлер</string>
     <string name="brand_transfer_success">Перевод успешно выполнен</string>
+    <string name="brand_my_personal_vpn">Мое личное VPN-подключение</string>
+    <string name="brand_open_vpn_dashboard">Открыть VPN клиент</string>
+    <string name="brand_personal_vpn_desc">Высокоскоростное подключение для ваших устройств со скидкой %1$d%%.</string>
+    <string name="brand_buy_personal_vpn">Купить личный VPN</string>
+    <string name="brand_renew_personal_vpn">Продлить личный VPN</string>
+    <string name="brand_copy_sub_link">Скопировать ссылку</string>
+    <string name="brand_copied_to_clipboard">Скопировано в буфер</string>
+    <string name="brand_reseller_portal_btn">Панель реселлера</string>
 </resources>

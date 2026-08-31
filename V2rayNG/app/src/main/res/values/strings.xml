@@ -659,4 +659,12 @@
     <string name="brand_sub_resellers">Sub-Resellers</string>
     <string name="brand_new_reseller">New Reseller</string>
     <string name="brand_transfer_success">Transfer completed successfully</string>
+    <string name="brand_my_personal_vpn">My Personal VPN</string>
+    <string name="brand_open_vpn_dashboard">Open VPN Client</string>
+    <string name="brand_personal_vpn_desc">High-speed stealth connection for your personal devices with %1$d%% reseller discount.</string>
+    <string name="brand_buy_personal_vpn">Purchase Personal VPN</string>
+    <string name="brand_renew_personal_vpn">Renew Personal VPN</string>
+    <string name="brand_copy_sub_link">Copy Link</string>
+    <string name="brand_copied_to_clipboard">Copied to clipboard</string>
+    <string name="brand_reseller_portal_btn">Reseller Portal</string>
 </resources>

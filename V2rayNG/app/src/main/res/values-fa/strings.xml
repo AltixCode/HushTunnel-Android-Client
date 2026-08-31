@@ -659,4 +659,12 @@
     <string name="brand_sub_resellers">نمایندگان زیرمجموعه</string>
     <string name="brand_new_reseller">نماینده جدید</string>
     <string name="brand_transfer_success">انتقال وجه با موفقیت انجام شد</string>
+    <string name="brand_my_personal_vpn">اتصال اختصاصی من</string>
+    <string name="brand_open_vpn_dashboard">ورود به نرم‌افزار VPN</string>
+    <string name="brand_personal_vpn_desc">اتصال پرسرعت ضدفیلتر برای دستگاه‌های شما با %1$d٪ تخفیف نمایندگی.</string>
+    <string name="brand_buy_personal_vpn">خرید اتصال شخصی</string>
+    <string name="brand_renew_personal_vpn">تمدید اتصال شخصی</string>
+    <string name="brand_copy_sub_link">کپی لینک اتصال</string>
+    <string name="brand_copied_to_clipboard">در حافظه کپی شد</string>
+    <string name="brand_reseller_portal_btn">پنل نمایندگی</string>
 </resources>

@@ -34,6 +34,12 @@ object ApiClient {
 
         when (method) {
             "POST" -> requestBuilder.post((body ?: JSONObject()).toString().toRequestBody(jsonMediaType))
+            "PUT" -> requestBuilder.put((body ?: JSONObject()).toString().toRequestBody(jsonMediaType))
+            "DELETE" -> if (body != null) {
+                requestBuilder.delete(body.toString().toRequestBody(jsonMediaType))
+            } else {
+                requestBuilder.delete()
+            }
             "GET" -> requestBuilder.get()
             else -> error("Unsupported method $method")
         }
@@ -310,7 +316,7 @@ object ApiClient {
     }
 
     suspend fun updateCustomerPassword(token: String, customerId: String, newPassword: String) {
-        request("/api/mobile/reseller/customers/$customerId/password", "PUT", token = token, body = JSONObject().put("newPassword", newPassword))
+        request("/api/mobile/reseller/customers/$customerId/password", "POST", token = token, body = JSONObject().put("newPassword", newPassword))
     }
 
     suspend fun resetCustomerPassword(token: String, customerId: String): String {

@@ -9,6 +9,16 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 export ANDROID_HOME="/opt/homebrew/share/android-commandlinetools"
 ADB="/opt/homebrew/share/android-commandlinetools/platform-tools/adb"
 
+# Test-account credentials come from the environment, never hardcoded here —
+# this script is committed to git, and a hardcoded real email/password would
+# leak into repo history permanently. Set these to a disposable test account
+# before running, e.g.:
+#   TEST_EMAIL=qa_e2e_android@hushtunnel.com TEST_PASSWORD=... bash scripts/test-android-e2e.sh
+if [ -z "$TEST_EMAIL" ] || [ -z "$TEST_PASSWORD" ]; then
+  echo "ERROR: Set TEST_EMAIL and TEST_PASSWORD env vars to a disposable test account before running." >&2
+  exit 1
+fi
+
 echo "▶ [1/4] Assembling Release APKs..."
 cd /Users/atamohammadi/Dev/shadowlink-android/V2rayNG
 ./gradlew assembleRelease --quiet
@@ -25,15 +35,18 @@ echo " ✅ Installed and launched com.hushtunnel.app"
 
 echo "▶ [3/4] Testing Login & Authentication Flow..."
 python3 -c '
-import subprocess, time
+import subprocess, time, os
 def adb(cmd):
     return subprocess.run(f"/opt/homebrew/share/android-commandlinetools/platform-tools/adb {cmd}", shell=True, capture_output=True, text=True)
+
+email = os.environ["TEST_EMAIL"]
+password = os.environ["TEST_PASSWORD"]
 
 # Email
 adb("shell input tap 160 230")
 time.sleep(0.3)
 for _ in range(40): adb("shell input keyevent KEYCODE_DEL")
-adb("shell input text amirsmohammadi@gmail.com")
+adb(f"shell input text {email}")
 
 # Password
 adb("shell input keyevent KEYCODE_BACK")
@@ -41,7 +54,7 @@ time.sleep(0.3)
 adb("shell input tap 160 310")
 time.sleep(0.3)
 for _ in range(30): adb("shell input keyevent KEYCODE_DEL")
-adb("shell input text 09144511739")
+adb(f"shell input text {password}")
 
 # Submit
 adb("shell input keyevent KEYCODE_BACK")
@@ -50,6 +63,13 @@ adb("shell input tap 160 380")
 time.sleep(4)
 '
 echo " ✅ Logged in successfully."
+
+# TODO: extend this script to cover the reseller self-service personal VPN
+# flow (buy -> verify QR/connect card renders -> renew -> disconnect), the
+# way scripts/test-e2e.ts in the vpn-billing-dashboard repo does at the
+# API/DB level. This script only drives the UI via hardcoded tap coordinates,
+# which needs a real device/emulator screen to verify — couldn't be added
+# reliably without one available. See AGENTS.md section 5.
 
 echo "▶ [4/4] Capturing E2E Screen Artifacts..."
 $ADB exec-out screencap -p > /Users/atamohammadi/Dev/shadowlink-android/store_assets/02_android_home_e2e.png

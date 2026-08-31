@@ -560,4 +560,12 @@
     <string name="brand_sub_resellers">Đại lý phụ</string>
     <string name="brand_new_reseller">Đại lý mới</string>
     <string name="brand_transfer_success">Chuyển tiền thành công</string>
+    <string name="brand_my_personal_vpn">Kết nối VPN cá nhân của tôi</string>
+    <string name="brand_open_vpn_dashboard">Mở ứng dụng VPN</string>
+    <string name="brand_personal_vpn_desc">Kết nối ẩn danh tốc độ cao cho thiết bị cá nhân của bạn với chiết khấu đại lý %1$d%%.</string>
+    <string name="brand_buy_personal_vpn">Mua VPN cá nhân</string>
+    <string name="brand_renew_personal_vpn">Gia hạn VPN cá nhân</string>
+    <string name="brand_copy_sub_link">Sao chép liên kết</string>
+    <string name="brand_copied_to_clipboard">Đã sao chép vào bộ nhớ tạm</string>
+    <string name="brand_reseller_portal_btn">Cổng đại lý</string>
 </resources>

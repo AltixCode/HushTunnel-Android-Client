@@ -241,6 +241,15 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
+                        val isReseller = AuthStore.getRole().equals("RESELLER", ignoreCase = true)
+                        if (isReseller) {
+                            SuggestionChip(
+                                onClick = {
+                                    context.startActivity(Intent(context, ResellerHomeActivity::class.java))
+                                },
+                                label = { Text("💼 " + stringResource(R.string.brand_reseller_portal_btn), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
+                            )
+                        }
                         SuggestionChip(
                             onClick = { showPasswordDialog = true },
                             label = { Text(stringResource(R.string.brand_change_password), style = MaterialTheme.typography.labelSmall) },

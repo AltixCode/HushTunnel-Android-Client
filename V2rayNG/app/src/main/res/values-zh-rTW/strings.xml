@@ -560,4 +560,12 @@
     <string name="brand_sub_resellers">子分銷商</string>
     <string name="brand_new_reseller">新建分銷商</string>
     <string name="brand_transfer_success">轉帳成功</string>
+    <string name="brand_my_personal_vpn">我的個人專屬 VPN</string>
+    <string name="brand_open_vpn_dashboard">打開 VPN 客戶端</string>
+    <string name="brand_personal_vpn_desc">為您的個人設備提供專享 %1$d%% 折扣的高速隱形連線。</string>
+    <string name="brand_buy_personal_vpn">購買個人專屬連線</string>
+    <string name="brand_renew_personal_vpn">續費專屬連線</string>
+    <string name="brand_copy_sub_link">複製訂閱連結</string>
+    <string name="brand_copied_to_clipboard">已複製到剪貼簿</string>
+    <string name="brand_reseller_portal_btn">經銷商面板</string>
 </resources>

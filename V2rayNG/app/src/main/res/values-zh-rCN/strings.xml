@@ -659,4 +659,12 @@
     <string name="brand_sub_resellers">子分销商</string>
     <string name="brand_new_reseller">新建分销商</string>
     <string name="brand_transfer_success">转账成功</string>
+    <string name="brand_my_personal_vpn">我的个人专属 VPN</string>
+    <string name="brand_open_vpn_dashboard">打开 VPN 客户端</string>
+    <string name="brand_personal_vpn_desc">为您的个人设备提供专享 %1$d%% 折扣的高速隐形连接。</string>
+    <string name="brand_buy_personal_vpn">购买个人专属连接</string>
+    <string name="brand_renew_personal_vpn">续费专属连接</string>
+    <string name="brand_copy_sub_link">复制订阅链接</string>
+    <string name="brand_copied_to_clipboard">已复制到剪贴板</string>
+    <string name="brand_reseller_portal_btn">代理商面板</string>
 </resources>

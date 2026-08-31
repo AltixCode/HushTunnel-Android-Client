@@ -74,6 +74,11 @@ class ResellerHomeActivity : BaseComponentActivity() {
             isLoading = isLoading,
             onRefresh = viewModel::refresh,
             onSetTab = viewModel::setTab,
+            onOpenVpnClient = {
+                startActivity(Intent(this@ResellerHomeActivity, HomeActivity::class.java))
+            },
+            onBuyPersonalPlan = viewModel::buyPersonalSubscription,
+            onRenewPersonalPlan = viewModel::renewPersonalSubscription,
             onCreateCustomer = viewModel::createCustomer,
             onCreateOrder = viewModel::createOrderForCustomer,
             onCreateDeposit = { _, _ ->
@@ -103,6 +108,9 @@ fun ResellerHomeScreen(
     isLoading: Boolean,
     onRefresh: () -> Unit,
     onSetTab: (Int) -> Unit,
+    onOpenVpnClient: () -> Unit,
+    onBuyPersonalPlan: (String) -> Unit,
+    onRenewPersonalPlan: (String, String) -> Unit,
     onCreateCustomer: (String) -> Unit,
     onCreateOrder: (customerEmail: String, planId: String) -> Unit,
     onCreateDeposit: (amount: Double, gateway: String) -> Unit,
@@ -119,6 +127,8 @@ fun ResellerHomeScreen(
     var showAddDepositDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showChangePasswordDialog by remember { mutableStateOf(false) }
+    var showBuyPersonalDialog by remember { mutableStateOf(false) }
+    var renewPersonalSubId by remember { mutableStateOf<String?>(null) }
 
     val currentLang = LocaleHelper.getCurrentLanguageTag()
     val tabs = listOf(
@@ -159,6 +169,19 @@ fun ResellerHomeScreen(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    Button(
+                        onClick = onOpenVpnClient,
+                        shape = RoundedCornerShape(20.dp),
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        modifier = Modifier.padding(end = 4.dp),
+                    ) {
+                        Text(
+                            text = "🛡️ " + stringResource(R.string.brand_open_vpn_dashboard),
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
                     TextButton(onClick = onRefresh, enabled = !isLoading) {
                         if (isLoading) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
@@ -252,6 +275,16 @@ fun ResellerHomeScreen(
             when (state.selectedTab) {
                 0 -> ResellerOverviewTab(
                     overview = state.overview,
+                    personalSubscriptions = state.personalSubscriptions,
+                    onOpenVpnClient = onOpenVpnClient,
+                    onOpenBuyPersonal = {
+                        renewPersonalSubId = null
+                        showBuyPersonalDialog = true
+                    },
+                    onOpenRenewPersonal = { subId ->
+                        renewPersonalSubId = subId
+                        showBuyPersonalDialog = true
+                    },
                     onOpenAddCustomer = { showAddCustomerDialog = true },
                     onOpenAddOrder = { showAddOrderDialog = true },
                     onOpenAddDeposit = { showAddDepositDialog = true },
@@ -278,6 +311,26 @@ fun ResellerHomeScreen(
                 )
             }
         }
+    }
+
+
+    if (showBuyPersonalDialog) {
+        BuyPersonalPlanDialog(
+            plans = state.plans,
+            balanceUsd = state.overview.balanceUsd,
+            discountPct = state.overview.discountPct,
+            isRenew = (renewPersonalSubId != null),
+            onDismiss = { showBuyPersonalDialog = false },
+            onConfirm = { planId ->
+                showBuyPersonalDialog = false
+                val targetSubId = renewPersonalSubId
+                if (targetSubId != null) {
+                    onRenewPersonalPlan(targetSubId, planId)
+                } else {
+                    onBuyPersonalPlan(planId)
+                }
+            },
+        )
     }
 
     if (showAddCustomerDialog) {
@@ -353,12 +406,99 @@ fun ResellerHomeScreen(
 @Composable
 fun ResellerOverviewTab(
     overview: ResellerOverview,
+    personalSubscriptions: List<SubscriptionInfo>,
+    onOpenVpnClient: () -> Unit,
+    onOpenBuyPersonal: () -> Unit,
+    onOpenRenewPersonal: (String) -> Unit,
     onOpenAddCustomer: () -> Unit,
     onOpenAddOrder: () -> Unit,
     onOpenAddDeposit: () -> Unit,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val latestSub = personalSubscriptions.firstOrNull()
+
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
+            // Prominent Personal VPN Connection Section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+                ),
+                shape = RoundedCornerShape(14.dp),
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = "🛡️ " + stringResource(R.string.brand_my_personal_vpn),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        if (latestSub != null) {
+                            SuggestionChip(
+                                onClick = onOpenVpnClient,
+                                label = { Text(stringResource(R.string.brand_active), style = MaterialTheme.typography.labelSmall) },
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    if (latestSub != null) {
+                        Text(
+                            text = "Plan: ${latestSub.planName}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            text = stringResource(R.string.brand_expires_on, latestSub.expiryDate.take(10)),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 2.dp, bottom = 12.dp),
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Button(
+                                onClick = onOpenVpnClient,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text(stringResource(R.string.brand_connect))
+                            }
+                            OutlinedButton(
+                                onClick = { onOpenRenewPersonal(latestSub.id) },
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text(stringResource(R.string.brand_renew))
+                            }
+                        }
+                    } else {
+                        Text(
+                            text = stringResource(R.string.brand_personal_vpn_desc, overview.discountPct),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 12.dp),
+                        )
+
+                        Button(
+                            onClick = onOpenBuyPersonal,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("🛒 " + stringResource(R.string.brand_buy_personal_vpn))
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -951,5 +1091,115 @@ fun CustomerDetailDialog(
                 Text(stringResource(R.string.brand_cancel))
             }
         }
+    )
+}
+
+
+@Composable
+fun BuyPersonalPlanDialog(
+    plans: List<PlanInfo>,
+    balanceUsd: Double,
+    discountPct: Int,
+    isRenew: Boolean = false,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    var selectedPlanId by remember { mutableStateOf(plans.firstOrNull()?.id ?: "") }
+    val selectedPlan = plans.firstOrNull { it.id == selectedPlanId } ?: plans.firstOrNull()
+    val rawPrice = selectedPlan?.priceUsd ?: 0.0
+    val discountedPrice = Math.round(rawPrice * (1 - discountPct / 100.0) * 100.0) / 100.0
+    val canAfford = (balanceUsd >= discountedPrice)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(if (isRenew) stringResource(R.string.brand_renew_personal_vpn) else stringResource(R.string.brand_buy_personal_vpn))
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Your Reseller Balance: $${String.format(Locale.US, "%.2f", balanceUsd)} ($discountPct% off applied)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 12.dp),
+                )
+
+                plans.forEach { plan ->
+                    val isSelected = (plan.id == selectedPlanId)
+                    val itemDiscounted = Math.round(plan.priceUsd * (1 - discountPct / 100.0) * 100.0) / 100.0
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        onClick = { selectedPlanId = plan.id },
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column {
+                                Text(
+                                    text = plan.name,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                                Text(
+                                    text = "${plan.durationDays}d · " + (if (plan.trafficLimitGb > 0) "${plan.trafficLimitGb} GB" else "Unlimited"),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = "$${String.format(Locale.US, "%.2f", itemDiscounted)}",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                                if (itemDiscounted < plan.priceUsd) {
+                                    Text(
+                                        text = "$${String.format(Locale.US, "%.2f", plan.priceUsd)}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!canAfford) {
+                    Text(
+                        text = "Insufficient balance. Please deposit funds via web dashboard.",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { if (selectedPlan != null) onConfirm(selectedPlan.id) },
+                enabled = canAfford && selectedPlan != null,
+            ) {
+                Text("Confirm ($${String.format(Locale.US, "%.2f", discountedPrice)})")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.brand_cancel))
+            }
+        },
     )
 }
