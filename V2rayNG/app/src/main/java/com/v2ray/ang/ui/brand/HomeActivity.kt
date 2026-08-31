@@ -48,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -175,6 +176,9 @@ fun HomeScreen(
     val activeSubs = state.subscriptions.filter { it.isActive }
     val selectedSub = state.subscriptions.firstOrNull { it.id == state.selectedSubscriptionId }
 
+    val config = androidx.compose.ui.platform.LocalConfiguration.current
+    val responsivePadding = if (config.screenWidthDp > 640) ((config.screenWidthDp - 640) / 2).dp else 16.dp
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -183,7 +187,7 @@ fun HomeScreen(
                 .imePadding()
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp),
+                .padding(horizontal = responsivePadding, vertical = 20.dp),
         ) {
             // Top Header Bar
             Row(

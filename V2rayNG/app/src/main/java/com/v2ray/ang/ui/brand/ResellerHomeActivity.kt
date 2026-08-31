@@ -43,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -128,6 +129,9 @@ fun ResellerHomeScreen(
         stringResource(R.string.brand_reseller_tab_deposits),
     )
 
+    val config = androidx.compose.ui.platform.LocalConfiguration.current
+    val responsivePadding = if (config.screenWidthDp > 640) ((config.screenWidthDp - 640) / 2).dp else 16.dp
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -135,7 +139,7 @@ fun ResellerHomeScreen(
                 .consumeWindowInsets(innerPadding)
                 .imePadding()
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(horizontal = responsivePadding, vertical = 16.dp),
         ) {
             // Top Header Bar
             Row(

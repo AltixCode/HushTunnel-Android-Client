@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -83,6 +84,9 @@ fun RegisterScreen(
     var showLanguageDialog by remember { mutableStateOf(false) }
     val currentLang = LocaleHelper.getCurrentLanguageTag()
 
+    val config = androidx.compose.ui.platform.LocalConfiguration.current
+    val responsivePadding = if (config.screenWidthDp > 500) ((config.screenWidthDp - 480) / 2).dp else 24.dp
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -91,7 +95,7 @@ fun RegisterScreen(
                 .imePadding()
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(24.dp),
+                .padding(horizontal = responsivePadding, vertical = 24.dp),
             verticalArrangement = Arrangement.Center,
         ) {
             Row(
