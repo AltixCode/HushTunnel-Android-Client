@@ -111,6 +111,15 @@ class HomeActivity : BaseComponentActivity() {
             onRenewPlan = { subId, planId, gateway ->
                 viewModel.renewSubscription(subId, planId, gateway) { checkoutUrl -> Utils.openUri(this, checkoutUrl) }
             },
+            onSwitchServer = { serverId ->
+                viewModel.switchServer(serverId) {
+                    LauncherManager.stopService(this@HomeActivity)
+                    val intent = VpnService.prepare(this@HomeActivity)
+                    if (intent == null) {
+                        LauncherManager.startServiceFromToggle(this@HomeActivity)
+                    }
+                }
+            },
             onDismissCheckoutMessage = viewModel::dismissCheckoutMessage,
             onLogout = {
                 viewModel.logout()
@@ -133,6 +142,7 @@ fun HomeScreen(
     onSelectSubscription: (String) -> Unit,
     onBuyPlan: (planId: String, gateway: String) -> Unit,
     onRenewPlan: (subId: String, planId: String, gateway: String) -> Unit,
+    onSwitchServer: (String) -> Unit,
     onDismissCheckoutMessage: () -> Unit,
     onLogout: () -> Unit,
 ) {
@@ -141,6 +151,7 @@ fun HomeScreen(
     var showOrdersDialog by remember { mutableStateOf(false) }
     var showPasswordDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
+    var showServerDialog by remember { mutableStateOf(false) }
 
     val currentLang = LocaleHelper.getCurrentLanguageTag()
     val activeSubs = state.subscriptions.filter { it.isActive }
@@ -304,6 +315,47 @@ fun HomeScreen(
                 }
             }
 
+            // Server Location Selector Card
+            val activeServer = state.servers.firstOrNull { it.id == state.selectedServerId }
+                ?: state.servers.firstOrNull { it.isDefault }
+                ?: state.servers.firstOrNull()
+
+            Card(
+                onClick = { showServerDialog = true },
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = activeServer?.flag ?: "🌐", style = MaterialTheme.typography.headlineSmall)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = activeServer?.name ?: "Auto Location (Fastest)",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                text = "${activeServer?.city ?: activeServer?.countryCode ?: "Global"} · VLESS-Reality",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    OutlinedButton(
+                        onClick = { showServerDialog = true },
+                        shape = RoundedCornerShape(8.dp),
+                    ) {
+                        Text("Switch")
+                    }
+                }
+            }
+
             // Connection Status / Server hint
             if (!state.hasServer) {
                 Card(
@@ -461,8 +513,19 @@ fun HomeScreen(
         )
     }
 
+    if (showServerDialog) {
+        ServerSelectionDialog(
+            servers = state.servers,
+            selectedServerId = state.selectedServerId,
+            onDismiss = { showServerDialog = false },
+            onSelect = { serverId ->
+                showServerDialog = false
+                onSwitchServer(serverId)
+            },
+        )
+    }
+
     // Orders History Dialog
-    if (showOrdersDialog) {
         OrdersDialog(
             orders = state.orders,
             onDismiss = { showOrdersDialog = false },
@@ -832,6 +895,57 @@ fun ChangePasswordDialog(
             }
         },
         dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.brand_cancel))
+            }
+        }
+    )
+}
+
+@Composable
+fun ServerSelectionDialog(
+    servers: List<ServerNode>,
+    selectedServerId: String?,
+    onDismiss: () -> Unit,
+    onSelect: (String) -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Select Server Location") },
+        text = {
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                items(servers) { server ->
+                    val isSelected = (server.id == selectedServerId)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { onSelect(server.id) },
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = server.flag, style = MaterialTheme.typography.titleLarge)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = server.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            )
+                            Text(
+                                text = "${server.city ?: server.countryCode} · VLESS-Reality",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.brand_cancel))
             }

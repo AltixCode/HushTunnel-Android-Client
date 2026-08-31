@@ -91,10 +91,25 @@ object ApiClient {
                 subscriptionUrl = s.getString("subscriptionUrl"),
             )
         }
+        val serversJson = json.optJSONArray("servers") ?: JSONArray()
+        val servers = (0 until serversJson.length()).map { i ->
+            val s = serversJson.getJSONObject(i)
+            ServerNode(
+                id = s.getString("id"),
+                name = s.getString("name"),
+                countryCode = s.optString("countryCode", "GLOBAL"),
+                flag = s.optString("flag", "🌐"),
+                city = s.optNullableString("city"),
+                host = s.optString("host", ""),
+                port = s.optInt("port", 443),
+                isDefault = s.optBoolean("isDefault", false),
+            )
+        }
         return MeResult(
             email = json.getString("email"),
             role = json.optString("role", "USER"),
             subscriptions = subs,
+            servers = servers,
         )
     }
 

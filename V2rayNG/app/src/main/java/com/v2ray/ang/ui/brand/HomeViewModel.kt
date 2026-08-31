@@ -19,6 +19,8 @@ data class HomeUiState(
     val email: String = "",
     val subscriptions: List<SubscriptionInfo> = emptyList(),
     val selectedSubscriptionId: String? = null,
+    val servers: List<ServerNode> = emptyList(),
+    val selectedServerId: String? = null,
     val plans: List<PlanInfo> = emptyList(),
     val gateways: GatewayInfo = GatewayInfo(),
     val orders: List<OrderItem> = emptyList(),
@@ -102,11 +104,17 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
 
                 val isRunningNow = CoreServiceManager.isRunning()
 
+                val currentSelectedServer = _uiState.value.selectedServerId
+                    ?: me.servers.firstOrNull { it.isDefault }?.id
+                    ?: me.servers.firstOrNull()?.id
+
                 _uiState.update {
                     it.copy(
                         email = me.email,
                         subscriptions = me.subscriptions,
                         selectedSubscriptionId = selectedId,
+                        servers = me.servers,
+                        selectedServerId = currentSelectedServer,
                         plans = loadedPlans,
                         gateways = loadedGateways,
                         orders = loadedOrders,
@@ -233,6 +241,14 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
 
     fun logout() {
         AuthStore.clear()
+    }
+
+    
+    fun switchServer(serverId: String, onReconnect: () -> Unit) {
+        _uiState.update { it.copy(selectedServerId = serverId) }
+        if (_uiState.value.isRunning) {
+            onReconnect()
+        }
     }
 
     fun changePassword(currentPassword: String?, newPassword: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
