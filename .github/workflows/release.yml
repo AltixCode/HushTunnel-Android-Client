@@ -1,0 +1,186 @@
+name: Build & Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release Tag (e.g. v1.0.0)'
+        required: false
+        type: string
+      release_title:
+        description: 'Release Title'
+        required: false
+        type: string
+        default: 'HushTunnel Android Release'
+      is_prerelease:
+        description: 'Mark as Pre-release'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          log-accepted-android-sdk-licenses: false
+          cmdline-tools-version: '14742923'
+          packages: 'platforms;android-37.0 build-tools;37.0.0 platform-tools'
+
+      - name: Install Android NDK
+        run: |
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            --channel=0 \
+            --install "ndk;29.0.14206865"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/29.0.14206865" >> $GITHUB_ENV
+
+      - name: Cache libhevtun
+        id: cache-libhevtun
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/libs
+          key: libhevtun-${{ runner.os }}-${{ env.NDK_HOME }}-${{ hashFiles('compile-hevtun.sh') }}
+
+      - name: Build libhevtun
+        if: steps.cache-libhevtun.outputs.cache-hit != 'true'
+        run: |
+          bash compile-hevtun.sh
+
+      - name: Copy libhevtun to app
+        run: |
+          mkdir -p ${{ github.workspace }}/V2rayNG/app/libs
+          if [ -d "${{ github.workspace }}/libs" ]; then
+            cp -r ${{ github.workspace }}/libs/* ${{ github.workspace }}/V2rayNG/app/libs/ || true
+          fi
+
+      - name: Fetch AndroidLibXrayLite
+        run: |
+          if [ -d "AndroidLibXrayLite" ]; then
+            pushd AndroidLibXrayLite
+            CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v2026.08.01")
+            echo "CURRENT_TAG=$CURRENT_TAG" >> $GITHUB_ENV
+            popd
+          else
+            echo "CURRENT_TAG=v2026.08.01" >> $GITHUB_ENV
+          fi
+
+      - name: Download libv2ray binary
+        uses: robinraju/release-downloader@v1.13
+        continue-on-error: true
+        with:
+          repository: '2dust/AndroidLibXrayLite'
+          tag: ${{ env.CURRENT_TAG }}
+          fileName: 'libv2ray.aar'
+          out-file-path: V2rayNG/app/libs/
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Configure Keystore
+        id: keystore_setup
+        run: |
+          mkdir -p ${{ github.workspace }}/keystore
+          if [ -n "${{ secrets.APP_KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.APP_KEYSTORE_BASE64 }}" | base64 -d > ${{ github.workspace }}/keystore/release.jks
+            echo "KEYSTORE_PATH=${{ github.workspace }}/keystore/release.jks" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=${{ secrets.APP_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+            echo "KEY_ALIAS=${{ secrets.APP_KEYSTORE_ALIAS }}" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=${{ secrets.APP_KEY_PASSWORD }}" >> $GITHUB_ENV
+          else
+            echo "Generating CI signing key..."
+            keytool -genkeypair -v -keystore ${{ github.workspace }}/keystore/release.jks \
+              -alias hushtunnel -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass hushtunnel123 -keypass hushtunnel123 \
+              -dname "CN=HushTunnel, OU=Mobile, O=HushTunnel, L=Amsterdam, C=NL"
+            echo "KEYSTORE_PATH=${{ github.workspace }}/keystore/release.jks" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=hushtunnel123" >> $GITHUB_ENV
+            echo "KEY_ALIAS=hushtunnel" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=hushtunnel123" >> $GITHUB_ENV
+          fi
+
+      - name: Build Release APKs
+        run: |
+          cd ${{ github.workspace }}/V2rayNG
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+          chmod +x gradlew
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=${{ env.KEYSTORE_PATH }} \
+            -Pandroid.injected.signing.store.password=${{ env.KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ env.KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ env.KEY_PASSWORD }}
+
+      - name: Prepare Release Artifacts
+        run: |
+          mkdir -p ${{ github.workspace }}/release_apks
+          
+          # Find and copy playstore / fdroid release APKs
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*arm64-v8a*.apk" -exec cp {} ${{ github.workspace }}/release_apks/HushTunnel-1.0.0-arm64-v8a.apk \; -quit || true
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*armeabi-v7a*.apk" -exec cp {} ${{ github.workspace }}/release_apks/HushTunnel-1.0.0-armeabi-v7a.apk \; -quit || true
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*universal*.apk" -exec cp {} ${{ github.workspace }}/release_apks/HushTunnel-1.0.0-universal.apk \; -quit || true
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*x86_64*.apk" -exec cp {} ${{ github.workspace }}/release_apks/HushTunnel-1.0.0-x86_64.apk \; -quit || true
+
+          ls -lh ${{ github.workspace }}/release_apks/
+
+      - name: Upload APKs to Workflow Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: HushTunnel-Android-APKs
+          path: ${{ github.workspace }}/release_apks/*.apk
+
+      - name: Determine Release Tag
+        id: tag_info
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.release_tag }}" ]; then
+            TAG_NAME="${{ inputs.release_tag }}"
+          elif [ "${{ startsWith(github.ref, 'refs/tags/') }}" = "true" ]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+          else
+            TAG_NAME="v1.0.0-build.${{ github.run_number }}"
+          fi
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release & Upload APKs
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
+        with:
+          tag_name: ${{ steps.tag_info.outputs.TAG_NAME }}
+          name: ${{ inputs.release_title || steps.tag_info.outputs.TAG_NAME }}
+          body: |
+            ## HushTunnel Android Release (${{ steps.tag_info.outputs.TAG_NAME }})
+
+            ### What's New:
+            - **Multi-Server Location Switching**: Instant node picker with seamless auto-reconnect.
+            - **SaaS Store Compliance**: Compliant multi-device account management linking to `https://www.hushtunnel.com`.
+            - **Reseller Administration**: Full customer management, password resetting, and self-service subscriptions.
+            - **Multi-Language Support**: English, Persian (RTL), Russian, Simplified Chinese, and Turkish.
+
+            ### Downloads:
+            - **`HushTunnel-1.0.0-universal.apk`**: Universal APK for all devices (recommended)
+            - **`HushTunnel-1.0.0-arm64-v8a.apk`**: 64-bit ARM devices (most modern phones)
+            - **`HushTunnel-1.0.0-armeabi-v7a.apk`**: 32-bit ARM devices
+            - **`HushTunnel-1.0.0-x86_64.apk`**: Emulators and Chromebooks
+          draft: false
+          prerelease: ${{ inputs.is_prerelease || false }}
+          files: ${{ github.workspace }}/release_apks/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
