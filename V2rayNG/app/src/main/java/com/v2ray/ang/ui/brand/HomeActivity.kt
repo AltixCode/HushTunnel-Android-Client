@@ -58,7 +58,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.R
 import com.v2ray.ang.core.LauncherManager
-import com.v2ray.ang.core.CoreServiceManager
 import com.v2ray.ang.ui.base.BaseComponentActivity
 import com.v2ray.ang.util.Utils
 import com.v2ray.ang.extension.toast
@@ -88,8 +87,11 @@ class HomeActivity : BaseComponentActivity() {
     }
 
     private fun handleConnectToggle(isRunning: Boolean) {
-        val active = CoreServiceManager.isRunning() || isRunning
-        if (active) {
+        // Not CoreServiceManager.isRunning() — that's a per-process singleton and the VPN
+        // daemon runs in a separate process (see HomeViewModel.checkVpnState), so it would
+        // always read false from here regardless of the real state. state.isRunning is the
+        // one kept correct, via the daemon's own broadcast replies.
+        if (isRunning) {
             LauncherManager.stopService(this)
             viewModel.setVpnRunning(false)
             return

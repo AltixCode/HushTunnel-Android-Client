@@ -83,6 +83,19 @@ class MainRepository(
             IntentFilter(AppConfig.BROADCAST_ACTION_ACTIVITY),
             Utils.receiverFlags()
         )
+        requestServiceState()
+    }
+
+    /**
+     * Asks the (separate-process, `android:process=":RunSoLibV2RayDaemon"`) VPN daemon whether
+     * it's actually running, via the same registration handshake `init` uses — the daemon replies
+     * with [AppConfig.MSG_STATE_RUNNING]/[AppConfig.MSG_STATE_NOT_RUNNING], which [serviceReceiver]
+     * turns into a [MainServiceEvent] on [mainServiceEvent]. Call this to resync UI state (e.g. on
+     * `Activity.onResume`) instead of checking `CoreServiceManager.isRunning()` directly — that
+     * object is a per-process singleton, so from the UI process it never reflects the daemon
+     * process's real state (it's a different `coreController` instance entirely).
+     */
+    fun requestServiceState() {
         MessageHelper.sendMsg2Service(app, AppConfig.MSG_REGISTER_CLIENT, "")
     }
 

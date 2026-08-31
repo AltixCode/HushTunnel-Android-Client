@@ -6,7 +6,6 @@ import com.v2ray.ang.ui.base.BaseViewModel
 import com.v2ray.ang.ui.main.MainRepository
 import com.v2ray.ang.ui.main.MainServiceEvent
 import androidx.lifecycle.viewModelScope
-import com.v2ray.ang.core.CoreServiceManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,7 +35,7 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
     private val mainRepository = MainRepository(app)
     private var pollJob: Job? = null
 
-    private val _uiState = MutableStateFlow(HomeUiState(isRunning = CoreServiceManager.isRunning()))
+    private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
@@ -58,9 +57,24 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
         refresh()
     }
 
+    /**
+     * Re-syncs connect state on Activity resume. Does NOT check
+     * `CoreServiceManager.isRunning()` directly — the VPN daemon runs in a
+     * separate process (`android:process=":RunSoLibV2RayDaemon"`, see
+     * AndroidManifest.xml), so that call only ever reflects the UI process's
+     * own unused `coreController`, never the daemon's real state. This was
+     * overwriting a correct "connected" state with a false "disconnected" on
+     * every resume, with nothing to correct it afterward (the registration
+     * handshake that keeps `isRunning` right only fires once, when
+     * MainRepository is first constructed) — the real, reported bug: the
+     * app showed Disconnected after backgrounding/foregrounding even though
+     * the system-level VPN was still active. Fixed by re-asking the daemon
+     * via the same cross-process handshake `MainRepository.init` uses; the
+     * reply updates `isRunning` through the existing `mainServiceEvent`
+     * collector below, which is correct.
+     */
     fun checkVpnState() {
-        val running = CoreServiceManager.isRunning()
-        _uiState.update { it.copy(isRunning = running) }
+        mainRepository.requestServiceState()
     }
 
     fun setVpnRunning(running: Boolean) {
@@ -102,8 +116,6 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
                 val loadedGateways = try { ApiClient.gateways() } catch (_: Exception) { GatewayInfo() }
                 val loadedOrders = try { ApiClient.orders(token) } catch (_: Exception) { emptyList() }
 
-                val isRunningNow = CoreServiceManager.isRunning()
-
                 val currentSelectedServer = _uiState.value.selectedServerId
                     ?: me.servers.firstOrNull { it.isDefault }?.id
                     ?: me.servers.firstOrNull()?.id
@@ -119,7 +131,6 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
                         gateways = loadedGateways,
                         orders = loadedOrders,
                         hasServer = provisioned,
-                        isRunning = isRunningNow,
                         error = null,
                     )
                 }
