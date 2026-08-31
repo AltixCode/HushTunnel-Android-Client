@@ -1,4 +1,4 @@
-name: Build & Release APK
+name: Android Build & Play Store Release
 
 on:
   push:
@@ -8,6 +8,11 @@ on:
       - main
   workflow_dispatch:
     inputs:
+      upload_to_play_store:
+        description: 'Upload to Google Play Console (internal track)'
+        required: false
+        type: boolean
+        default: false
       release_tag:
         description: 'Release Tag (e.g. v1.0.0)'
         required: false
@@ -110,20 +115,29 @@ jobs:
             echo "Generating CI signing key..."
             keytool -genkeypair -v -keystore ${{ github.workspace }}/keystore/release.jks \
               -alias hushtunnel -keyalg RSA -keysize 2048 -validity 10000 \
-              -storepass hushtunnel123 -keypass hushtunnel123 \
+              -storepass hushtunnelpass -keypass hushtunnelpass \
               -dname "CN=HushTunnel, OU=Mobile, O=HushTunnel, L=Amsterdam, C=NL"
             echo "KEYSTORE_PATH=${{ github.workspace }}/keystore/release.jks" >> $GITHUB_ENV
-            echo "KEYSTORE_PASSWORD=hushtunnel123" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=hushtunnelpass" >> $GITHUB_ENV
             echo "KEY_ALIAS=hushtunnel" >> $GITHUB_ENV
-            echo "KEY_PASSWORD=hushtunnel123" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=hushtunnelpass" >> $GITHUB_ENV
           fi
 
-      - name: Build Release APKs
+      - name: Build Release APKs & Google Play Bundle (AAB)
         run: |
           cd ${{ github.workspace }}/V2rayNG
           echo "sdk.dir=${ANDROID_HOME}" > local.properties
           chmod +x gradlew
+          
+          # Build signed APKs
           ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=${{ env.KEYSTORE_PATH }} \
+            -Pandroid.injected.signing.store.password=${{ env.KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ env.KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ env.KEY_PASSWORD }}
+
+          # Build signed Play Store App Bundle (.aab)
+          ./gradlew bundlePlaystoreRelease \
             -Pandroid.injected.signing.store.file=${{ env.KEYSTORE_PATH }} \
             -Pandroid.injected.signing.store.password=${{ env.KEYSTORE_PASSWORD }} \
             -Pandroid.injected.signing.key.alias=${{ env.KEY_ALIAS }} \
@@ -131,21 +145,35 @@ jobs:
 
       - name: Prepare Release Artifacts
         run: |
-          mkdir -p ${{ github.workspace }}/release_apks
+          mkdir -p ${{ github.workspace }}/release_artifacts
           
-          # Find and copy playstore / fdroid release APKs
-          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*arm64-v8a*.apk" -exec cp {} ${{ github.workspace }}/release_apks/HushTunnel-1.0.0-arm64-v8a.apk \; -quit || true
-          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*armeabi-v7a*.apk" -exec cp {} ${{ github.workspace }}/release_apks/HushTunnel-1.0.0-armeabi-v7a.apk \; -quit || true
-          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*universal*.apk" -exec cp {} ${{ github.workspace }}/release_apks/HushTunnel-1.0.0-universal.apk \; -quit || true
-          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*x86_64*.apk" -exec cp {} ${{ github.workspace }}/release_apks/HushTunnel-1.0.0-x86_64.apk \; -quit || true
+          # Collect APKs
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*arm64-v8a*.apk" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-1.0.0-arm64-v8a.apk \; -quit || true
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*armeabi-v7a*.apk" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-1.0.0-armeabi-v7a.apk \; -quit || true
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*universal*.apk" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-1.0.0-universal.apk \; -quit || true
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*x86_64*.apk" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-1.0.0-x86_64.apk \; -quit || true
 
-          ls -lh ${{ github.workspace }}/release_apks/
+          # Collect Play Store AAB Bundle
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/bundle -name "*.aab" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-1.0.0-playstore.aab \; -quit || true
 
-      - name: Upload APKs to Workflow Artifacts
+          ls -lh ${{ github.workspace }}/release_artifacts/
+
+      - name: Upload to Google Play Console
+        if: inputs.upload_to_play_store == true || startsWith(github.ref, 'refs/tags/')
+        uses: r0adkll/upload-google-play@v1
+        continue-on-error: true
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.hushtunnel.app
+          releaseFiles: ${{ github.workspace }}/release_artifacts/HushTunnel-1.0.0-playstore.aab
+          track: internal
+          status: draft
+
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: HushTunnel-Android-APKs
-          path: ${{ github.workspace }}/release_apks/*.apk
+          name: HushTunnel-Android-Builds
+          path: ${{ github.workspace }}/release_artifacts/*
 
       - name: Determine Release Tag
         id: tag_info
@@ -155,11 +183,11 @@ jobs:
           elif [ "${{ startsWith(github.ref, 'refs/tags/') }}" = "true" ]; then
             TAG_NAME="${GITHUB_REF#refs/tags/}"
           else
-            TAG_NAME="v1.0.0-build.${{ github.run_number }}"
+            TAG_NAME="android-v1.0.0-build.${{ github.run_number }}"
           fi
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Release & Upload APKs
+      - name: Create GitHub Release & Upload Binaries
         uses: softprops/action-gh-release@v2
         if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         with:
@@ -169,18 +197,19 @@ jobs:
             ## HushTunnel Android Release (${{ steps.tag_info.outputs.TAG_NAME }})
 
             ### What's New:
-            - **Multi-Server Location Switching**: Instant node picker with seamless auto-reconnect.
+            - **Multi-Server Location Switching**: Instant node selector with auto-reconnect.
             - **SaaS Store Compliance**: Compliant multi-device account management linking to `https://www.hushtunnel.com`.
-            - **Reseller Administration**: Full customer management, password resetting, and self-service subscriptions.
+            - **Reseller Administration**: Customer management, password resetting, and self-service provisioning.
             - **Multi-Language Support**: English, Persian (RTL), Russian, Simplified Chinese, and Turkish.
 
             ### Downloads:
             - **`HushTunnel-1.0.0-universal.apk`**: Universal APK for all devices (recommended)
-            - **`HushTunnel-1.0.0-arm64-v8a.apk`**: 64-bit ARM devices (most modern phones)
-            - **`HushTunnel-1.0.0-armeabi-v7a.apk`**: 32-bit ARM devices
+            - **`HushTunnel-1.0.0-arm64-v8a.apk`**: 64-bit ARM smartphones
+            - **`HushTunnel-1.0.0-armeabi-v7a.apk`**: 32-bit ARM smartphones
             - **`HushTunnel-1.0.0-x86_64.apk`**: Emulators and Chromebooks
+            - **`HushTunnel-1.0.0-playstore.aab`**: Google Play Store Android App Bundle
           draft: false
           prerelease: ${{ inputs.is_prerelease || false }}
-          files: ${{ github.workspace }}/release_apks/*.apk
+          files: ${{ github.workspace }}/release_artifacts/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
