@@ -633,4 +633,18 @@
     <string name="brand_reseller_reset_traffic">Сбросить трафик</string>
     <string name="brand_reseller_revoke">Отозвать</string>
 
+
+    <string name="brand_web_store_notice">Покупка и продление</string>
+    <string name="brand_web_store_desc">Для покупки, продления или смены тарифа перейдите на наш сайт:</string>
+    <string name="brand_web_store_url">https://www.hushtunnel.com</string>
+    <string name="brand_web_payment_methods">Мы принимаем криптовалюты (USDT, BTC) и банковские карты.</string>
+    <string name="brand_web_reseller_notice">Если вы купили подписку у реселлера, обратитесь к нему для продления или продлите на сайте.</string>
+    <string name="brand_change_password">Сменить пароль</string>
+    <string name="brand_current_password">Текущий пароль</string>
+    <string name="brand_new_password">Новый пароль</string>
+    <string name="brand_confirm_password">Повторите новый пароль</string>
+    <string name="brand_password_success">Пароль успешно обновлен</string>
+    <string name="brand_password_mismatch">Пароли не совпадают</string>
+    <string name="brand_password_min_length">Пароль должен содержать не менее 6 символов</string>
+
 </resources>

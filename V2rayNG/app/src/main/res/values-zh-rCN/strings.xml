@@ -633,4 +633,18 @@
     <string name="brand_reseller_reset_traffic">重置流量</string>
     <string name="brand_reseller_revoke">注销订阅</string>
 
+
+    <string name="brand_web_store_notice">购买与续费</string>
+    <string name="brand_web_store_desc">如需购买新套餐、续费或升级服务，请访问官方网站：</string>
+    <string name="brand_web_store_url">https://www.hushtunnel.com</string>
+    <string name="brand_web_payment_methods">支持加密货币（USDT、BTC）及信用卡支付。</string>
+    <string name="brand_web_reseller_notice">如果您是通过分销商购买的，可联系分销商续费，或在官网上直接在线续费。</string>
+    <string name="brand_change_password">修改密码</string>
+    <string name="brand_current_password">当前密码</string>
+    <string name="brand_new_password">新密码</string>
+    <string name="brand_confirm_password">确认新密码</string>
+    <string name="brand_password_success">密码修改成功</string>
+    <string name="brand_password_mismatch">两次输入的密码不一致</string>
+    <string name="brand_password_min_length">密码长度至少为6位</string>
+
 </resources>

@@ -633,4 +633,18 @@
     <string name="brand_reseller_reset_traffic">تنظیم مجدد ترافیک</string>
     <string name="brand_reseller_revoke">لغو اشتراک</string>
 
+
+    <string name="brand_web_store_notice">خرید و تمدید اشتراک</string>
+    <string name="brand_web_store_desc">برای خرید اشتراک جدید، تمدید یا ارتقای پلن به وب‌سایت رسمی مراجعه کنید:</string>
+    <string name="brand_web_store_url">https://www.hushtunnel.com</string>
+    <string name="brand_web_payment_methods">پذیرش پرداخت با رمزارزها (تتر، بیت‌کوین و...) و کارت‌های اعتباری.</string>
+    <string name="brand_web_reseller_notice">اگر از نمایندگان فروش خرید کرده‌اید، جهت تمدید با نماینده خود تماس بگیرید یا مستقیماً از وب‌سایت تمدید کنید.</string>
+    <string name="brand_change_password">تغییر رمز عبور</string>
+    <string name="brand_current_password">رمز عبور فعلی</string>
+    <string name="brand_new_password">رمز عبور جدید</string>
+    <string name="brand_confirm_password">تکرار رمز عبور جدید</string>
+    <string name="brand_password_success">رمز عبور با موفقیت تغییر یافت</string>
+    <string name="brand_password_mismatch">رمزهای عبور وارد شده همخوانی ندارند</string>
+    <string name="brand_password_min_length">رمز عبور باید حداقل ۶ کاراکتر باشد</string>
+
 </resources>

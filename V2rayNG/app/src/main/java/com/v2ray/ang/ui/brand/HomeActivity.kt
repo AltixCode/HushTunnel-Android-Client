@@ -139,6 +139,7 @@ fun HomeScreen(
     var checkoutTargetSubId by remember { mutableStateOf<String?>(null) }
     var showCheckoutDialog by remember { mutableStateOf(false) }
     var showOrdersDialog by remember { mutableStateOf(false) }
+    var showPasswordDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
 
     val currentLang = LocaleHelper.getCurrentLanguageTag()
@@ -173,6 +174,10 @@ fun HomeScreen(
                             LocaleHelper.supportedLanguages.firstOrNull { it.code == currentLang }?.nativeName
                                 ?: stringResource(R.string.brand_language)
                         )
+                    }
+
+                    TextButton(onClick = { showPasswordDialog = true }) {
+                        Text(stringResource(R.string.brand_change_password))
                     }
 
                     TextButton(onClick = { showOrdersDialog = true }) {
@@ -376,17 +381,41 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Buy a plan button
-            Button(
-                onClick = {
-                    checkoutTargetSubId = null
-                    showCheckoutDialog = true
-                },
-                modifier = Modifier.fillMaxWidth(),
+            // Web Store & Renewal Notice Card
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
             ) {
-                Text(
-                    if (activeSubs.isNotEmpty()) stringResource(R.string.brand_buy_another_plan) else stringResource(R.string.brand_buy_plan)
-                )
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = stringResource(R.string.brand_web_store_notice),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text = stringResource(R.string.brand_web_store_desc),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Button(
+                        onClick = { Utils.openUri(this@HomeActivity, "https://www.hushtunnel.com") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp),
+                    ) {
+                        Text("https://www.hushtunnel.com", fontWeight = FontWeight.Bold)
+                    }
+                    Text(
+                        text = stringResource(R.string.brand_web_payment_methods),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = stringResource(R.string.brand_web_reseller_notice),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
 
             TextButton(
@@ -414,6 +443,21 @@ fun HomeScreen(
                     onBuyPlan(selectedPlanId, selectedGateway)
                 }
             },
+        )
+    }
+
+    if (showPasswordDialog) {
+        ChangePasswordDialog(
+            onDismiss = { showPasswordDialog = false },
+            onConfirm = { currentPwd, newPwd ->
+                showPasswordDialog = false
+                viewModel.changePassword(
+                    currentPassword = currentPwd,
+                    newPassword = newPwd,
+                    onSuccess = { toast(getString(R.string.brand_password_success)) },
+                    onError = { toastError(it) },
+                )
+            }
         )
     }
 
@@ -724,4 +768,73 @@ private fun formatBytes(bytes: Long): String {
         val mb = bytes.toDouble() / (1024 * 1024)
         String.format(Locale.US, "%.0f MB", mb)
     }
+}
+
+@Composable
+fun ChangePasswordDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String?, String) -> Unit,
+) {
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.brand_change_password)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                androidx.compose.material3.OutlinedTextField(
+                    value = currentPassword,
+                    onValueChange = { currentPassword = it },
+                    label = { Text(stringResource(R.string.brand_current_password)) },
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+                androidx.compose.material3.OutlinedTextField(
+                    value = newPassword,
+                    onValueChange = { newPassword = it },
+                    label = { Text(stringResource(R.string.brand_new_password)) },
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+                androidx.compose.material3.OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text(stringResource(R.string.brand_confirm_password)) },
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+                error?.let {
+                    Text(text = it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (newPassword.length < 6) {
+                        error = "Password must be at least 6 characters"
+                        return@Button
+                    }
+                    if (newPassword != confirmPassword) {
+                        error = "Passwords do not match"
+                        return@Button
+                    }
+                    onConfirm(if (currentPassword.isBlank()) null else currentPassword, newPassword)
+                }
+            ) {
+                Text(stringResource(R.string.brand_change_password))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.brand_cancel))
+            }
+        }
+    )
 }

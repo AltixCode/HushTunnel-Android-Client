@@ -633,4 +633,18 @@
     <string name="brand_reseller_reset_traffic">Reset Traffic</string>
     <string name="brand_reseller_revoke">Revoke</string>
 
+
+    <string name="brand_web_store_notice">Subscriptions &amp; Renewals</string>
+    <string name="brand_web_store_desc">To subscribe, renew, or upgrade your service, visit our official website:</string>
+    <string name="brand_web_store_url">https://www.hushtunnel.com</string>
+    <string name="brand_web_payment_methods">We accept Cryptocurrency (USDT, BTC) and Credit Cards.</string>
+    <string name="brand_web_reseller_notice">Purchased from a partner? Contact your reseller to renew, or renew directly on our website.</string>
+    <string name="brand_change_password">Change Password</string>
+    <string name="brand_current_password">Current Password</string>
+    <string name="brand_new_password">New Password</string>
+    <string name="brand_confirm_password">Confirm Password</string>
+    <string name="brand_password_success">Password updated successfully</string>
+    <string name="brand_password_mismatch">Passwords do not match</string>
+    <string name="brand_password_min_length">Password must be at least 6 characters</string>
+
 </resources>

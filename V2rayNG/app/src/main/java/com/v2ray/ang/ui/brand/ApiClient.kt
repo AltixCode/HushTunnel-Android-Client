@@ -285,4 +285,12 @@ object ApiClient {
         )
         return json.optString("depositId", "") to json.optNullableString("checkoutUrl")
     }
+
+    suspend fun changePassword(token: String, currentPassword: String?, newPassword: String) {
+        val body = JSONObject().put("newPassword", newPassword)
+        if (!currentPassword.isNullOrBlank()) {
+            body.put("currentPassword", currentPassword)
+        }
+        request("/api/mobile/account/password", "POST", token = token, body = body)
+    }
 }

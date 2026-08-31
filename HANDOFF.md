@@ -316,3 +316,15 @@ web Server Action's logic.
    bar, distinct renew flow).
 4. Reseller support — backend endpoints first, then the app screens that
    consume them.
+
+
+### App Store External Purchase Compliance & Password Management
+- **In-App Store Concealment**: Direct in-app purchase buttons hidden in mobile clients to comply with Apple & Google fee guidelines.
+- **External Web Store Notice**: Displaying localized notice card linking to `https://www.hushtunnel.com` with support for Cryptocurrency (USDT, BTC, etc.) and Credit Cards.
+- **Reseller Renewal Info**: Instructions for users who acquired subscriptions via resellers to contact their provider or renew online.
+- **Self Password Change**: Endpoints and UI implemented across:
+  - Mobile API: `POST /api/mobile/account/password` (bcrypt validation & update).
+  - iOS App: `ChangePasswordSheetView` in consumer and reseller portals.
+  - Android App: `ChangePasswordDialog` in consumer and reseller portals.
+  - Web Dashboard: `ChangePasswordDialog` in `/dashboard` and `/reseller`.
+  - Admin Panel: `AdminProfileForm` in `/admin/settings` allowing SuperAdmin to update Email and Password.

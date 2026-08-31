@@ -116,6 +116,7 @@ fun ResellerHomeScreen(
     var showAddOrderDialog by remember { mutableStateOf(false) }
     var showAddDepositDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
 
     val currentLang = LocaleHelper.getCurrentLanguageTag()
     val tabs = listOf(
@@ -154,6 +155,10 @@ fun ResellerHomeScreen(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = { showChangePasswordDialog = true }) {
+                        Text(stringResource(R.string.brand_change_password))
+                    }
+
                     TextButton(onClick = { showLanguageDialog = true }) {
                         Text(
                             LocaleHelper.supportedLanguages.firstOrNull { it.code == currentLang }?.nativeName
@@ -752,5 +757,74 @@ fun AddDepositDialog(
                 Text(stringResource(R.string.brand_cancel))
             }
         },
+    )
+}
+
+@Composable
+fun ResellerChangePasswordDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String?, String) -> Unit,
+) {
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.brand_change_password)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    value = currentPassword,
+                    onValueChange = { currentPassword = it },
+                    label = { Text(stringResource(R.string.brand_current_password)) },
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = newPassword,
+                    onValueChange = { newPassword = it },
+                    label = { Text(stringResource(R.string.brand_new_password)) },
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text(stringResource(R.string.brand_confirm_password)) },
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+                error?.let {
+                    Text(text = it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (newPassword.length < 6) {
+                        error = "Password must be at least 6 characters"
+                        return@Button
+                    }
+                    if (newPassword != confirmPassword) {
+                        error = "Passwords do not match"
+                        return@Button
+                    }
+                    onConfirm(if (currentPassword.isBlank()) null else currentPassword, newPassword)
+                }
+            ) {
+                Text(stringResource(R.string.brand_change_password))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.brand_cancel))
+            }
+        }
     )
 }
