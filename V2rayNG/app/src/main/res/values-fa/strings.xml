@@ -647,4 +647,5 @@
     <string name="brand_password_mismatch">رمزهای عبور وارد شده همخوانی ندارند</string>
     <string name="brand_password_min_length">رمز عبور باید حداقل ۶ کاراکتر باشد</string>
 
+    <string name="brand_switch">تغییر سرور</string>
 </resources>

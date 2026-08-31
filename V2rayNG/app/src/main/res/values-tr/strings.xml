@@ -98,4 +98,5 @@
     <string name="brand_password_mismatch">Şifreler uyuşmuyor</string>
     <string name="brand_password_min_length">Şifre en az 6 karakter olmalıdır</string>
 
+    <string name="brand_switch">Değiştir</string>
 </resources>

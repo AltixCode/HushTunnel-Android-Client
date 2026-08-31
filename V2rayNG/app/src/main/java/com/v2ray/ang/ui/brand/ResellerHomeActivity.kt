@@ -137,36 +137,24 @@ fun ResellerHomeScreen(
                 .fillMaxSize()
                 .padding(16.dp),
         ) {
-            // Header Bar
+            // Top Header Bar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Column {
+                OutlinedButton(
+                    onClick = { showLanguageDialog = true },
+                    shape = RoundedCornerShape(20.dp),
+                ) {
                     Text(
-                        text = stringResource(R.string.brand_reseller_portal),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                    Text(
-                        text = "$${String.format(Locale.US, "%.2f", state.overview.balanceUsd)} (${state.overview.discountPct}% off)",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
+                        text = "🌐 " + (LocaleHelper.supportedLanguages.firstOrNull { it.code == currentLang }?.nativeName
+                            ?: stringResource(R.string.brand_language)),
+                        style = MaterialTheme.typography.labelMedium,
                     )
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = { showChangePasswordDialog = true }) {
-                        Text(stringResource(R.string.brand_change_password))
-                    }
-
-                    TextButton(onClick = { showLanguageDialog = true }) {
-                        Text(
-                            LocaleHelper.supportedLanguages.firstOrNull { it.code == currentLang }?.nativeName
-                                ?: stringResource(R.string.brand_language)
-                        )
-                    }
-
                     TextButton(onClick = onRefresh, enabled = !isLoading) {
                         if (isLoading) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
@@ -174,10 +162,43 @@ fun ResellerHomeScreen(
                             Text(stringResource(R.string.brand_refresh))
                         }
                     }
-
                     TextButton(onClick = onLogout) {
-                        Text(stringResource(R.string.brand_logout))
+                        Text(stringResource(R.string.brand_logout), color = MaterialTheme.colorScheme.error)
                     }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Reseller Balance & Account Card
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.brand_reseller_portal),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            text = "$${String.format(Locale.US, "%.2f", state.overview.balanceUsd)} (${state.overview.discountPct}% off)",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    SuggestionChip(
+                        onClick = { showChangePasswordDialog = true },
+                        label = { Text(stringResource(R.string.brand_change_password), style = MaterialTheme.typography.labelSmall) },
+                    )
                 }
             }
 

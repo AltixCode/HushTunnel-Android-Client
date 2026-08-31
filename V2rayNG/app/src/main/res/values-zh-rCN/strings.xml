@@ -647,4 +647,5 @@
     <string name="brand_password_mismatch">两次输入的密码不一致</string>
     <string name="brand_password_min_length">密码长度至少为6位</string>
 
+    <string name="brand_switch">切换</string>
 </resources>

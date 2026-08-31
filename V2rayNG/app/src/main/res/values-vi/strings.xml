@@ -548,4 +548,5 @@
     <string name="connection_test_empty_message">không có thông tin chi tiết</string>
     <string name="value_unknown">không xác định</string>
 
+    <string name="brand_switch">Đổi</string>
 </resources>

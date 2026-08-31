@@ -647,4 +647,5 @@
     <string name="brand_password_mismatch">Passwords do not match</string>
     <string name="brand_password_min_length">Password must be at least 6 characters</string>
 
+    <string name="brand_switch">Switch</string>
 </resources>

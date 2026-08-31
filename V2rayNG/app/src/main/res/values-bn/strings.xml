@@ -548,4 +548,5 @@
     <string name="connection_test_empty_message">কোনো বিবরণ পাওয়া যায়নি</string>
     <string name="value_unknown">অজানা</string>
 
+    <string name="brand_switch">পরিবর্তন</string>
 </resources>

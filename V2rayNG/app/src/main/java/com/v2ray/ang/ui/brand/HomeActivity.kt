@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.R
 import com.v2ray.ang.core.LauncherManager
+import com.v2ray.ang.core.CoreServiceManager
 import com.v2ray.ang.ui.base.BaseComponentActivity
 import com.v2ray.ang.util.Utils
 import com.v2ray.ang.extension.toast
@@ -69,7 +70,10 @@ class HomeActivity : BaseComponentActivity() {
 
     private val requestVpnPermission =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) LauncherManager.startServiceFromToggle(this)
+            if (result.resultCode == RESULT_OK) {
+                LauncherManager.startServiceFromToggle(this)
+                viewModel.setVpnRunning(true)
+            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,7 +87,8 @@ class HomeActivity : BaseComponentActivity() {
     }
 
     private fun handleConnectToggle(isRunning: Boolean) {
-        if (isRunning) {
+        val active = CoreServiceManager.isRunning() || isRunning
+        if (active) {
             LauncherManager.stopService(this)
             viewModel.setVpnRunning(false)
             return
@@ -91,6 +96,7 @@ class HomeActivity : BaseComponentActivity() {
         val intent = VpnService.prepare(this)
         if (intent == null) {
             LauncherManager.startServiceFromToggle(this)
+            viewModel.setVpnRunning(true)
         } else {
             requestVpnPermission.launch(intent)
         }
@@ -179,40 +185,66 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(20.dp),
         ) {
-            // Header Bar
+            // Top Header Bar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = state.email,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f, fill = false),
-                )
+                OutlinedButton(
+                    onClick = { showLanguageDialog = true },
+                    shape = RoundedCornerShape(20.dp),
+                ) {
+                    Text(
+                        text = "🌐 " + (LocaleHelper.supportedLanguages.firstOrNull { it.code == currentLang }?.nativeName
+                            ?: stringResource(R.string.brand_language)),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = { showLanguageDialog = true }) {
-                        Text(
-                            LocaleHelper.supportedLanguages.firstOrNull { it.code == currentLang }?.nativeName
-                                ?: stringResource(R.string.brand_language)
-                        )
-                    }
-
-                    TextButton(onClick = { showPasswordDialog = true }) {
-                        Text(stringResource(R.string.brand_change_password))
-                    }
-
-                    TextButton(onClick = { showOrdersDialog = true }) {
-                        Text(stringResource(R.string.brand_orders_title))
-                    }
-
                     TextButton(onClick = onRefresh, enabled = !isLoading) {
                         if (isLoading) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                         } else {
                             Text(stringResource(R.string.brand_refresh))
                         }
+                    }
+                    TextButton(onClick = onLogout) {
+                        Text(stringResource(R.string.brand_logout), color = MaterialTheme.colorScheme.error)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // User Info & Quick Action Card
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+                    Text(
+                        text = state.email,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        SuggestionChip(
+                            onClick = { showPasswordDialog = true },
+                            label = { Text(stringResource(R.string.brand_change_password), style = MaterialTheme.typography.labelSmall) },
+                        )
+                        SuggestionChip(
+                            onClick = { showOrdersDialog = true },
+                            label = { Text(stringResource(R.string.brand_orders_title), style = MaterialTheme.typography.labelSmall) },
+                        )
                     }
                 }
             }
@@ -343,27 +375,38 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Text(text = activeServer?.flag ?: "🌐", style = MaterialTheme.typography.headlineSmall)
                         Spacer(modifier = Modifier.width(12.dp))
-                        Column {
+                        Column(modifier = Modifier.weight(1f, fill = false)) {
                             Text(
-                                text = activeServer?.name ?: "Auto Location (Fastest)",
+                                text = activeServer?.name ?: "Netherlands 01 (Amsterdam)",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             )
                             Text(
-                                text = "${activeServer?.city ?: activeServer?.countryCode ?: "Global"} · VLESS-Reality",
+                                text = "${activeServer?.city ?: activeServer?.countryCode ?: "Amsterdam"} · VLESS-Reality",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             )
                         }
                     }
-                    OutlinedButton(
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
                         onClick = { showServerDialog = true },
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(20.dp),
                     ) {
-                        Text("Switch")
+                        Text(
+                            text = stringResource(R.string.brand_switch),
+                            maxLines = 1,
+                        )
                     }
                 }
             }
