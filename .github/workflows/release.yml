@@ -153,15 +153,19 @@ jobs:
       - name: Prepare Release Artifacts
         run: |
           mkdir -p ${{ github.workspace }}/release_artifacts
+          VERSION="${{ env.APP_VERSION_NAME }}"
           
-          # Collect APKs
-          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*arm64-v8a*.apk" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-1.0.0-arm64-v8a.apk \; -quit || true
-          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*armeabi-v7a*.apk" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-1.0.0-armeabi-v7a.apk \; -quit || true
-          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*universal*.apk" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-1.0.0-universal.apk \; -quit || true
-          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*x86_64*.apk" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-1.0.0-x86_64.apk \; -quit || true
+          # Collect Versioned & Generic APKs
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*arm64-v8a*.apk" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-${VERSION}-arm64-v8a.apk \; -quit || true
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*armeabi-v7a*.apk" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-${VERSION}-armeabi-v7a.apk \; -quit || true
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*universal*.apk" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-${VERSION}-universal.apk \; -quit || true
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/apk -name "*x86_64*.apk" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-${VERSION}-x86_64.apk \; -quit || true
+          
+          # Also create un-versioned aliases
+          cp ${{ github.workspace }}/release_artifacts/HushTunnel-${VERSION}-universal.apk ${{ github.workspace }}/release_artifacts/HushTunnel-universal.apk || true
 
           # Collect Play Store AAB Bundle
-          find ${{ github.workspace }}/V2rayNG/app/build/outputs/bundle -name "*.aab" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-1.0.0-playstore.aab \; -quit || true
+          find ${{ github.workspace }}/V2rayNG/app/build/outputs/bundle -name "*.aab" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-${VERSION}-playstore.aab \; -quit || true
 
           ls -lh ${{ github.workspace }}/release_artifacts/
 
@@ -190,7 +194,7 @@ jobs:
           elif [ "${{ startsWith(github.ref, 'refs/tags/') }}" = "true" ]; then
             TAG_NAME="${GITHUB_REF#refs/tags/}"
           else
-            TAG_NAME="android-v1.0.0-build.${{ github.run_number }}"
+            TAG_NAME="v${{ env.APP_VERSION_NAME }}"
           fi
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
 

@@ -7,12 +7,15 @@ plugins {
 
 fun getGitCommitCount(): Int {
     return try {
-        val process = ProcessBuilder("git", "rev-list", "--count", "HEAD").start()
-        val count = process.inputStream.bufferedReader().readText().trim().toIntOrNull() ?: 2
+        val rootDir = project.rootDir.parentFile ?: project.rootDir
+        val process = ProcessBuilder("git", "rev-list", "--count", "HEAD")
+            .directory(rootDir)
+            .start()
+        val count = process.inputStream.bufferedReader().readText().trim().toIntOrNull() ?: 21
         process.waitFor()
         count
     } catch (e: Exception) {
-        2
+        21
     }
 }
 
@@ -29,7 +32,7 @@ android {
         minSdk = 24
         targetSdk = 37
         val gitCount = getGitCommitCount()
-        versionCode = gitCount
+        versionCode = 10000000 + gitCount
         versionName = "1.0.$gitCount"
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
