@@ -42,9 +42,34 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            val ksFile = file("keystore/release.jks")
+            if (ksFile.exists()) {
+                storeFile = ksFile
+                storePassword = "hushtunnelpass"
+                keyAlias = "hushtunnel"
+                keyPassword = "hushtunnelpass"
+            } else {
+                val debugKs = file("${System.getProperty("user.home")}/.android/debug.keystore")
+                if (debugKs.exists()) {
+                    storeFile = debugKs
+                    storePassword = "android"
+                    keyAlias = "androiddebugkey"
+                    keyPassword = "android"
+                }
+            }
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = true
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
