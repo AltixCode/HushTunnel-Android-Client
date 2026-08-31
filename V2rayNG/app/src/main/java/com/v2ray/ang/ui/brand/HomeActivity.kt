@@ -48,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -58,6 +59,7 @@ import com.v2ray.ang.R
 import com.v2ray.ang.core.LauncherManager
 import com.v2ray.ang.ui.base.BaseComponentActivity
 import com.v2ray.ang.util.Utils
+import com.v2ray.ang.extension.toast
 import kotlinx.coroutines.delay
 import java.util.Locale
 
@@ -120,6 +122,14 @@ class HomeActivity : BaseComponentActivity() {
                     }
                 }
             },
+            onChangePassword = { currentPwd, newPwd ->
+                viewModel.changePassword(
+                    currentPassword = currentPwd,
+                    newPassword = newPwd,
+                    onSuccess = { toast(getString(R.string.brand_password_success)) },
+                    onError = { toast(it) },
+                )
+            },
             onDismissCheckoutMessage = viewModel::dismissCheckoutMessage,
             onLogout = {
                 viewModel.logout()
@@ -143,6 +153,7 @@ fun HomeScreen(
     onBuyPlan: (planId: String, gateway: String) -> Unit,
     onRenewPlan: (subId: String, planId: String, gateway: String) -> Unit,
     onSwitchServer: (String) -> Unit,
+    onChangePassword: (currentPassword: String?, newPassword: String) -> Unit,
     onDismissCheckoutMessage: () -> Unit,
     onLogout: () -> Unit,
 ) {
@@ -153,6 +164,7 @@ fun HomeScreen(
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showServerDialog by remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
     val currentLang = LocaleHelper.getCurrentLanguageTag()
     val activeSubs = state.subscriptions.filter { it.isActive }
     val selectedSub = state.subscriptions.firstOrNull { it.id == state.selectedSubscriptionId }
@@ -451,7 +463,7 @@ fun HomeScreen(
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     Button(
-                        onClick = { Utils.openUri(this@HomeActivity, "https://www.hushtunnel.com") },
+                        onClick = { Utils.openUri(context, "https://www.hushtunnel.com") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
                     ) {
@@ -503,12 +515,7 @@ fun HomeScreen(
             onDismiss = { showPasswordDialog = false },
             onConfirm = { currentPwd, newPwd ->
                 showPasswordDialog = false
-                viewModel.changePassword(
-                    currentPassword = currentPwd,
-                    newPassword = newPwd,
-                    onSuccess = { toast(getString(R.string.brand_password_success)) },
-                    onError = { toastError(it) },
-                )
+                onChangePassword(currentPwd, newPwd)
             }
         )
     }
@@ -526,6 +533,7 @@ fun HomeScreen(
     }
 
     // Orders History Dialog
+    if (showOrdersDialog) {
         OrdersDialog(
             orders = state.orders,
             onDismiss = { showOrdersDialog = false },

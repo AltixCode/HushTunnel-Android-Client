@@ -252,15 +252,12 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
     }
 
     fun changePassword(currentPassword: String?, newPassword: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
-        val token = AuthStore.getToken(app) ?: return
-        viewModelScope.launch {
+        val token = AuthStore.getToken() ?: return
+        launchLoading {
             try {
-                isLoading.value = true
                 ApiClient.changePassword(token, currentPassword, newPassword)
-                isLoading.value = false
                 onSuccess()
             } catch (e: Exception) {
-                isLoading.value = false
                 onError(e.message ?: "Failed to change password")
             }
         }

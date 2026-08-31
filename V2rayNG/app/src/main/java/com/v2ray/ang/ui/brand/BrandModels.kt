@@ -19,10 +19,22 @@ data class SubscriptionInfo(
     val subscriptionUrl: String,
 )
 
+data class ServerNode(
+    val id: String,
+    val name: String,
+    val countryCode: String = "GLOBAL",
+    val flag: String = "🌐",
+    val city: String? = null,
+    val host: String = "",
+    val port: Int = 443,
+    val isDefault: Boolean = false,
+)
+
 data class MeResult(
     val email: String,
     val role: String,
     val subscriptions: List<SubscriptionInfo>,
+    val servers: List<ServerNode> = emptyList(),
 )
 
 data class AuthResult(
