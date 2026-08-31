@@ -330,4 +330,26 @@ object ApiClient {
         val json = request("/api/mobile/reseller/self-subscription", "POST", token = token, body = body)
         return json.optString("subscriptionId", "")
     }
+
+    suspend fun transferFunds(token: String, recipientEmail: String, amountUsd: Double, description: String? = null): JSONObject {
+        val body = JSONObject()
+            .put("recipientEmail", recipientEmail)
+            .put("amountUsd", amountUsd)
+        if (!description.isNullOrBlank()) {
+            body.put("description", description)
+        }
+        return request("/api/mobile/wallet/transfer", "POST", token = token, body = body)
+    }
+
+    suspend fun getTransactions(token: String): JSONArray {
+        val json = request("/api/mobile/wallet/transactions", "GET", token = token)
+        return json.optJSONArray("transactions") ?: JSONArray()
+    }
+
+    suspend fun createSubReseller(token: String, email: String, initialBalanceUsd: Double): JSONObject {
+        val body = JSONObject()
+            .put("email", email)
+            .put("initialBalanceUsd", initialBalanceUsd)
+        return request("/api/mobile/reseller/resellers", "POST", token = token, body = body)
+    }
 }

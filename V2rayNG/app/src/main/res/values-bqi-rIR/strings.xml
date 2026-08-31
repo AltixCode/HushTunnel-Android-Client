@@ -549,4 +549,15 @@
     <string name="value_unknown">نا مؽخص</string>
 
     <string name="brand_switch">تغییر سرور</string>
+    <string name="brand_wallet">کیف پول</string>
+    <string name="brand_transfer_funds">انتقال وجه</string>
+    <string name="brand_recipient_email">ایمیل گیرنده</string>
+    <string name="brand_amount_usd">مبلغ (دلار)</string>
+    <string name="brand_note">یادداشت (اختیاری)</string>
+    <string name="brand_confirm_transfer">تأیید انتقال</string>
+    <string name="brand_transactions">تراکنش‌ها</string>
+    <string name="brand_balance_usd">موجودی</string>
+    <string name="brand_sub_resellers">نمایندگان زیرمجموعه</string>
+    <string name="brand_new_reseller">نماینده جدید</string>
+    <string name="brand_transfer_success">انتقال وجه با موفقیت انجام شد</string>
 </resources>

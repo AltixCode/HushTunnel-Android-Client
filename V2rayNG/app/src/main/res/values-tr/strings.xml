@@ -99,4 +99,15 @@
     <string name="brand_password_min_length">Şifre en az 6 karakter olmalıdır</string>
 
     <string name="brand_switch">Değiştir</string>
+    <string name="brand_wallet">Cüzdan</string>
+    <string name="brand_transfer_funds">Para Transferi</string>
+    <string name="brand_recipient_email">Alıcı E-postası</string>
+    <string name="brand_amount_usd">Miktar ($ USD)</string>
+    <string name="brand_note">Açıklama (İsteğe bağlı)</string>
+    <string name="brand_confirm_transfer">Transferi Onayla</string>
+    <string name="brand_transactions">İşlemler</string>
+    <string name="brand_balance_usd">Bakiye</string>
+    <string name="brand_sub_resellers">Alt Bayiler</string>
+    <string name="brand_new_reseller">Yeni Bayi</string>
+    <string name="brand_transfer_success">Transfer başarıyla tamamlandı</string>
 </resources>

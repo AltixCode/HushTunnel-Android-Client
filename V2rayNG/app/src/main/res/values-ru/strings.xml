@@ -648,4 +648,15 @@
     <string name="brand_password_min_length">Пароль должен содержать не менее 6 символов</string>
 
     <string name="brand_switch">Сменить</string>
+    <string name="brand_wallet">Кошелек</string>
+    <string name="brand_transfer_funds">Перевести средства</string>
+    <string name="brand_recipient_email">Email получателя</string>
+    <string name="brand_amount_usd">Сумма ($ USD)</string>
+    <string name="brand_note">Примечание (необязательно)</string>
+    <string name="brand_confirm_transfer">Подтвердить перевод</string>
+    <string name="brand_transactions">Транзакции</string>
+    <string name="brand_balance_usd">Баланс</string>
+    <string name="brand_sub_resellers">Суб-реселлеры</string>
+    <string name="brand_new_reseller">Новый реселлер</string>
+    <string name="brand_transfer_success">Перевод успешно выполнен</string>
 </resources>

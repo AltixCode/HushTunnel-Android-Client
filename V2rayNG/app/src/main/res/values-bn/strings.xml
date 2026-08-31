@@ -549,4 +549,15 @@
     <string name="value_unknown">অজানা</string>
 
     <string name="brand_switch">পরিবর্তন</string>
+    <string name="brand_wallet">ওয়ালেট</string>
+    <string name="brand_transfer_funds">অর্থ স্থানান্তর</string>
+    <string name="brand_recipient_email">প্রাপকের ইমেল</string>
+    <string name="brand_amount_usd">পরিমাণ ($ USD)</string>
+    <string name="brand_note">নোট (ঐচ্ছিক)</string>
+    <string name="brand_confirm_transfer">স্থানান্তর নিশ্চিত করুন</string>
+    <string name="brand_transactions">লেনদেন</string>
+    <string name="brand_balance_usd">ব্যালেন্স</string>
+    <string name="brand_sub_resellers">সাব-রিসেলার</string>
+    <string name="brand_new_reseller">নতুন রিসেলার</string>
+    <string name="brand_transfer_success">স্থানান্তর সফল হয়েছে</string>
 </resources>

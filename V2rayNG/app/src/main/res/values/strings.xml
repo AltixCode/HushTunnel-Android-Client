@@ -648,4 +648,15 @@
     <string name="brand_password_min_length">Password must be at least 6 characters</string>
 
     <string name="brand_switch">Switch</string>
+    <string name="brand_wallet">Wallet</string>
+    <string name="brand_transfer_funds">Transfer Funds</string>
+    <string name="brand_recipient_email">Recipient Email</string>
+    <string name="brand_amount_usd">Amount ($ USD)</string>
+    <string name="brand_note">Note (Optional)</string>
+    <string name="brand_confirm_transfer">Confirm Transfer</string>
+    <string name="brand_transactions">Transactions</string>
+    <string name="brand_balance_usd">Balance</string>
+    <string name="brand_sub_resellers">Sub-Resellers</string>
+    <string name="brand_new_reseller">New Reseller</string>
+    <string name="brand_transfer_success">Transfer completed successfully</string>
 </resources>

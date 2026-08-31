@@ -549,4 +549,15 @@
     <string name="value_unknown">không xác định</string>
 
     <string name="brand_switch">Đổi</string>
+    <string name="brand_wallet">Ví</string>
+    <string name="brand_transfer_funds">Chuyển tiền</string>
+    <string name="brand_recipient_email">Email người nhận</string>
+    <string name="brand_amount_usd">Số tiền ($ USD)</string>
+    <string name="brand_note">Ghi chú (Tùy chọn)</string>
+    <string name="brand_confirm_transfer">Xác nhận chuyển</string>
+    <string name="brand_transactions">Giao dịch</string>
+    <string name="brand_balance_usd">Số dư</string>
+    <string name="brand_sub_resellers">Đại lý phụ</string>
+    <string name="brand_new_reseller">Đại lý mới</string>
+    <string name="brand_transfer_success">Chuyển tiền thành công</string>
 </resources>

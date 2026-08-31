@@ -648,4 +648,15 @@
     <string name="brand_password_min_length">密码长度至少为6位</string>
 
     <string name="brand_switch">切换</string>
+    <string name="brand_wallet">钱包</string>
+    <string name="brand_transfer_funds">转账</string>
+    <string name="brand_recipient_email">接收方邮箱</string>
+    <string name="brand_amount_usd">金额 ($ USD)</string>
+    <string name="brand_note">备注 (可选)</string>
+    <string name="brand_confirm_transfer">确认转账</string>
+    <string name="brand_transactions">交易记录</string>
+    <string name="brand_balance_usd">余额</string>
+    <string name="brand_sub_resellers">子分销商</string>
+    <string name="brand_new_reseller">新建分销商</string>
+    <string name="brand_transfer_success">转账成功</string>
 </resources>

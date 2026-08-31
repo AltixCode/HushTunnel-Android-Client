@@ -549,4 +549,15 @@
     <string name="value_unknown">未知</string>
 
     <string name="brand_switch">切換</string>
+    <string name="brand_wallet">錢包</string>
+    <string name="brand_transfer_funds">轉帳</string>
+    <string name="brand_recipient_email">接收方電子郵件</string>
+    <string name="brand_amount_usd">金額 ($ USD)</string>
+    <string name="brand_note">備註 (選填)</string>
+    <string name="brand_confirm_transfer">確認轉帳</string>
+    <string name="brand_transactions">交易記錄</string>
+    <string name="brand_balance_usd">餘額</string>
+    <string name="brand_sub_resellers">子分銷商</string>
+    <string name="brand_new_reseller">新建分銷商</string>
+    <string name="brand_transfer_success">轉帳成功</string>
 </resources>

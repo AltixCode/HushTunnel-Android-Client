@@ -549,4 +549,15 @@
     <string name="value_unknown">غير معروف</string>
 
     <string name="brand_switch">تبديل</string>
+    <string name="brand_wallet">المحفظة</string>
+    <string name="brand_transfer_funds">تحويل الأموال</string>
+    <string name="brand_recipient_email">بريد المستلم</string>
+    <string name="brand_amount_usd">المبلغ ($ USD)</string>
+    <string name="brand_note">ملاحظة (اختياري)</string>
+    <string name="brand_confirm_transfer">تأكيد التحويل</string>
+    <string name="brand_transactions">المعاملات</string>
+    <string name="brand_balance_usd">الرصيد</string>
+    <string name="brand_sub_resellers">الموزعون الفرعيون</string>
+    <string name="brand_new_reseller">موزع جديد</string>
+    <string name="brand_transfer_success">تم التحويل بنجاح</string>
 </resources>
