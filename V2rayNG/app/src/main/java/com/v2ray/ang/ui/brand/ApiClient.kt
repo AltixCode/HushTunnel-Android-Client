@@ -293,4 +293,26 @@ object ApiClient {
         }
         request("/api/mobile/account/password", "POST", token = token, body = body)
     }
+
+    suspend fun updateCustomerPassword(token: String, customerId: String, newPassword: String) {
+        request("/api/mobile/reseller/customers/$customerId/password", "PUT", token = token, body = JSONObject().put("newPassword", newPassword))
+    }
+
+    suspend fun resetCustomerPassword(token: String, customerId: String): String {
+        val json = request("/api/mobile/reseller/customers/$customerId/password", "POST", token = token)
+        return json.getString("newPassword")
+    }
+
+    suspend fun deleteCustomer(token: String, customerId: String) {
+        request("/api/mobile/reseller/customers/$customerId", "DELETE", token = token)
+    }
+
+    suspend fun createSelfSubscription(token: String, planId: String, subscriptionId: String? = null): String {
+        val body = JSONObject().put("planId", planId)
+        if (!subscriptionId.isNullOrBlank()) {
+            body.put("subscriptionId", subscriptionId)
+        }
+        val json = request("/api/mobile/reseller/self-subscription", "POST", token = token, body = body)
+        return json.optString("subscriptionId", "")
+    }
 }

@@ -213,6 +213,59 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
         AuthStore.clear()
     }
 
+    
+    fun updateCustomerPassword(customerId: String, newPassword: String) {
+        val token = AuthStore.getToken() ?: return
+        launchLoading {
+            try {
+                ApiClient.updateCustomerPassword(token, customerId, newPassword)
+                _uiState.update { it.copy(message = "Customer password updated successfully", error = null) }
+                refresh()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message ?: "Failed to update password") }
+            }
+        }
+    }
+
+    fun resetCustomerPassword(customerId: String) {
+        val token = AuthStore.getToken() ?: return
+        launchLoading {
+            try {
+                val newPassword = ApiClient.resetCustomerPassword(token, customerId)
+                _uiState.update { it.copy(message = "Password reset: $newPassword", error = null) }
+                refresh()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message ?: "Failed to reset password") }
+            }
+        }
+    }
+
+    fun deleteCustomer(customerId: String) {
+        val token = AuthStore.getToken() ?: return
+        launchLoading {
+            try {
+                ApiClient.deleteCustomer(token, customerId)
+                _uiState.update { it.copy(message = "Customer deleted", error = null) }
+                refresh()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message ?: "Failed to delete customer") }
+            }
+        }
+    }
+
+    fun createSelfSubscription(planId: String, subscriptionId: String? = null) {
+        val token = AuthStore.getToken() ?: return
+        launchLoading {
+            try {
+                ApiClient.createSelfSubscription(token, planId, subscriptionId)
+                _uiState.update { it.copy(message = "Personal VPN subscription active!", error = null) }
+                refresh()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message ?: "Failed to create self subscription") }
+            }
+        }
+    }
+
     fun changePassword(currentPassword: String?, newPassword: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         val token = AuthStore.getToken(app) ?: return
         viewModelScope.launch {

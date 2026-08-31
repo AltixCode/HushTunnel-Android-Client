@@ -74,8 +74,8 @@ class ResellerHomeActivity : BaseComponentActivity() {
             onSetTab = viewModel::setTab,
             onCreateCustomer = viewModel::createCustomer,
             onCreateOrder = viewModel::createOrderForCustomer,
-            onCreateDeposit = { amount, gateway ->
-                viewModel.createDeposit(amount, gateway) { checkoutUrl -> Utils.openUri(this, checkoutUrl) }
+            onCreateDeposit = { _, _ ->
+                Utils.openUri(this, "https://www.hushtunnel.com")
             },
             onExtendSub = viewModel::extendSubscription,
             onToggleSub = viewModel::toggleSubscription,
@@ -379,8 +379,30 @@ fun ResellerOverviewTab(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedButton(onClick = onOpenAddDeposit, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.brand_reseller_add_deposit))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            ) {
+                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Balance Top-Up via Web Portal",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text = "To deposit funds or top up your reseller balance, visit our web portal. Crypto (USDT, BTC) and Credit Cards supported.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    Button(
+                        onClick = onOpenAddDeposit,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                    ) {
+                        Text("Top Up at https://www.hushtunnel.com")
+                    }
+                }
             }
         }
     }
@@ -822,6 +844,83 @@ fun ResellerChangePasswordDialog(
             }
         },
         dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.brand_cancel))
+            }
+        }
+    )
+}
+
+@Composable
+fun CustomerDetailDialog(
+    customer: ResellerCustomer,
+    onDismiss: () -> Unit,
+    onChangePassword: (String) -> Unit,
+    onResetPassword: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    var newPassword by remember { mutableStateOf("") }
+    var showPasswordField by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(customer.email) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "Created: ${customer.createdAt.take(10)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                if (showPasswordField) {
+                    OutlinedTextField(
+                        value = newPassword,
+                        onValueChange = { newPassword = it },
+                        label = { Text(stringResource(R.string.brand_new_password)) },
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                    )
+                    Button(
+                        onClick = {
+                            if (newPassword.length >= 6) {
+                                onChangePassword(newPassword)
+                            }
+                        },
+                        enabled = newPassword.length >= 6,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("Save New Password")
+                    }
+                } else {
+                    Button(
+                        onClick = { showPasswordField = true },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("Change Password")
+                    }
+                }
+
+                OutlinedButton(
+                    onClick = onResetPassword,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Auto-Generate New Password")
+                }
+
+                OutlinedButton(
+                    onClick = onDelete,
+                    colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Delete Customer")
+                }
+            }
+        },
+        confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.brand_cancel))
             }
