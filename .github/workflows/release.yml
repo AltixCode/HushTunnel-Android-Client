@@ -101,6 +101,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Compute Dynamic Version
+        run: |
+          COMMIT_COUNT=$(git rev-list --count HEAD)
+          echo "Computed Version: 1.0.$COMMIT_COUNT (Code: $COMMIT_COUNT)"
+          echo "APP_VERSION_NAME=1.0.$COMMIT_COUNT" >> $GITHUB_ENV
+          echo "APP_VERSION_CODE=$COMMIT_COUNT" >> $GITHUB_ENV
+
       - name: Configure Keystore
         id: keystore_setup
         run: |

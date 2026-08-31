@@ -5,6 +5,17 @@ plugins {
     id("com.jaredsburrows.license")
 }
 
+fun getGitCommitCount(): Int {
+    return try {
+        val process = ProcessBuilder("git", "rev-list", "--count", "HEAD").start()
+        val count = process.inputStream.bufferedReader().readText().trim().toIntOrNull() ?: 2
+        process.waitFor()
+        count
+    } catch (e: Exception) {
+        2
+    }
+}
+
 android {
     namespace = "com.v2ray.ang"
     compileSdk = 37
@@ -17,8 +28,9 @@ android {
         applicationId = "com.hushtunnel.app"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0.0"
+        val gitCount = getGitCommitCount()
+        versionCode = gitCount
+        versionName = "1.0.$gitCount"
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
         splits {
