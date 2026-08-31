@@ -548,8 +548,8 @@
     <string name="connection_test_empty_message">подробности отсутствуют</string>
     <string name="value_unknown">неизвестно</string>
 
-    <!-- ShadowLink Brand Strings (Russian) -->
-    <string name="brand_app_name">ShadowLink</string>
+    <!-- HushTunnel Brand Strings (Russian) -->
+    <string name="brand_app_name">HushTunnel</string>
     <string name="brand_welcome_back">С возвращением</string>
     <string name="brand_login_subtitle">Войдите, чтобы управлять подписками</string>
     <string name="brand_create_account">Создайте аккаунт</string>

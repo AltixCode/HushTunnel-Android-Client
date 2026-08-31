@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ShadowLink Brand Strings (Turkish) -->
-    <string name="brand_app_name">ShadowLink</string>
+    <!-- HushTunnel Brand Strings (Turkish) -->
+    <string name="brand_app_name">HushTunnel</string>
     <string name="brand_welcome_back">Tekrar hoş geldiniz</string>
     <string name="brand_login_subtitle">Aboneliklerinizi yönetmek için giriş yapın</string>
     <string name="brand_create_account">Hesabınızı oluşturun</string>

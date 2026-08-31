@@ -1,4 +1,4 @@
-# Handoff: ShadowLink Android client
+# Handoff: HushTunnel Android client
 
 You're continuing a white-label Android VPN client forked from
 [2dust/v2rayNG](https://github.com/2dust/v2rayNG). Read `README.md` first (build
@@ -8,7 +8,7 @@ the web dashboard it's a front-end for.
 
 ## The business
 
-ShadowLink sells VLESS-REALITY VPN subscriptions. Backend is a Next.js app,
+HushTunnel sells VLESS-REALITY VPN subscriptions. Backend is a Next.js app,
 repo `vpn-billing-dashboard`, deployed at `https://vpn-billing-dashboard.vercel.app`
 (no custom domain yet — that's `BrandConfig.API_BASE_URL`, update it when one
 exists). It has three kinds of accounts:
@@ -291,7 +291,7 @@ web Server Action's logic.
   Compose BOM version — same caution applies to anything else marked
   `@ExperimentalMaterial3Api` you're tempted to reach for.
 - `namespace` in `app/build.gradle.kts` is deliberately still `com.v2ray.ang`
-  (not `com.shadowlink.vpn`, which is only the `applicationId`) — every
+  (not `com.hushtunnel.vpn`, which is only the `applicationId`) — every
   unqualified `R.xxx` reference in the huge existing v2rayNG source depends
   on this. Don't "fix" it without repackaging the entire existing codebase.
 - MMKV for local persistence (already initialized app-wide in

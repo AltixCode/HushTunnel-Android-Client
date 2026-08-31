@@ -548,8 +548,8 @@
     <string name="connection_test_empty_message">无详细信息</string>
     <string name="value_unknown">未知</string>
 
-    <!-- ShadowLink Brand Strings (Chinese) -->
-    <string name="brand_app_name">ShadowLink</string>
+    <!-- HushTunnel Brand Strings (Chinese) -->
+    <string name="brand_app_name">HushTunnel</string>
     <string name="brand_welcome_back">欢迎回来</string>
     <string name="brand_login_subtitle">登录以管理您的订阅</string>
     <string name="brand_create_account">创建您的账户</string>

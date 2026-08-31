@@ -548,8 +548,8 @@
     <string name="connection_test_empty_message">جزئیاتی در دسترس نیست</string>
     <string name="value_unknown">ناشناخته</string>
 
-    <!-- ShadowLink Brand Strings (Persian) -->
-    <string name="brand_app_name">ShadowLink</string>
+    <!-- HushTunnel Brand Strings (Persian) -->
+    <string name="brand_app_name">HushTunnel</string>
     <string name="brand_welcome_back">خوش برگشتید</string>
     <string name="brand_login_subtitle">برای مدیریت اشتراک‌های خود وارد شوید</string>
     <string name="brand_create_account">حساب کاربری خود را بسازید</string>

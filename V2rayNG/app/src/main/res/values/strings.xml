@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">ShadowLink</string>
+    <string name="app_name" translatable="false">HushTunnel</string>
     <string name="app_widget_name">Switch</string>
     <string name="app_tile_name">Switch</string>
     <string name="app_tile_first_use">Buy a plan in the app before connecting.</string>
@@ -548,8 +548,8 @@
     <string name="connection_test_empty_message">no details available</string>
     <string name="value_unknown">unknown</string>
 
-    <!-- ShadowLink Brand Strings -->
-    <string name="brand_app_name">ShadowLink</string>
+    <!-- HushTunnel Brand Strings -->
+    <string name="brand_app_name">HushTunnel</string>
     <string name="brand_welcome_back">Welcome back</string>
     <string name="brand_login_subtitle">Log in to manage your subscriptions</string>
     <string name="brand_create_account">Create your account</string>

@@ -14,7 +14,7 @@ android {
         // (which stays "com.v2ray.ang" so every existing unqualified `R.xxx`
         // reference in the forked source keeps resolving) so this app installs
         // as its own product, side by side with real v2rayNG if ever needed.
-        applicationId = "com.shadowlink.vpn"
+        applicationId = "com.hushtunnel.app"
         minSdk = 24
         targetSdk = 37
         versionCode = 1

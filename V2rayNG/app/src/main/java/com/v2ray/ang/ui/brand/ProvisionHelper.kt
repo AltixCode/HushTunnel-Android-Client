@@ -15,7 +15,7 @@ import java.util.UUID
  */
 object ProvisionHelper {
 
-    private const val REMARK = "ShadowLink"
+    private const val REMARK = "HushTunnel"
 
     /**
      * Points the app's single subscription at [subscriptionUrl] and fetches it now.
