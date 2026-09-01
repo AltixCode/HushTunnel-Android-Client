@@ -107,11 +107,6 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
                 val selectedId = selectedSub?.id
                 AuthStore.setSelectedSubscriptionId(selectedId)
 
-                var provisioned = false
-                if (selectedSub != null && selectedSub.isActive) {
-                    provisioned = ProvisionHelper.provisionSubscription(selectedSub.subscriptionUrl)
-                }
-
                 val loadedPlans = try { ApiClient.plans() } catch (_: Exception) { emptyList() }
                 val loadedGateways = try { ApiClient.gateways() } catch (_: Exception) { GatewayInfo() }
                 val loadedOrders = try { ApiClient.orders(token) } catch (_: Exception) { emptyList() }
@@ -119,6 +114,15 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
                 val currentSelectedServer = _uiState.value.selectedServerId
                     ?: me.servers.firstOrNull { it.isDefault }?.id
                     ?: me.servers.firstOrNull()?.id
+
+                val activeServerObj = me.servers.firstOrNull { it.id == currentSelectedServer }
+
+                var provisioned = false
+                if (selectedSub != null && selectedSub.isActive) {
+                    provisioned = ProvisionHelper.provisionSubscription(selectedSub.subscriptionUrl, activeServerObj)
+                } else if (activeServerObj != null) {
+                    ProvisionHelper.selectServerByNode(activeServerObj)
+                }
 
                 _uiState.update {
                     it.copy(
@@ -257,6 +261,10 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
     
     fun switchServer(serverId: String, onReconnect: () -> Unit) {
         _uiState.update { it.copy(selectedServerId = serverId) }
+        val targetServer = _uiState.value.servers.firstOrNull { it.id == serverId }
+        if (targetServer != null) {
+            ProvisionHelper.selectServerByNode(targetServer)
+        }
         if (_uiState.value.isRunning) {
             onReconnect()
         }
