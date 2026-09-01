@@ -83,7 +83,11 @@ class ResellerHomeActivity : BaseComponentActivity() {
             },
             onBuyPersonalPlan = viewModel::buyPersonalSubscription,
             onRenewPersonalPlan = viewModel::renewPersonalSubscription,
-            onCreateCustomer = viewModel::createCustomer,
+            onCreateCustomer = { email, pwd ->
+                viewModel.createCustomer(email, pwd) { em, pw ->
+                    // Handled via state or message
+                }
+            },
             onCreateOrder = viewModel::createOrderForCustomer,
             onCreateDeposit = { _, _ ->
                 Utils.openUri(this, "https://www.hushtunnel.com")
@@ -119,7 +123,7 @@ fun ResellerHomeScreen(
     onOpenVpnClient: () -> Unit,
     onBuyPersonalPlan: (String) -> Unit,
     onRenewPersonalPlan: (String, String) -> Unit,
-    onCreateCustomer: (String) -> Unit,
+    onCreateCustomer: (String, String?) -> Unit,
     onCreateOrder: (customerEmail: String, planId: String) -> Unit,
     onCreateDeposit: (amount: Double, gateway: String) -> Unit,
     onCreateSubReseller: (email: String, initialBalanceUsd: Double) -> Unit,
@@ -136,6 +140,7 @@ fun ResellerHomeScreen(
 ) {
     var showAddCustomerDialog by remember { mutableStateOf(false) }
     var showAddOrderDialog by remember { mutableStateOf(false) }
+    var prefilledOrderEmail by remember { mutableStateOf("") }
     var showAddDepositDialog by remember { mutableStateOf(false) }
     var showAddSubResellerDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
@@ -356,9 +361,9 @@ fun ResellerHomeScreen(
     if (showAddCustomerDialog) {
         AddCustomerDialog(
             onDismiss = { showAddCustomerDialog = false },
-            onConfirm = { email ->
+            onConfirm = { email, pwd ->
                 showAddCustomerDialog = false
-                onCreateCustomer(email)
+                onCreateCustomer(email, pwd)
             },
         )
     }
@@ -367,7 +372,11 @@ fun ResellerHomeScreen(
         AddResellerOrderDialog(
             plans = state.plans,
             customers = state.customers,
-            onDismiss = { showAddOrderDialog = false },
+            initialEmail = prefilledOrderEmail,
+            onDismiss = {
+                showAddOrderDialog = false
+                prefilledOrderEmail = ""
+            },
             onConfirm = { email, planId ->
                 showAddOrderDialog = false
                 onCreateOrder(email, planId)
@@ -624,7 +633,22 @@ fun ResellerCustomersTab(
     onAddCustomerClick: () -> Unit,
     onCustomerClick: (ResellerCustomer) -> Unit,
 ) {
+    var searchQuery by remember { mutableStateOf("") }
+    val filtered = remember(customers, searchQuery) {
+        if (searchQuery.isBlank()) customers
+        else customers.filter { it.email.contains(searchQuery.trim(), ignoreCase = true) }
+    }
+
     LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("🔍 Search customers by email") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            )
+        }
         item {
             Button(onClick = onAddCustomerClick, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
                 Text(stringResource(R.string.brand_reseller_add_customer))
@@ -640,7 +664,7 @@ fun ResellerCustomersTab(
                 )
             }
         } else {
-            items(customers) { c ->
+            items(filtered) { c ->
                 Card(
                     onClick = { onCustomerClick(c) },
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
@@ -669,7 +693,25 @@ fun ResellerSubscriptionsTab(
     onResetTraffic: (String) -> Unit,
     onRevoke: (String) -> Unit,
 ) {
+    var searchQuery by remember { mutableStateOf("") }
+    val filtered = remember(subscriptions, searchQuery) {
+        if (searchQuery.isBlank()) subscriptions
+        else subscriptions.filter {
+            it.customerEmail.contains(searchQuery.trim(), ignoreCase = true) ||
+            it.planName.contains(searchQuery.trim(), ignoreCase = true)
+        }
+    }
+
     LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("🔍 Search subscriptions by email / plan") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            )
+        }
         if (subscriptions.isEmpty()) {
             item {
                 Text(
@@ -740,7 +782,25 @@ fun ResellerOrdersTab(
     orders: List<ResellerOrder>,
     onNewOrderClick: () -> Unit,
 ) {
+    var searchQuery by remember { mutableStateOf("") }
+    val filtered = remember(orders, searchQuery) {
+        if (searchQuery.isBlank()) orders
+        else orders.filter {
+            it.customerEmail.contains(searchQuery.trim(), ignoreCase = true) ||
+            it.planName.contains(searchQuery.trim(), ignoreCase = true)
+        }
+    }
+
     LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("🔍 Search orders by email / plan") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            )
+        }
         item {
             Button(onClick = onNewOrderClick, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
                 Text(stringResource(R.string.brand_reseller_buy_for_customer))
@@ -756,7 +816,7 @@ fun ResellerOrdersTab(
                 )
             }
         } else {
-            items(orders) { o ->
+            items(filtered) { o ->
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -956,25 +1016,83 @@ fun ResellerDepositsTab(
 @Composable
 fun AddCustomerDialog(
     onDismiss: () -> Unit,
-    onConfirm: (email: String) -> Unit,
+    onConfirm: (email: String, password: String?) -> Unit,
 ) {
     var email by remember { mutableStateOf("") }
+    var isCustomPassword by remember { mutableStateOf(false) }
+    var customPassword by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.brand_reseller_add_customer)) },
         text = {
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text(stringResource(R.string.brand_email)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier.fillMaxWidth(),
-            )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text(stringResource(R.string.brand_email)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    if (!isCustomPassword) {
+                        Button(
+                            onClick = { isCustomPassword = false },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text("✨ Auto-Generate")
+                        }
+                        OutlinedButton(
+                            onClick = { isCustomPassword = true },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text("🔑 Custom")
+                        }
+                    } else {
+                        OutlinedButton(
+                            onClick = { isCustomPassword = false },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text("✨ Auto-Generate")
+                        }
+                        Button(
+                            onClick = { isCustomPassword = true },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text("🔑 Custom")
+                        }
+                    }
+                }
+
+                if (isCustomPassword) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = customPassword,
+                        onValueChange = { customPassword = it },
+                        label = { Text("Password (min 6 chars)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
         },
         confirmButton = {
-            Button(onClick = { if (email.isNotBlank()) onConfirm(email.trim()) }, enabled = email.isNotBlank()) {
+            Button(
+                onClick = {
+                    if (email.isNotBlank()) {
+                        val pwd = if (isCustomPassword && customPassword.length >= 6) customPassword else null
+                        onConfirm(email.trim(), pwd)
+                    }
+                },
+                enabled = email.isNotBlank() && (!isCustomPassword || customPassword.length >= 6),
+            ) {
                 Text(stringResource(R.string.brand_reseller_add_customer))
             }
         },
@@ -990,10 +1108,13 @@ fun AddCustomerDialog(
 fun AddResellerOrderDialog(
     plans: List<PlanInfo>,
     customers: List<ResellerCustomer>,
+    initialEmail: String = "",
     onDismiss: () -> Unit,
     onConfirm: (customerEmail: String, planId: String) -> Unit,
 ) {
-    var email by remember { mutableStateOf(customers.firstOrNull()?.email.orEmpty()) }
+    var email by remember(initialEmail, customers) {
+        mutableStateOf(if (initialEmail.isNotBlank()) initialEmail else customers.firstOrNull()?.email.orEmpty())
+    }
     var selectedPlanId by remember(plans) { mutableStateOf(plans.firstOrNull()?.id.orEmpty()) }
 
     AlertDialog(

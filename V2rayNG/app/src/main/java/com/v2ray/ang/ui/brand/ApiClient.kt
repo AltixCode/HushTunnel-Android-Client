@@ -238,10 +238,12 @@ object ApiClient {
         )
     }
 
-    suspend fun createResellerCustomer(token: String, email: String): Pair<ResellerCustomer, String> {
+    suspend fun createResellerCustomer(token: String, email: String, password: String? = null): Pair<ResellerCustomer, String> {
+        val body = JSONObject().put("email", email)
+        if (!password.isNullOrBlank()) body.put("password", password)
         val json = request(
             "/api/mobile/reseller/customers", "POST", token = token,
-            body = JSONObject().put("email", email)
+            body = body
         )
         val customer = ResellerCustomer(
             id = json.getString("id"),

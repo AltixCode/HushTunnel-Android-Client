@@ -82,11 +82,12 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
         }
     }
 
-    fun createCustomer(email: String) {
+    fun createCustomer(email: String, customPassword: String? = null, onCreated: ((email: String, password: String) -> Unit)? = null) {
         val token = AuthStore.getToken() ?: return
         launchLoading {
             try {
-                val (_, password) = ApiClient.createResellerCustomer(token, email)
+                val (customer, password) = ApiClient.createResellerCustomer(token, email, customPassword)
+                onCreated?.invoke(customer.email, password)
                 _uiState.update {
                     it.copy(
                         message = app.getString(R.string.brand_reseller_customer_created, password),
