@@ -26,6 +26,41 @@ object CoreConfigManager {
     private var initConfigCache: String? = null
     private var initConfigCacheWithTun: String? = null
 
+    /**
+     * Populated by [preResolveActiveProfileHost], called before the VPN tun interface is
+     * established. [resolveOutboundDomainsToHosts] (called after establish(), from inside
+     * startCoreLoop) reads this first instead of doing its own InetAddress lookup, because
+     * a domain lookup issued after establish() races the VPN's own routing: the server's own
+     * hostname (e.g. nl1.hushtunnel.com) can end up captured by the tunnel that is trying to
+     * bootstrap itself through it, hanging forever with no explicit error — reproduced live
+     * (DNS_PROBE_FINISHED_NO_INTERNET, 3X-UI shows the client never actually connecting) only
+     * when the profile's server field is a domain, never when it's a bare IP, which is what
+     * pointed at this ordering rather than a server-side REALITY/SNI misconfiguration.
+     */
+    private val preResolvedHosts = mutableMapOf<String, List<String>>()
+
+    /**
+     * Resolve the currently selected profile's server domain to an IP before the VPN tun
+     * interface exists, so the resolution can't get looped through the tunnel it's bootstrapping.
+     * Call from CoreVpnService.setupVpnService() before configureVpnService()/establish().
+     */
+    fun preResolveActiveProfileHost() {
+        try {
+            val guid = MmkvManager.getSelectServer() ?: return
+            val profile = MmkvManager.decodeServerConfig(guid) ?: return
+            val domain = profile.server?.takeIf { it.isNotEmpty() } ?: return
+            if (Utils.isPureIpAddress(domain)) return
+
+            val preferIpv6 = MmkvManager.decodeSettingsBool(AppConfig.PREF_PREFER_IPV6) == true
+            val resolvedIps = HttpUtil.resolveHostToIP(domain, preferIpv6)
+            if (!resolvedIps.isNullOrEmpty()) {
+                preResolvedHosts[domain] = resolvedIps
+            }
+        } catch (e: Exception) {
+            LogUtil.e(AppConfig.TAG, "Failed to pre-resolve active profile host", e)
+        }
+    }
+
     //region get config function
 
     /**
@@ -1082,7 +1117,10 @@ object CoreConfigManager {
                 continue
             }
 
-            val resolvedIps = HttpUtil.resolveHostToIP(domain, preferIpv6)
+            // Prefer the pre-tun resolution done in preResolveActiveProfileHost() — see its
+            // KDoc. Only fall back to a live lookup here (which by this point runs after the
+            // VPN interface already exists) for paths that skip pre-resolution, e.g. speed test.
+            val resolvedIps = preResolvedHosts[domain] ?: HttpUtil.resolveHostToIP(domain, preferIpv6)
             if (resolvedIps.isNullOrEmpty()) {
                 continue
             }

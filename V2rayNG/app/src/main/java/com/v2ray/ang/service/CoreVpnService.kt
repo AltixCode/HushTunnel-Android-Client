@@ -16,6 +16,7 @@ import com.v2ray.ang.AppConfig.LOOPBACK
 import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.contracts.ServiceControl
 import com.v2ray.ang.contracts.Tun2SocksControl
+import com.v2ray.ang.core.CoreConfigManager
 import com.v2ray.ang.core.CoreServiceManager
 import com.v2ray.ang.handler.AppLocaleManager
 import com.v2ray.ang.handler.MmkvManager
@@ -143,6 +144,10 @@ class CoreVpnService : VpnService(), ServiceControl {
             LogUtil.e(AppConfig.TAG, "StartCore-VPN: Permission not granted")
             return false
         }
+
+        // Resolve the server's own domain to an IP now, while there is still no tun interface
+        // to accidentally route that DNS lookup through. See CoreConfigManager.preResolveActiveProfileHost.
+        CoreConfigManager.preResolveActiveProfileHost()
 
         if (configureVpnService() != true) {
             LogUtil.e(AppConfig.TAG, "StartCore-VPN: Configuration failed")
