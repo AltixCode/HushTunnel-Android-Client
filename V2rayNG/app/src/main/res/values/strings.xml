@@ -727,4 +727,13 @@
 
     <!-- Multi-server QR/VLESS display (reseller connection details) -->
     <string name="brand_default_server">Default</string>
+
+    <string name="brand_sub_reseller_details">Sub-Reseller Details</string>
+    <string name="brand_add_funds">Add Funds</string>
+    <string name="brand_available_balance">Available Balance: $%1$.2f</string>
+    <string name="brand_remaining_balance">Remaining After: $%1$.2f</string>
+    <string name="brand_transfer_success_with_balance">Transfer successful! New balance: $%1$s</string>
+    <string name="brand_transfer_to_user">Instant transfer to any user or sub-reseller</string>
+    <string name="brand_quick_amount_add">+$%1$d</string>
+    <string name="brand_max">Max</string>
 </resources>

@@ -391,4 +391,31 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
             }
         }
     }
+
+    fun transferFunds(
+        recipientEmail: String,
+        amountUsd: Double,
+        description: String? = null,
+        onSuccess: (() -> Unit)? = null
+    ) {
+        val token = AuthStore.getToken() ?: return
+        launchLoading {
+            try {
+                val res = ApiClient.transferFunds(token, recipientEmail, amountUsd, description)
+                val newBal = res.optDouble("newBalance", -1.0)
+                val msg = if (newBal >= 0) {
+                    app.getString(R.string.brand_transfer_success_with_balance, String.format(java.util.Locale.US, "%.2f", newBal))
+                } else {
+                    app.getString(R.string.brand_transfer_success)
+                }
+                _uiState.update { it.copy(message = msg, error = null) }
+                onSuccess?.invoke()
+                refresh()
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(error = e.message) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = app.getString(R.string.brand_error_connection)) }
+            }
+        }
+    }
 }

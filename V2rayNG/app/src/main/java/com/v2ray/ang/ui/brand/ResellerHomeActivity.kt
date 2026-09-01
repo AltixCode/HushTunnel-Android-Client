@@ -114,6 +114,7 @@ class ResellerHomeActivity : BaseComponentActivity() {
                 Utils.openUri(this, "https://www.hushtunnel.com")
             },
             onCreateSubReseller = viewModel::createSubReseller,
+            onTransferFunds = viewModel::transferFunds,
             onExtendSub = viewModel::extendSubscription,
             onToggleSub = viewModel::toggleSubscription,
             onResetSubUuid = viewModel::resetSubscriptionUuid,
@@ -159,6 +160,7 @@ fun ResellerHomeScreen(
     onDismissPendingOrder: () -> Unit,
     onCreateDeposit: (amount: Double, gateway: String) -> Unit,
     onCreateSubReseller: (email: String, initialBalanceUsd: Double) -> Unit,
+    onTransferFunds: (recipientEmail: String, amountUsd: Double, description: String?, onSuccess: (() -> Unit)?) -> Unit,
     onExtendSub: (String) -> Unit,
     onToggleSub: (String, Boolean) -> Unit,
     onResetSubUuid: (String) -> Unit,
@@ -176,6 +178,10 @@ fun ResellerHomeScreen(
     var prefilledOrderEmail by remember { mutableStateOf("") }
     var showAddDepositDialog by remember { mutableStateOf(false) }
     var showAddSubResellerDialog by remember { mutableStateOf(false) }
+    var showTransferFundsDialog by remember { mutableStateOf(false) }
+    var transferInitialEmail by remember { mutableStateOf("") }
+    var transferLockRecipient by remember { mutableStateOf(false) }
+    var selectedSubResellerForDetail by remember { mutableStateOf<SubResellerItem?>(null) }
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showChangePasswordDialog by remember { mutableStateOf(false) }
     var showBuyPersonalDialog by remember { mutableStateOf(false) }
@@ -421,10 +427,21 @@ fun ResellerHomeScreen(
                 4 -> ResellerTransactionsTab(
                     transactions = state.transactions,
                     currentBalanceUsd = state.overview.balanceUsd,
+                    onTransferFundsClick = {
+                        transferInitialEmail = ""
+                        transferLockRecipient = false
+                        showTransferFundsDialog = true
+                    },
                 )
                 5 -> ResellerSubResellersTab(
                     subResellers = state.subResellers,
                     onAddSubResellerClick = { showAddSubResellerDialog = true },
+                    onSubResellerClick = { subReseller -> selectedSubResellerForDetail = subReseller },
+                    onAddFundsClick = { subReseller ->
+                        transferInitialEmail = subReseller.email
+                        transferLockRecipient = true
+                        showTransferFundsDialog = true
+                    },
                 )
             }
         }
@@ -520,6 +537,32 @@ fun ResellerHomeScreen(
             onConfirm = { email, initialBalance ->
                 showAddSubResellerDialog = false
                 onCreateSubReseller(email, initialBalance)
+            },
+        )
+    }
+
+    if (showTransferFundsDialog) {
+        TransferFundsDialog(
+            currentBalance = state.overview.balanceUsd,
+            initialRecipientEmail = transferInitialEmail,
+            lockRecipient = transferLockRecipient,
+            onDismiss = { showTransferFundsDialog = false },
+            onConfirm = { recipientEmail, amount, desc ->
+                showTransferFundsDialog = false
+                onTransferFunds(recipientEmail, amount, desc, null)
+            },
+        )
+    }
+
+    selectedSubResellerForDetail?.let { subReseller ->
+        SubResellerDetailDialog(
+            subReseller = subReseller,
+            currentBalance = state.overview.balanceUsd,
+            onDismiss = { selectedSubResellerForDetail = null },
+            onAddFundsClick = { targetReseller ->
+                transferInitialEmail = targetReseller.email
+                transferLockRecipient = true
+                showTransferFundsDialog = true
             },
         )
     }
@@ -983,6 +1026,8 @@ fun ResellerOrdersTab(
 fun ResellerSubResellersTab(
     subResellers: List<SubResellerItem>,
     onAddSubResellerClick: () -> Unit,
+    onSubResellerClick: (SubResellerItem) -> Unit,
+    onAddFundsClick: (SubResellerItem) -> Unit,
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
@@ -1002,15 +1047,18 @@ fun ResellerSubResellersTab(
         } else {
             items(subResellers) { r ->
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    onClick = { onSubResellerClick(r) },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { onSubResellerClick(r) },
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    shape = RoundedCornerShape(10.dp),
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = r.email, style = MaterialTheme.typography.titleSmall)
+                            Text(text = r.email, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                             Text(
                                 text = stringResource(R.string.brand_price_usd_double, r.balanceUsd),
                                 style = MaterialTheme.typography.titleSmall,
@@ -1018,16 +1066,28 @@ fun ResellerSubResellersTab(
                                 color = MaterialTheme.colorScheme.primary,
                             )
                         }
-                        Text(
-                            text = stringResource(
-                                R.string.brand_reseller_subreseller_stats,
-                                r.customerCount,
-                                r.subscriptionCount,
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp),
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    R.string.brand_reseller_subreseller_stats,
+                                    r.customerCount,
+                                    r.subscriptionCount,
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Button(
+                                onClick = { onAddFundsClick(r) },
+                                modifier = Modifier.height(32.dp),
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
+                            ) {
+                                Text(stringResource(R.string.brand_add_funds), style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
                     }
                 }
             }
@@ -1106,6 +1166,7 @@ fun AddSubResellerDialog(
 fun ResellerTransactionsTab(
     transactions: List<WalletTransactionItem>,
     currentBalanceUsd: Double,
+    onTransferFundsClick: () -> Unit,
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val filtered = remember(transactions, searchQuery) {
@@ -1124,18 +1185,30 @@ fun ResellerTransactionsTab(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
                 shape = RoundedCornerShape(12.dp),
             ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Text(
-                        text = stringResource(R.string.brand_reseller_balance),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        text = stringResource(R.string.brand_price_usd_double, currentBalanceUsd),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = stringResource(R.string.brand_reseller_balance),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = stringResource(R.string.brand_price_usd_double, currentBalanceUsd),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    Button(
+                        onClick = onTransferFundsClick,
+                        
+                    ) {
+                        Text(stringResource(R.string.brand_transfer_funds))
+                    }
                 }
             }
         }
@@ -1967,6 +2040,240 @@ fun ResellerConnectionDetailDialog(
         confirmButton = {
             Button(onClick = onDismiss) {
                 Text(stringResource(R.string.brand_done))
+            }
+        }
+    )
+}
+
+@Composable
+fun TransferFundsDialog(
+    currentBalance: Double,
+    initialRecipientEmail: String = "",
+    lockRecipient: Boolean = false,
+    onDismiss: () -> Unit,
+    onConfirm: (recipientEmail: String, amountUsd: Double, description: String?) -> Unit,
+) {
+    var recipientEmail by remember(initialRecipientEmail) { mutableStateOf(initialRecipientEmail) }
+    var amountStr by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    val amount = amountStr.toDoubleOrNull() ?: 0.0
+    val isOverBalance = amount > currentBalance
+    val remainingBalance = (currentBalance - amount).coerceAtLeast(0.0)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.brand_transfer_funds)) },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.brand_transfer_to_user),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                OutlinedTextField(
+                    value = recipientEmail,
+                    onValueChange = { if (!lockRecipient) recipientEmail = it },
+                    label = { Text(stringResource(R.string.brand_recipient_email)) },
+                    readOnly = lockRecipient,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                OutlinedTextField(
+                    value = amountStr,
+                    onValueChange = { amountStr = it },
+                    label = { Text(stringResource(R.string.brand_amount_usd)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        TextButton(onClick = { amountStr = String.format(java.util.Locale.US, "%.2f", currentBalance) }) {
+                            Text(stringResource(R.string.brand_max))
+                        }
+                    }
+                )
+
+                // Quick amount chips
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    listOf(5, 10, 25, 50).forEach { quickVal ->
+                        OutlinedButton(
+                            onClick = {
+                                val newAmount = quickVal.toDouble().coerceAtMost(currentBalance)
+                                amountStr = String.format(java.util.Locale.US, "%.2f", newAmount)
+                            },
+                            enabled = currentBalance >= quickVal,
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
+                        ) {
+                            Text(stringResource(R.string.brand_quick_amount_add, quickVal), style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+                }
+
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text(stringResource(R.string.brand_note)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                // Balance summary card underneath inputs
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Text(
+                            text = stringResource(R.string.brand_available_balance, currentBalance),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        if (amount > 0.0) {
+                            Text(
+                                text = stringResource(R.string.brand_remaining_balance, remainingBalance),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (isOverBalance) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                if (isOverBalance) {
+                    Text(
+                        text = stringResource(R.string.brand_error_insufficient_balance),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (recipientEmail.isNotBlank() && amount > 0.0 && !isOverBalance) {
+                        onConfirm(recipientEmail.trim().lowercase(), amount, description.ifBlank { null })
+                    }
+                },
+                enabled = recipientEmail.isNotBlank() && amount > 0.0 && !isOverBalance,
+            ) {
+                Text(stringResource(R.string.brand_confirm_transfer))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.brand_cancel))
+            }
+        }
+    )
+}
+
+@Composable
+fun SubResellerDetailDialog(
+    subReseller: SubResellerItem,
+    currentBalance: Double,
+    onDismiss: () -> Unit,
+    onAddFundsClick: (SubResellerItem) -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Column {
+                Text(text = subReseller.email, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(text = "Sub-Reseller Partner", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = stringResource(R.string.brand_reseller_balance),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = stringResource(R.string.brand_price_usd_double, subReseller.balanceUsd),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Card(
+                        modifier = Modifier.weight(1f),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Text(text = stringResource(R.string.brand_reseller_tab_customers), style = MaterialTheme.typography.labelSmall)
+                            Text(
+                                text = "${subReseller.customerCount}",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    Card(
+                        modifier = Modifier.weight(1f),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Text(text = stringResource(R.string.brand_reseller_tab_subscriptions), style = MaterialTheme.typography.labelSmall)
+                            Text(
+                                text = "${subReseller.subscriptionCount}",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                if (subReseller.createdAt.isNotBlank()) {
+                    Text(
+                        text = stringResource(R.string.brand_created_date, subReseller.createdAt.take(10)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    onDismiss()
+                    onAddFundsClick(subReseller)
+                }
+            ) {
+                Text(stringResource(R.string.brand_add_funds))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.brand_close))
             }
         }
     )
