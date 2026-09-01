@@ -827,8 +827,7 @@ fun CheckoutPlanDialog(
                             Column(modifier = Modifier.padding(start = 8.dp)) {
                                 Text(plan.name, style = MaterialTheme.typography.bodyMedium)
                                 Text(
-                                    "$${plan.priceUsd} · ${plan.durationDays} days · " +
-                                        if (plan.trafficLimitGb > 0) "${plan.trafficLimitGb} GB" else "Unlimited",
+                                    text = stringResource(R.string.brand_plan_duration_traffic, stringResource(R.string.brand_price_usd_format, plan.priceUsd.toString()), plan.durationDays, if (plan.trafficLimitGb > 0) "${plan.trafficLimitGb} GB" else stringResource(R.string.brand_unlimited)),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
@@ -906,7 +905,7 @@ fun OrdersDialog(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                 ) {
                                     Text(order.planName, style = MaterialTheme.typography.titleSmall)
-                                    Text("$${order.amountUsd}", style = MaterialTheme.typography.titleSmall)
+                                    Text(stringResource(R.string.brand_price_usd_format, order.amountUsd.toString()), style = MaterialTheme.typography.titleSmall)
                                 }
                                 Row(
                                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),

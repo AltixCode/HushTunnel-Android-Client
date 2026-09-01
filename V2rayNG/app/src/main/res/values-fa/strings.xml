@@ -678,4 +678,44 @@
     <string name="brand_unit_gb">%1$.1f گیگابایت</string>
     <string name="brand_unit_mb">%1$.0f مگابایت</string>
     <string name="brand_plan_name_label">پلن: %1$s</string>
+
+    <!-- Localized Currency and UI strings (Farsi) -->
+    <string name="brand_price_usd_format">%1$s دلار</string>
+    <string name="brand_price_usd_double">%1$.2f دلار</string>
+    <string name="brand_balance_discount_format">%1$.2f دلار (%2$d٪ تخفیف)</string>
+    <string name="brand_reseller_balance_applied">موجودی نمایندگی شما: %1$.2f دلار (%2$d٪ تخفیف اعمال شده)</string>
+    <string name="brand_confirm_with_price">تأیید (%1$.2f دلار)</string>
+    <string name="brand_confirm">تأیید</string>
+    <string name="brand_search_customers">🔍 جستجوی مشتریان با ایمیل</string>
+    <string name="brand_search_orders">🔍 جستجوی سفارش‌ها بر اساس مشتری/پلن</string>
+    <string name="brand_search_subscriptions">🔍 جستجوی اشتراک‌ها</string>
+    <string name="brand_created_date">تاریخ ایجاد: %1$s</string>
+    <string name="brand_sub_expires_format">%1$s · انقضا: %2$s</string>
+    <string name="brand_counterpart">طرف تراکنش: %1$s</string>
+    <string name="brand_transfer_balance_change">%1$.2f دلار → %2$.2f دلار</string>
+    <string name="brand_plan_price_parenthesis">%1$s (%2$.2f دلار)</string>
+    <string name="brand_plan_duration_traffic">%1$s · %2$d روز · %3$s</string>
+    <string name="brand_unlimited">نامحدود</string>
+    <string name="brand_copied">کپی شد</string>
+    <string name="brand_reset_uuid_confirm">تنظیم مجدد UUID برای %1$s؟</string>
+    <string name="brand_reset_traffic_confirm">تنظیم مجدد ترافیک مصرفی برای %1$s؟</string>
+    <string name="brand_revoke_confirm">لغو کامل اشتراک %1$s؟</string>
+    <string name="brand_extend_confirm">تمدید ۳۰ روزه برای %1$s؟</string>
+    <string name="brand_days">%1$d روز</string>
+
+
+    <string name="brand_auto_generate">✨ ایجاد خودکار</string>
+    <string name="brand_custom">🔑 دلخواه</string>
+    <string name="brand_password_min_hint">رمز عبور (حداقل ۶ کاراکتر)</string>
+    <string name="brand_save_new_password">ذخیره رمز عبور جدید</string>
+    <string name="brand_auto_gen_password">ایجاد خودکار رمز عبور جدید</string>
+    <string name="brand_delete_customer">حذف مشتری</string>
+    <string name="brand_search_transactions">🔍 جستجوی تراکنش‌ها...</string>
+    <string name="brand_no_transactions">تراکنشی یافت نشد.</string>
+
+
+    <string name="brand_no_customers">هنوز مشتری ثبت نشده است.</string>
+    <string name="brand_no_orders">هنوز سفارشی ثبت نشده است.</string>
+    <string name="brand_no_subscriptions">هنوز اشتراکی برای مشتریان ثبت نشده است.</string>
+
 </resources>

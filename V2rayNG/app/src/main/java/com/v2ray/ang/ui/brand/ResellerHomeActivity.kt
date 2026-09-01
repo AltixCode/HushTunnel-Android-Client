@@ -1,5 +1,13 @@
 package com.v2ray.ang.ui.brand
 
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyRow
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.PaddingValues
+
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.horizontalScroll
@@ -111,6 +119,14 @@ class ResellerHomeActivity : BaseComponentActivity() {
             onUpdateCustomerPassword = viewModel::updateCustomerPassword,
             onResetCustomerPassword = viewModel::resetCustomerPassword,
             onDeleteCustomer = viewModel::deleteCustomer,
+            onChangePassword = { currentPwd, newPwd ->
+                viewModel.changePassword(
+                    currentPwd,
+                    newPwd,
+                    onSuccess = { viewModel.refresh() },
+                    onError = { }
+                )
+            },
             onDismissMessage = viewModel::dismissMessage,
             onLogout = {
                 viewModel.logout()
@@ -145,6 +161,7 @@ fun ResellerHomeScreen(
     onUpdateCustomerPassword: (String, String) -> Unit,
     onResetCustomerPassword: (String) -> Unit,
     onDeleteCustomer: (String) -> Unit,
+    onChangePassword: (String?, String) -> Unit,
     onDismissMessage: () -> Unit,
     onLogout: () -> Unit,
 ) {
@@ -260,33 +277,47 @@ fun ResellerHomeScreen(
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
-                            text = "$${String.format(Locale.US, "%.2f", state.overview.balanceUsd)} (${state.overview.discountPct}% off)",
+                            text = stringResource(R.string.brand_balance_discount_format, state.overview.balanceUsd, state.overview.discountPct),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
                         )
                     }
                     Spacer(modifier = Modifier.height(6.dp))
-                    SuggestionChip(
+                    OutlinedButton(
                         onClick = { showChangePasswordDialog = true },
-                        label = { Text(stringResource(R.string.brand_change_password), style = MaterialTheme.typography.labelSmall) },
-                    )
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                    ) {
+                        Text(stringResource(R.string.brand_change_password), style = MaterialTheme.typography.labelSmall)
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Tab Row
-            ScrollableTabRow(
-                selectedTabIndex = state.selectedTab,
-                edgePadding = 0.dp,
+            // Modern Responsive Tab Row
+            LazyRow(
                 modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = (state.selectedTab == index),
+                itemsIndexed(tabs) { index, title ->
+                    val isSelected = (state.selectedTab == index)
+                    FilterChip(
+                        selected = isSelected,
                         onClick = { onSetTab(index) },
-                        text = { Text(title, maxLines = 1, softWrap = false) },
+                        label = {
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
+                        shape = RoundedCornerShape(10.dp),
                     )
                 }
             }
@@ -446,6 +477,16 @@ fun ResellerHomeScreen(
         )
     }
 
+    if (showChangePasswordDialog) {
+        ResellerChangePasswordDialog(
+            onDismiss = { showChangePasswordDialog = false },
+            onConfirm = { currentPwd, newPwd ->
+                showChangePasswordDialog = false
+                onChangePassword(currentPwd, newPwd)
+            },
+        )
+    }
+
     if (showLanguageDialog) {
         AlertDialog(
             onDismissRequest = { showLanguageDialog = false },
@@ -595,7 +636,7 @@ fun ResellerOverviewTab(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(text = stringResource(R.string.brand_reseller_balance), style = MaterialTheme.typography.labelMedium)
                     Text(
-                        text = "$${String.format(Locale.US, "%.2f", overview.balanceUsd)}",
+                        text = stringResource(R.string.brand_price_usd_double, overview.balanceUsd),
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -661,7 +702,7 @@ fun ResellerCustomersTab(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                label = { Text("🔍 Search customers by email") },
+                label = { Text(stringResource(R.string.brand_search_customers)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
             )
@@ -675,7 +716,7 @@ fun ResellerCustomersTab(
         if (customers.isEmpty()) {
             item {
                 Text(
-                    text = "No customers found yet.",
+                    text = stringResource(R.string.brand_no_customers),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -690,7 +731,7 @@ fun ResellerCustomersTab(
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(text = c.email, style = MaterialTheme.typography.titleSmall)
                         Text(
-                            text = "Created: ${c.createdAt.take(10)}",
+                            text = stringResource(R.string.brand_created_date, c.createdAt.take(10)),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -724,7 +765,7 @@ fun ResellerSubscriptionsTab(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                label = { Text("🔍 Search subscriptions by email / plan") },
+                label = { Text(stringResource(R.string.brand_search_subscriptions)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
             )
@@ -732,7 +773,7 @@ fun ResellerSubscriptionsTab(
         if (subscriptions.isEmpty()) {
             item {
                 Text(
-                    text = "No customer subscriptions yet.",
+                    text = stringResource(R.string.brand_no_subscriptions),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -751,12 +792,12 @@ fun ResellerSubscriptionsTab(
                             Text(text = sub.customerEmail, style = MaterialTheme.typography.titleSmall)
                             SuggestionChip(
                                 onClick = {},
-                                label = { Text(if (sub.isActive) "ACTIVE" else "INACTIVE") },
+                                label = { Text(if (sub.isActive) stringResource(R.string.brand_active) else stringResource(R.string.brand_inactive)) },
                             )
                         }
 
                         Text(
-                            text = "${sub.planName} · Expires ${sub.expiryDate.take(10)}",
+                            text = stringResource(R.string.brand_sub_expires_format, sub.planName, sub.expiryDate.take(10)),
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(vertical = 2.dp),
                         )
@@ -813,7 +854,7 @@ fun ResellerOrdersTab(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                label = { Text("🔍 Search orders by email / plan") },
+                label = { Text(stringResource(R.string.brand_search_orders)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
             )
@@ -827,7 +868,7 @@ fun ResellerOrdersTab(
         if (orders.isEmpty()) {
             item {
                 Text(
-                    text = "No reseller orders found.",
+                    text = stringResource(R.string.brand_no_orders),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -844,7 +885,7 @@ fun ResellerOrdersTab(
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
                             Text(text = o.customerEmail, style = MaterialTheme.typography.titleSmall)
-                            Text(text = "$${o.amountUsd}", style = MaterialTheme.typography.titleSmall)
+                            Text(text = stringResource(R.string.brand_price_usd_format, o.amountUsd.toString()), style = MaterialTheme.typography.titleSmall)
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
@@ -893,7 +934,7 @@ fun ResellerSubResellersTab(
                         ) {
                             Text(text = r.email, style = MaterialTheme.typography.titleSmall)
                             Text(
-                                text = "$${String.format(Locale.US, "%.2f", r.balanceUsd)}",
+                                text = stringResource(R.string.brand_price_usd_double, r.balanceUsd),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
@@ -952,7 +993,7 @@ fun AddSubResellerDialog(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text(
-                    text = stringResource(R.string.brand_reseller_balance) + ": $${String.format(Locale.US, "%.2f", balanceUsd)}",
+                    text = stringResource(R.string.brand_reseller_balance) + ": " + stringResource(R.string.brand_price_usd_double, balanceUsd),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 6.dp),
@@ -1012,7 +1053,7 @@ fun ResellerTransactionsTab(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = "$${String.format(Locale.US, "%.2f", currentBalanceUsd)}",
+                        text = stringResource(R.string.brand_price_usd_double, currentBalanceUsd),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
@@ -1025,7 +1066,7 @@ fun ResellerTransactionsTab(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                label = { Text("🔍 Search transactions...") },
+                label = { Text(stringResource(R.string.brand_search_transactions)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
             )
@@ -1034,7 +1075,7 @@ fun ResellerTransactionsTab(
         if (filtered.isEmpty()) {
             item {
                 Text(
-                    text = "No transactions found.",
+                    text = stringResource(R.string.brand_no_transactions),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -1063,7 +1104,7 @@ fun ResellerTransactionsTab(
                                 color = MaterialTheme.colorScheme.primary,
                             )
                             Text(
-                                text = "$sign$${String.format(Locale.US, "%.2f", tx.amountUsd)}",
+                                text = "$sign " + stringResource(R.string.brand_price_usd_double, tx.amountUsd),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = amountColor,
@@ -1081,7 +1122,7 @@ fun ResellerTransactionsTab(
 
                         if (!tx.counterpartEmail.isNullOrBlank()) {
                             Text(
-                                text = "Counterpart: ${tx.counterpartEmail}",
+                                text = stringResource(R.string.brand_counterpart, tx.counterpartEmail ?: ""),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(top = 2.dp),
@@ -1094,7 +1135,7 @@ fun ResellerTransactionsTab(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
-                                text = "$${String.format(Locale.US, "%.2f", tx.balanceBefore)} → $${String.format(Locale.US, "%.2f", tx.balanceAfter)}",
+                                text = stringResource(R.string.brand_transfer_balance_change, tx.balanceBefore, tx.balanceAfter),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -1145,26 +1186,26 @@ fun AddCustomerDialog(
                             onClick = { isCustomPassword = false },
                             modifier = Modifier.weight(1f),
                         ) {
-                            Text("✨ Auto-Generate")
+                            Text(stringResource(R.string.brand_auto_generate))
                         }
                         OutlinedButton(
                             onClick = { isCustomPassword = true },
                             modifier = Modifier.weight(1f),
                         ) {
-                            Text("🔑 Custom")
+                            Text(stringResource(R.string.brand_custom))
                         }
                     } else {
                         OutlinedButton(
                             onClick = { isCustomPassword = false },
                             modifier = Modifier.weight(1f),
                         ) {
-                            Text("✨ Auto-Generate")
+                            Text(stringResource(R.string.brand_auto_generate))
                         }
                         Button(
                             onClick = { isCustomPassword = true },
                             modifier = Modifier.weight(1f),
                         ) {
-                            Text("🔑 Custom")
+                            Text(stringResource(R.string.brand_custom))
                         }
                     }
                 }
@@ -1174,7 +1215,7 @@ fun AddCustomerDialog(
                     OutlinedTextField(
                         value = customPassword,
                         onValueChange = { customPassword = it },
-                        label = { Text("Password (min 6 chars)") },
+                        label = { Text(stringResource(R.string.brand_password_min_hint)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -1243,7 +1284,7 @@ fun AddResellerOrderDialog(
                                 onClick = { selectedPlanId = plan.id },
                             )
                             Text(
-                                text = "${plan.name} ($${plan.priceUsd})",
+                                text = stringResource(R.string.brand_plan_price_parenthesis, plan.name, plan.priceUsd),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(start = 8.dp),
                             )
@@ -1341,6 +1382,7 @@ fun ResellerChangePasswordDialog(
     onDismiss: () -> Unit,
     onConfirm: (String?, String) -> Unit,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -1384,11 +1426,11 @@ fun ResellerChangePasswordDialog(
             Button(
                 onClick = {
                     if (newPassword.length < 6) {
-                        error = "Password must be at least 6 characters"
+                        error = context.getString(R.string.brand_password_min_length)
                         return@Button
                     }
                     if (newPassword != confirmPassword) {
-                        error = "Passwords do not match"
+                        error = context.getString(R.string.brand_password_mismatch)
                         return@Button
                     }
                     onConfirm(if (currentPassword.isBlank()) null else currentPassword, newPassword)
@@ -1434,7 +1476,7 @@ fun CustomerDetailDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "Created: ${customer.createdAt.take(10)}",
+                    text = stringResource(R.string.brand_created_date, customer.createdAt.take(10)),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -1520,14 +1562,14 @@ fun CustomerDetailDialog(
                         enabled = newPassword.length >= 6,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Save New Password")
+                        Text(stringResource(R.string.brand_save_new_password))
                     }
                 } else {
                     Button(
                         onClick = { showPasswordField = true },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Change Password")
+                        Text(stringResource(R.string.brand_change_password))
                     }
                 }
 
@@ -1535,7 +1577,7 @@ fun CustomerDetailDialog(
                     onClick = onResetPassword,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Auto-Generate New Password")
+                    Text(stringResource(R.string.brand_auto_gen_password))
                 }
 
                 OutlinedButton(
@@ -1545,7 +1587,7 @@ fun CustomerDetailDialog(
                     ),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Delete Customer")
+                    Text(stringResource(R.string.brand_delete_customer))
                 }
             }
         },
@@ -1583,7 +1625,7 @@ fun BuyPersonalPlanDialog(
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Your Reseller Balance: $${String.format(Locale.US, "%.2f", balanceUsd)} ($discountPct% off applied)",
+                    text = stringResource(R.string.brand_reseller_balance_applied, balanceUsd, discountPct),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
@@ -1618,21 +1660,21 @@ fun BuyPersonalPlanDialog(
                                     fontWeight = FontWeight.Bold,
                                 )
                                 Text(
-                                    text = "${plan.durationDays}d · " + (if (plan.trafficLimitGb > 0) "${plan.trafficLimitGb} GB" else "Unlimited"),
+                                    text = stringResource(R.string.brand_days, plan.durationDays) + " · " + (if (plan.trafficLimitGb > 0) "${plan.trafficLimitGb} GB" else stringResource(R.string.brand_unlimited)),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
-                                    text = "$${String.format(Locale.US, "%.2f", itemDiscounted)}",
+                                    text = stringResource(R.string.brand_price_usd_double, itemDiscounted),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary,
                                 )
                                 if (itemDiscounted < plan.priceUsd) {
                                     Text(
-                                        text = "$${String.format(Locale.US, "%.2f", plan.priceUsd)}",
+                                        text = stringResource(R.string.brand_price_usd_double, plan.priceUsd),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough,
@@ -1658,7 +1700,7 @@ fun BuyPersonalPlanDialog(
                 onClick = { if (selectedPlan != null) onConfirm(selectedPlan.id) },
                 enabled = canAfford && selectedPlan != null,
             ) {
-                Text("Confirm ($${String.format(Locale.US, "%.2f", discountedPrice)})")
+                Text(stringResource(R.string.brand_confirm_with_price, discountedPrice))
             }
         },
         dismissButton = {
