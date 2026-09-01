@@ -567,6 +567,8 @@
     <string name="brand_renew_personal_vpn">續費專屬連線</string>
     <string name="brand_copy_sub_link">複製訂閱連結</string>
     <string name="brand_copied_to_clipboard">已複製到剪貼簿</string>
+    <string name="brand_view_connection">檢視連線</string>
+    <string name="brand_reseller_no_subscriptions">尚無有效訂閱</string>
     <string name="brand_reseller_portal_btn">經銷商面板</string>
 
     <!-- Sub-reseller management tab (appended: this file predates the brand_reseller_tab_* block) -->

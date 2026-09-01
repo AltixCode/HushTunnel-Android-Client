@@ -567,6 +567,8 @@
     <string name="brand_renew_personal_vpn">تجديد VPN الشخصي</string>
     <string name="brand_copy_sub_link">نسخ الرابط</string>
     <string name="brand_copied_to_clipboard">تم النسخ إلى الحافظة</string>
+    <string name="brand_view_connection">عرض الاتصال</string>
+    <string name="brand_reseller_no_subscriptions">لا توجد اشتراكات نشطة</string>
     <string name="brand_reseller_portal_btn">لوحة الموزع</string>
 
     <!-- Sub-reseller management tab (appended: this file predates the brand_reseller_tab_* block) -->

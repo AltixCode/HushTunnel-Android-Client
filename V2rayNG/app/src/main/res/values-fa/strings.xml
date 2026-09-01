@@ -672,5 +672,7 @@
     <string name="brand_renew_personal_vpn">تمدید اتصال شخصی</string>
     <string name="brand_copy_sub_link">کپی لینک اتصال</string>
     <string name="brand_copied_to_clipboard">در حافظه کپی شد</string>
+    <string name="brand_view_connection">مشاهده اتصال</string>
+    <string name="brand_reseller_no_subscriptions">اشتراک فعالی وجود ندارد</string>
     <string name="brand_reseller_portal_btn">پنل نمایندگی</string>
 </resources>

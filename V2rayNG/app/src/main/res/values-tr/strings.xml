@@ -123,5 +123,7 @@
     <string name="brand_renew_personal_vpn">Kişisel VPN Yenile</string>
     <string name="brand_copy_sub_link">Bağlantıyı Kopyala</string>
     <string name="brand_copied_to_clipboard">Panoya kopyalandı</string>
+    <string name="brand_view_connection">Bağlantıyı Görüntüle</string>
+    <string name="brand_reseller_no_subscriptions">Aktif abonelik yok</string>
     <string name="brand_reseller_portal_btn">Bayi Paneli</string>
 </resources>

@@ -567,6 +567,8 @@
     <string name="brand_renew_personal_vpn">ব্যক্তিগত ভিপিএন নবায়ন করুন</string>
     <string name="brand_copy_sub_link">লিঙ্ক কপি করুন</string>
     <string name="brand_copied_to_clipboard">ক্লিপবোর্ডে কপি করা হয়েছে</string>
+    <string name="brand_view_connection">সংযোগ দেখুন</string>
+    <string name="brand_reseller_no_subscriptions">কোনো সক্রিয় সাবস্ক্রিপশন নেই</string>
     <string name="brand_reseller_portal_btn">রিসেলার পোর্টাল</string>
 
     <!-- Sub-reseller management tab (appended: this file predates the brand_reseller_tab_* block) -->

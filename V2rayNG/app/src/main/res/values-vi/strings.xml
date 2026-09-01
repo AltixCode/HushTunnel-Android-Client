@@ -567,6 +567,8 @@
     <string name="brand_renew_personal_vpn">Gia hạn VPN cá nhân</string>
     <string name="brand_copy_sub_link">Sao chép liên kết</string>
     <string name="brand_copied_to_clipboard">Đã sao chép vào bộ nhớ tạm</string>
+    <string name="brand_view_connection">Xem kết nối</string>
+    <string name="brand_reseller_no_subscriptions">Không có gói đăng ký nào đang hoạt động</string>
     <string name="brand_reseller_portal_btn">Cổng đại lý</string>
 
     <!-- Sub-reseller management tab (appended: this file predates the brand_reseller_tab_* block) -->

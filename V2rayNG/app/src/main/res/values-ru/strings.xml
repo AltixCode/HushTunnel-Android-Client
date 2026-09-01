@@ -672,5 +672,7 @@
     <string name="brand_renew_personal_vpn">Продлить личный VPN</string>
     <string name="brand_copy_sub_link">Скопировать ссылку</string>
     <string name="brand_copied_to_clipboard">Скопировано в буфер</string>
+    <string name="brand_view_connection">Просмотр подключения</string>
+    <string name="brand_reseller_no_subscriptions">Нет активных подписок</string>
     <string name="brand_reseller_portal_btn">Панель реселлера</string>
 </resources>

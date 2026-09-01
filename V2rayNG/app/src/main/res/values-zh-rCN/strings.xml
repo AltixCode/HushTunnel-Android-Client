@@ -672,5 +672,7 @@
     <string name="brand_renew_personal_vpn">续费专属连接</string>
     <string name="brand_copy_sub_link">复制订阅链接</string>
     <string name="brand_copied_to_clipboard">已复制到剪贴板</string>
+    <string name="brand_view_connection">查看连接</string>
+    <string name="brand_reseller_no_subscriptions">暂无有效订阅</string>
     <string name="brand_reseller_portal_btn">代理商面板</string>
 </resources>
