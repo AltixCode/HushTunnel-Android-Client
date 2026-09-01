@@ -736,4 +736,5 @@
     <string name="brand_transfer_to_user">Instant transfer to any user or sub-reseller</string>
     <string name="brand_quick_amount_add">+$%1$d</string>
     <string name="brand_max">Max</string>
+    <string name="brand_search_subresellers">🔍 Search sub-resellers...</string>
 </resources>

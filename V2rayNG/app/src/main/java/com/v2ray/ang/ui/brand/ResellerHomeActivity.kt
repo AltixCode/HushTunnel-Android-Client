@@ -1029,14 +1029,29 @@ fun ResellerSubResellersTab(
     onSubResellerClick: (SubResellerItem) -> Unit,
     onAddFundsClick: (SubResellerItem) -> Unit,
 ) {
+    var searchQuery by remember { mutableStateOf("") }
+    val filtered = remember(subResellers, searchQuery) {
+        if (searchQuery.isBlank()) subResellers
+        else subResellers.filter { it.email.contains(searchQuery.trim(), ignoreCase = true) }
+    }
+
     LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text(stringResource(R.string.brand_search_subresellers)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            )
+        }
         item {
             Button(onClick = onAddSubResellerClick, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
                 Text(stringResource(R.string.brand_reseller_add_subreseller))
             }
         }
 
-        if (subResellers.isEmpty()) {
+        if (filtered.isEmpty()) {
             item {
                 Text(
                     text = stringResource(R.string.brand_reseller_no_subresellers),
@@ -1045,7 +1060,7 @@ fun ResellerSubResellersTab(
                 )
             }
         } else {
-            items(subResellers) { r ->
+            items(filtered) { r ->
                 Card(
                     onClick = { onSubResellerClick(r) },
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { onSubResellerClick(r) },
@@ -1119,8 +1134,9 @@ fun AddSubResellerDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     modifier = Modifier.fillMaxWidth(),
                 )
+                EmailDomainChipsRow(email = email, onEmailChange = { email = it })
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
                     value = initialBalanceStr,
@@ -1325,8 +1341,9 @@ fun AddCustomerDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     modifier = Modifier.fillMaxWidth(),
                 )
+                EmailDomainChipsRow(email = email, onEmailChange = { email = it })
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1421,8 +1438,36 @@ fun AddResellerOrderDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     modifier = Modifier.fillMaxWidth(),
                 )
+                EmailDomainChipsRow(email = email, onEmailChange = { email = it })
 
-                Spacer(modifier = Modifier.height(12.dp))
+                val matchingCustomers = remember(email, customers) {
+                    if (email.isBlank()) customers.take(4)
+                    else customers.filter { it.email.contains(email.trim(), ignoreCase = true) }
+                }
+                if (matchingCustomers.isNotEmpty()) {
+                    Text(
+                        text = stringResource(R.string.brand_reseller_tab_customers),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(vertical = 2.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        matchingCustomers.forEach { cust ->
+                            SuggestionChip(
+                                onClick = { email = cust.email },
+                                label = { Text(cust.email, style = MaterialTheme.typography.labelSmall) }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(text = stringResource(R.string.brand_choose_plan), style = MaterialTheme.typography.titleSmall)
 
                 LazyColumn(modifier = Modifier.fillMaxWidth().height(160.dp)) {
@@ -2083,6 +2128,9 @@ fun TransferFundsDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     modifier = Modifier.fillMaxWidth(),
                 )
+                if (!lockRecipient) {
+                    EmailDomainChipsRow(email = recipientEmail, onEmailChange = { recipientEmail = it })
+                }
 
                 OutlinedTextField(
                     value = amountStr,
@@ -2277,4 +2325,32 @@ fun SubResellerDetailDialog(
             }
         }
     )
+}
+
+@Composable
+fun EmailDomainChipsRow(
+    email: String,
+    onEmailChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val domains = listOf("@gmail.com", "@yahoo.com", "@outlook.com", "@icloud.com", "@proton.me", "@hotmail.com")
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        domains.forEach { domain ->
+            SuggestionChip(
+                onClick = {
+                    val clean = email.trim()
+                    val atIdx = clean.indexOf('@')
+                    val newEmail = if (atIdx == -1) clean + domain else clean.substring(0, atIdx) + domain
+                    onEmailChange(newEmail)
+                },
+                label = { Text(domain, style = MaterialTheme.typography.labelSmall) }
+            )
+        }
+    }
 }
