@@ -718,4 +718,7 @@
     <string name="brand_no_orders">هنوز سفارشی ثبت نشده است.</string>
     <string name="brand_no_subscriptions">هنوز اشتراکی برای مشتریان ثبت نشده است.</string>
 
+    <!-- Multi-server QR/VLESS display (reseller connection details) -->
+    <string name="brand_default_server">پیش‌فرض</string>
+
 </resources>

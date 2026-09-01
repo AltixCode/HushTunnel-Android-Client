@@ -13,7 +13,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.foundation.horizontalScroll
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
@@ -65,9 +64,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.R
 import com.v2ray.ang.extension.toast
 import com.v2ray.ang.ui.base.BaseComponentActivity
-import com.v2ray.ang.ui.compose.QRCodeDialog
 import com.v2ray.ang.util.QRCodeDecoder
 import com.v2ray.ang.util.Utils
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.delay
 import java.util.Locale
 
@@ -101,12 +105,11 @@ class ResellerHomeActivity : BaseComponentActivity() {
             },
             onBuyPersonalPlan = viewModel::buyPersonalSubscription,
             onRenewPersonalPlan = viewModel::renewPersonalSubscription,
-            onCreateCustomer = { email, pwd ->
-                viewModel.createCustomer(email, pwd) { em, pw ->
-                    // Handled via state or message
-                }
-            },
+            onCreateCustomer = viewModel::createCustomer,
             onCreateOrder = viewModel::createOrderForCustomer,
+            onOpenConnectionDetails = viewModel::openConnectionDetails,
+            onDismissConnectionDetails = viewModel::dismissConnectionDetails,
+            onDismissPendingOrder = viewModel::dismissPendingOrder,
             onCreateDeposit = { _, _ ->
                 Utils.openUri(this, "https://www.hushtunnel.com")
             },
@@ -151,6 +154,9 @@ fun ResellerHomeScreen(
     onRenewPersonalPlan: (String, String) -> Unit,
     onCreateCustomer: (String, String?) -> Unit,
     onCreateOrder: (customerEmail: String, planId: String) -> Unit,
+    onOpenConnectionDetails: (ResellerConnectionDetails) -> Unit,
+    onDismissConnectionDetails: () -> Unit,
+    onDismissPendingOrder: () -> Unit,
     onCreateDeposit: (amount: Double, gateway: String) -> Unit,
     onCreateSubReseller: (email: String, initialBalanceUsd: Double) -> Unit,
     onExtendSub: (String) -> Unit,
@@ -175,6 +181,7 @@ fun ResellerHomeScreen(
     var showBuyPersonalDialog by remember { mutableStateOf(false) }
     var renewPersonalSubId by remember { mutableStateOf<String?>(null) }
     var selectedCustomerForDetail by remember { mutableStateOf<ResellerCustomer?>(null) }
+    var activeConnectionDetails by remember { mutableStateOf<ConnectionDialogData?>(null) }
 
     val currentLang = LocaleHelper.getCurrentLanguageTag()
     val tabs = listOf(
@@ -186,6 +193,7 @@ fun ResellerHomeScreen(
         stringResource(R.string.brand_reseller_tab_subresellers),
     )
 
+    val context = androidx.compose.ui.platform.LocalContext.current
     val config = androidx.compose.ui.platform.LocalConfiguration.current
     val responsivePadding = if (config.screenWidthDp > 640) ((config.screenWidthDp - 640) / 2).dp else 16.dp
 
@@ -379,10 +387,36 @@ fun ResellerHomeScreen(
                     onResetUuid = onResetSubUuid,
                     onResetTraffic = onResetSubTraffic,
                     onRevoke = onRevokeSub,
+                    onSubClick = { sub ->
+                        onOpenConnectionDetails(
+                            ResellerConnectionDetails(
+                                title = sub.customerEmail,
+                                planName = sub.planName,
+                                subscriptionUrl = sub.subscriptionUrl,
+                                vlessLink = sub.vlessLink,
+                                expiryDate = sub.expiryDate,
+                                status = if (sub.isActive) "ACTIVE" else "INACTIVE",
+                                servers = sub.servers,
+                            )
+                        )
+                    },
                 )
                 3 -> ResellerOrdersTab(
                     orders = state.orders,
                     onNewOrderClick = { showAddOrderDialog = true },
+                    onOrderClick = { order ->
+                        onOpenConnectionDetails(
+                            ResellerConnectionDetails(
+                                title = order.customerEmail,
+                                planName = order.planName,
+                                subscriptionUrl = order.subscriptionUrl,
+                                vlessLink = order.vlessLink,
+                                amountUsd = order.amountUsd,
+                                status = order.status,
+                                servers = order.servers,
+                            )
+                        )
+                    },
                 )
                 4 -> ResellerTransactionsTab(
                     transactions = state.transactions,
@@ -421,24 +455,50 @@ fun ResellerHomeScreen(
             onDismiss = { showAddCustomerDialog = false },
             onConfirm = { email, pwd ->
                 showAddCustomerDialog = false
-                onCreateCustomer(email, pwd)
+                prefilledOrderEmail = email.trim()
+                showAddOrderDialog = true
+                onCreateCustomer(email.trim(), pwd)
             },
         )
     }
 
-    if (showAddOrderDialog) {
+    val isOrderDialogOpen = showAddOrderDialog || !state.pendingOrderForEmail.isNullOrBlank()
+    val orderDialogEmail = if (!state.pendingOrderForEmail.isNullOrBlank()) state.pendingOrderForEmail else prefilledOrderEmail
+
+    if (isOrderDialogOpen) {
         AddResellerOrderDialog(
             plans = state.plans,
             customers = state.customers,
-            initialEmail = prefilledOrderEmail,
+            initialEmail = orderDialogEmail.orEmpty(),
             onDismiss = {
                 showAddOrderDialog = false
                 prefilledOrderEmail = ""
+                onDismissPendingOrder()
             },
             onConfirm = { email, planId ->
                 showAddOrderDialog = false
-                onCreateOrder(email, planId)
+                val targetEmail = email.ifBlank { orderDialogEmail.orEmpty() }
+                prefilledOrderEmail = ""
+                onDismissPendingOrder()
+                onCreateOrder(targetEmail, planId)
             },
+        )
+    }
+
+    state.activeConnectionDetails?.let { details ->
+        ResellerConnectionDetailDialog(
+            data = ConnectionDialogData(
+                title = details.title,
+                planName = details.planName,
+                subscriptionUrl = details.subscriptionUrl,
+                vlessLink = details.vlessLink,
+                generatedPassword = details.generatedPassword,
+                amountUsd = details.amountUsd,
+                expiryDate = details.expiryDate,
+                status = details.status,
+                servers = details.servers,
+            ),
+            onDismiss = onDismissConnectionDetails,
         )
     }
 
@@ -467,12 +527,26 @@ fun ResellerHomeScreen(
     selectedCustomerForDetail?.let { customer ->
         CustomerDetailDialog(
             customer = customer,
+            subscriptions = state.subscriptions.filter { it.customerEmail == customer.email },
             onDismiss = { selectedCustomerForDetail = null },
             onChangePassword = { newPassword -> onUpdateCustomerPassword(customer.id, newPassword) },
             onResetPassword = { onResetCustomerPassword(customer.id) },
             onDelete = {
                 onDeleteCustomer(customer.id)
                 selectedCustomerForDetail = null
+            },
+            onViewConnection = { sub ->
+                onOpenConnectionDetails(
+                    ResellerConnectionDetails(
+                        title = sub.customerEmail,
+                        planName = sub.planName,
+                        subscriptionUrl = sub.subscriptionUrl,
+                        vlessLink = sub.vlessLink,
+                        expiryDate = sub.expiryDate,
+                        status = if (sub.isActive) "ACTIVE" else "INACTIVE",
+                        servers = sub.servers,
+                    )
+                )
             },
         )
     }
@@ -750,6 +824,7 @@ fun ResellerSubscriptionsTab(
     onResetUuid: (String) -> Unit,
     onResetTraffic: (String) -> Unit,
     onRevoke: (String) -> Unit,
+    onSubClick: (ResellerSubscription) -> Unit = {},
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val filtered = remember(subscriptions, searchQuery) {
@@ -779,9 +854,10 @@ fun ResellerSubscriptionsTab(
                 )
             }
         } else {
-            items(subscriptions) { sub ->
+            items(filtered) { sub ->
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                    onClick = { onSubClick(sub) },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).clickable { onSubClick(sub) },
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
@@ -839,6 +915,7 @@ fun ResellerSubscriptionsTab(
 fun ResellerOrdersTab(
     orders: List<ResellerOrder>,
     onNewOrderClick: () -> Unit,
+    onOrderClick: (ResellerOrder) -> Unit = {},
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val filtered = remember(orders, searchQuery) {
@@ -876,7 +953,8 @@ fun ResellerOrdersTab(
         } else {
             items(filtered) { o ->
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    onClick = { onOrderClick(o) },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { onOrderClick(o) },
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
@@ -1255,6 +1333,7 @@ fun AddResellerOrderDialog(
         mutableStateOf(if (initialEmail.isNotBlank()) initialEmail else customers.firstOrNull()?.email.orEmpty())
     }
     var selectedPlanId by remember(plans) { mutableStateOf(plans.firstOrNull()?.id.orEmpty()) }
+    val effectivePlanId = selectedPlanId.ifBlank { plans.firstOrNull()?.id.orEmpty() }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1280,7 +1359,7 @@ fun AddResellerOrderDialog(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             RadioButton(
-                                selected = (selectedPlanId == plan.id),
+                                selected = (effectivePlanId == plan.id),
                                 onClick = { selectedPlanId = plan.id },
                             )
                             Text(
@@ -1295,8 +1374,8 @@ fun AddResellerOrderDialog(
         },
         confirmButton = {
             Button(
-                onClick = { if (email.isNotBlank() && selectedPlanId.isNotBlank()) onConfirm(email.trim(), selectedPlanId) },
-                enabled = email.isNotBlank() && selectedPlanId.isNotBlank(),
+                onClick = { if (email.isNotBlank() && effectivePlanId.isNotBlank()) onConfirm(email.trim(), effectivePlanId) },
+                enabled = email.isNotBlank() && effectivePlanId.isNotBlank(),
             ) {
                 Text(stringResource(R.string.brand_reseller_buy_for_customer))
             }
@@ -1450,25 +1529,16 @@ fun ResellerChangePasswordDialog(
 @Composable
 fun CustomerDetailDialog(
     customer: ResellerCustomer,
+    subscriptions: List<ResellerSubscription>,
     onDismiss: () -> Unit,
     onChangePassword: (String) -> Unit,
     onResetPassword: () -> Unit,
     onDelete: () -> Unit,
+    onViewConnection: (ResellerSubscription) -> Unit,
 ) {
     var newPassword by remember { mutableStateOf("") }
     var showPasswordField by remember { mutableStateOf(false) }
-    var detail by remember { mutableStateOf<ResellerCustomerDetail?>(null) }
-    var qrCodeBitmap by remember { mutableStateOf<Bitmap?>(null) }
     val context = androidx.compose.ui.platform.LocalContext.current
-
-    LaunchedEffect(customer.id) {
-        val token = AuthStore.getToken() ?: return@LaunchedEffect
-        detail = try {
-            ApiClient.resellerCustomerDetails(token, customer.id)
-        } catch (_: Exception) {
-            null
-        }
-    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1481,60 +1551,57 @@ fun CustomerDetailDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
-                val subscriptions = detail?.subscriptions
-                if (subscriptions != null) {
-                    if (subscriptions.isEmpty()) {
-                        Text(
-                            text = stringResource(R.string.brand_reseller_no_subscriptions),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    } else {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            subscriptions.forEach { sub ->
-                                Card(
-                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                                    shape = RoundedCornerShape(10.dp),
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) {
-                                    Column(modifier = Modifier.padding(10.dp)) {
-                                        Text(
-                                            text = sub.planName,
-                                            style = MaterialTheme.typography.titleSmall,
-                                            fontWeight = FontWeight.SemiBold,
-                                        )
-                                        Text(
-                                            text = stringResource(R.string.brand_expires_on, sub.expiryDate.take(10)),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                        if (sub.isActive && sub.subscriptionUrl.isNotBlank()) {
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                if (subscriptions.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.brand_reseller_no_subscriptions),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        subscriptions.forEach { sub ->
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Column(modifier = Modifier.padding(10.dp)) {
+                                    Text(
+                                        text = sub.planName,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.brand_expires_on, sub.expiryDate.take(10)),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    if (sub.isActive && !sub.subscriptionUrl.isNullOrBlank()) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        ) {
+                                            OutlinedButton(
+                                                onClick = { onViewConnection(sub) },
+                                                modifier = Modifier.weight(1f),
                                             ) {
-                                                OutlinedButton(
-                                                    onClick = { qrCodeBitmap = QRCodeDecoder.createQRCode(sub.subscriptionUrl) },
-                                                    modifier = Modifier.weight(1f),
-                                                ) {
-                                                    Text(
-                                                        text = stringResource(R.string.brand_view_connection),
-                                                        style = MaterialTheme.typography.labelSmall,
-                                                    )
-                                                }
-                                                OutlinedButton(
-                                                    onClick = {
-                                                        Utils.setClipboard(context, sub.subscriptionUrl)
-                                                        context.toast(R.string.brand_copied_to_clipboard)
-                                                    },
-                                                    modifier = Modifier.weight(1f),
-                                                ) {
-                                                    Text(
-                                                        text = stringResource(R.string.brand_copy_sub_link),
-                                                        style = MaterialTheme.typography.labelSmall,
-                                                    )
-                                                }
+                                                Text(
+                                                    text = stringResource(R.string.brand_view_connection),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                )
+                                            }
+                                            OutlinedButton(
+                                                onClick = {
+                                                    Utils.setClipboard(context, sub.subscriptionUrl)
+                                                    context.toast(R.string.brand_copied_to_clipboard)
+                                                },
+                                                modifier = Modifier.weight(1f),
+                                            ) {
+                                                Text(
+                                                    text = stringResource(R.string.brand_copy_sub_link),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                )
                                             }
                                         }
                                     }
@@ -1597,8 +1664,6 @@ fun CustomerDetailDialog(
             }
         }
     )
-
-    QRCodeDialog(bitmap = qrCodeBitmap, onDismiss = { qrCodeBitmap = null })
 }
 
 
@@ -1708,5 +1773,201 @@ fun BuyPersonalPlanDialog(
                 Text(stringResource(R.string.brand_cancel))
             }
         },
+    )
+}
+
+
+data class ConnectionDialogData(
+    val title: String,
+    val planName: String,
+    val subscriptionUrl: String?,
+    val vlessLink: String?,
+    val generatedPassword: String? = null,
+    val amountUsd: Double? = null,
+    val expiryDate: String? = null,
+    val status: String? = null,
+    val servers: List<ResellerServerLink> = emptyList(),
+)
+
+/**
+ * One server's connection card: flag/name/city row (with a DEFAULT badge when applicable), its own
+ * QR code generated from that server's VLESS link, and a button to copy that same link. Each card owns
+ * its own [server] value directly (no shared/mutable index state), so the QR and copy action can never
+ * drift to the wrong server when rendered in a list.
+ */
+@Composable
+fun ServerConnectionCard(server: ResellerServerLink) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val qrCodeBitmap = remember(server.vlessLink) {
+        if (server.vlessLink.isNotBlank()) QRCodeDecoder.createQRCode(server.vlessLink) else null
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        shape = RoundedCornerShape(10.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(text = server.flag, style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = server.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = server.city ?: server.countryCode,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (server.isDefault) {
+                    SuggestionChip(
+                        onClick = {},
+                        label = {
+                            Text(
+                                text = stringResource(R.string.brand_default_server),
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        },
+                    )
+                }
+            }
+
+            if (qrCodeBitmap != null) {
+                Image(
+                    bitmap = qrCodeBitmap.asImageBitmap(),
+                    contentDescription = "QR Code",
+                    modifier = Modifier.size(180.dp).background(Color.White, RoundedCornerShape(12.dp)).padding(8.dp),
+                )
+            }
+
+            Button(
+                onClick = {
+                    Utils.setClipboard(context, server.vlessLink)
+                    context.toast(R.string.brand_copied_to_clipboard)
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.brand_copy_vless))
+            }
+        }
+    }
+}
+
+@Composable
+fun ResellerConnectionDetailDialog(
+    data: ConnectionDialogData,
+    onDismiss: () -> Unit,
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    // Defensive fallback only: every reseller order/subscription endpoint now returns `servers`,
+    // but if some caller ever hands us a bare vlessLink with no per-server breakdown, still show something.
+    val fallbackQrCodeBitmap = remember(data.servers, data.vlessLink) {
+        if (data.servers.isEmpty() && !data.vlessLink.isNullOrBlank()) QRCodeDecoder.createQRCode(data.vlessLink) else null
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Column {
+                Text(text = data.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(text = data.planName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                if (data.generatedPassword != null) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Text(text = stringResource(R.string.brand_reseller_new_account_creds), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(text = "Email: ${data.title}", style = MaterialTheme.typography.bodySmall)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = "Password: ${data.generatedPassword}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                                TextButton(onClick = {
+                                    Utils.setClipboard(context, data.generatedPassword)
+                                    context.toast(R.string.brand_copied_to_clipboard)
+                                }) {
+                                    Text(stringResource(R.string.brand_copy), style = MaterialTheme.typography.labelSmall)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Subscription URL is an aggregate link that works across every server when scanned by a
+                // real client, so it stays a single copy action here — not one per server.
+                if (!data.subscriptionUrl.isNullOrBlank()) {
+                    OutlinedButton(
+                        onClick = {
+                            Utils.setClipboard(context, data.subscriptionUrl)
+                            context.toast(R.string.brand_copied_to_clipboard)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.brand_copy_sub_link))
+                    }
+                }
+
+                if (data.servers.isNotEmpty()) {
+                    data.servers.forEach { server ->
+                        ServerConnectionCard(server = server)
+                    }
+                } else if (!data.vlessLink.isNullOrBlank()) {
+                    val fallbackVlessLink = data.vlessLink
+                    if (fallbackQrCodeBitmap != null) {
+                        Image(
+                            bitmap = fallbackQrCodeBitmap.asImageBitmap(),
+                            contentDescription = "QR Code",
+                            modifier = Modifier.size(200.dp).background(Color.White, RoundedCornerShape(12.dp)).padding(8.dp),
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            Utils.setClipboard(context, fallbackVlessLink)
+                            context.toast(R.string.brand_copied_to_clipboard)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.brand_copy_vless))
+                    }
+                }
+
+                if (data.expiryDate != null) {
+                    Text(
+                        text = stringResource(R.string.brand_expires_on, data.expiryDate.take(10)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text(stringResource(R.string.brand_done))
+            }
+        }
     )
 }

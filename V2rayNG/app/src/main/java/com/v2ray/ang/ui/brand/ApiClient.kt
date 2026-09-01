@@ -13,6 +13,23 @@ import java.util.concurrent.TimeUnit
 /** org.json quirk: a JSON `null` value round-trips as the sentinel [JSONObject.NULL], not Kotlin null. */
 private fun JSONObject.optNullableString(key: String): String? = if (isNull(key)) null else optString(key)
 
+/** Parses the `servers` array present on reseller order/subscription responses (default-first, then configured order). */
+private fun JSONObject.optResellerServers(): List<ResellerServerLink> {
+    val serversJson = optJSONArray("servers") ?: JSONArray()
+    return (0 until serversJson.length()).map { i ->
+        val s = serversJson.getJSONObject(i)
+        ResellerServerLink(
+            id = s.getString("id"),
+            name = s.getString("name"),
+            countryCode = s.optString("countryCode", "GLOBAL"),
+            flag = s.optString("flag", "🌐"),
+            city = s.optNullableString("city"),
+            isDefault = s.optBoolean("isDefault", false),
+            vlessLink = s.getString("vlessLink"),
+        )
+    }
+}
+
 // Talks to backend mobile REST endpoints (Bearer-token auth)
 object ApiClient {
 
@@ -289,16 +306,28 @@ object ApiClient {
                 amountUsd = o.optDouble("amountUsd", 0.0),
                 status = o.optString("status", "PAID"),
                 createdAt = o.optString("createdAt", ""),
+                subscriptionUrl = o.optNullableString("subscriptionUrl"),
+                vlessLink = o.optNullableString("vlessLink"),
+                servers = o.optResellerServers(),
             )
         }
     }
 
-    suspend fun createResellerOrder(token: String, customerEmail: String, planId: String): Pair<String, String?> {
+    suspend fun createResellerOrder(token: String, customerEmail: String, planId: String): CreateResellerOrderResult {
         val json = request(
             "/api/mobile/reseller/orders", "POST", token = token,
             body = JSONObject().put("customerEmail", customerEmail).put("planId", planId)
         )
-        return json.getString("orderId") to json.optNullableString("generatedPassword")
+        return CreateResellerOrderResult(
+            orderId = json.getString("orderId"),
+            customerEmail = json.optNullableString("customerEmail"),
+            generatedPassword = json.optNullableString("generatedPassword"),
+            amountUsd = if (json.has("amountUsd")) json.optDouble("amountUsd") else null,
+            planName = json.optNullableString("planName"),
+            subscriptionUrl = json.optNullableString("subscriptionUrl"),
+            vlessLink = json.optNullableString("vlessLink"),
+            servers = json.optResellerServers(),
+        )
     }
 
     suspend fun resellerSubscriptions(token: String): List<ResellerSubscription> {
@@ -314,6 +343,9 @@ object ApiClient {
                 isActive = s.optBoolean("isActive", true),
                 usedBytes = s.optLong("usedBytes", 0L),
                 totalBytes = s.optLong("totalBytes", 0L),
+                subscriptionUrl = s.optNullableString("subscriptionUrl"),
+                vlessLink = s.optNullableString("vlessLink"),
+                servers = s.optResellerServers(),
             )
         }
     }

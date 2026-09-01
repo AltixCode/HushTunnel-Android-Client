@@ -676,4 +676,7 @@
     <string name="brand_unit_gb">%1$.1f জিবি</string>
     <string name="brand_unit_mb">%1$.0f এমবি</string>
     <string name="brand_plan_name_label">পরিকল্পনা: %1$s</string>
+
+    <!-- Multi-server QR/VLESS display (reseller connection details) -->
+    <string name="brand_default_server">ডিফল্ট</string>
 </resources>

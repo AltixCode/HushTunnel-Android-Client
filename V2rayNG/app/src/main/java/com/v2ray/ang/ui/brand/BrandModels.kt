@@ -99,6 +99,28 @@ data class SubResellerItem(
     val subscriptionCount: Int,
 )
 
+/** One reseller-visible server's connection info, as returned in the `servers` array. */
+data class ResellerServerLink(
+    val id: String,
+    val name: String,
+    val countryCode: String,
+    val flag: String,
+    val city: String?,
+    val isDefault: Boolean,
+    val vlessLink: String,
+)
+
+data class CreateResellerOrderResult(
+    val orderId: String,
+    val customerEmail: String?,
+    val generatedPassword: String?,
+    val amountUsd: Double?,
+    val planName: String?,
+    val subscriptionUrl: String?,
+    val vlessLink: String?,
+    val servers: List<ResellerServerLink> = emptyList(),
+)
+
 data class ResellerOrder(
     val id: String,
     val customerEmail: String,
@@ -106,6 +128,9 @@ data class ResellerOrder(
     val amountUsd: Double,
     val status: String,
     val createdAt: String,
+    val subscriptionUrl: String? = null,
+    val vlessLink: String? = null,
+    val servers: List<ResellerServerLink> = emptyList(),
 )
 
 data class ResellerSubscription(
@@ -116,6 +141,9 @@ data class ResellerSubscription(
     val isActive: Boolean,
     val usedBytes: Long,
     val totalBytes: Long,
+    val subscriptionUrl: String? = null,
+    val vlessLink: String? = null,
+    val servers: List<ResellerServerLink> = emptyList(),
 )
 
 data class WalletTransactionItem(
@@ -139,3 +167,15 @@ data class ResellerDeposit(
 
 /** Thrown for any non-2xx API response; [message] is the server's own error text when available. */
 class ApiException(val statusCode: Int, override val message: String) : Exception(message)
+
+data class ResellerConnectionDetails(
+    val title: String,
+    val planName: String,
+    val subscriptionUrl: String? = null,
+    val vlessLink: String? = null,
+    val generatedPassword: String? = null,
+    val amountUsd: Double? = null,
+    val expiryDate: String? = null,
+    val status: String? = null,
+    val servers: List<ResellerServerLink> = emptyList(),
+)

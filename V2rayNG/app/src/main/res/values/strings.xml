@@ -718,4 +718,13 @@
     <string name="brand_no_orders">No orders found yet.</string>
     <string name="brand_no_subscriptions">No customer subscriptions found yet.</string>
 
+    <string name="brand_copy_vless">Copy VLESS Link</string>
+    <string name="brand_copy_sub_url">Copy Subscription URL</string>
+    <string name="brand_connection_details">Connection Details</string>
+    <string name="brand_reseller_new_account_creds">Customer Login Credentials</string>
+    <string name="brand_copy">Copy</string>
+    <string name="brand_done">Done</string>
+
+    <!-- Multi-server QR/VLESS display (reseller connection details) -->
+    <string name="brand_default_server">Default</string>
 </resources>

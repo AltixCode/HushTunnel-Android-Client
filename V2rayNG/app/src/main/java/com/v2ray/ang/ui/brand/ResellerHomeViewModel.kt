@@ -27,6 +27,8 @@ data class ResellerUiState(
     val selectedTab: Int = 0,
     val message: String? = null,
     val error: String? = null,
+    val pendingOrderForEmail: String? = null,
+    val activeConnectionDetails: ResellerConnectionDetails? = null,
 )
 
 class ResellerHomeViewModel(application: Application) : BaseViewModel(application) {
@@ -112,19 +114,22 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
         }
     }
 
-    fun createCustomer(email: String, customPassword: String? = null, onCreated: ((email: String, password: String) -> Unit)? = null) {
+    fun createCustomer(email: String, customPassword: String? = null) {
         val token = AuthStore.getToken() ?: return
         launchLoading {
             try {
                 val (customer, password) = ApiClient.createResellerCustomer(token, email, customPassword)
-                onCreated?.invoke(customer.email, password)
+                val overview = try { ApiClient.resellerOverview(token) } catch (_: Exception) { _uiState.value.overview }
+                val customers = try { ApiClient.resellerCustomers(token) } catch (_: Exception) { _uiState.value.customers }
                 _uiState.update {
                     it.copy(
+                        overview = overview,
+                        customers = customers,
                         message = app.getString(R.string.brand_reseller_customer_created, password),
                         error = null,
+                        pendingOrderForEmail = customer.email,
                     )
                 }
-                refresh()
             } catch (e: ApiException) {
                 _uiState.update { it.copy(error = e.message) }
             } catch (e: Exception) {
@@ -133,24 +138,59 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
         }
     }
 
-    fun createOrderForCustomer(customerEmail: String, planId: String) {
+    fun createOrderForCustomer(
+        customerEmail: String,
+        planId: String,
+    ) {
         val token = AuthStore.getToken() ?: return
         launchLoading {
             try {
-                val (_, generatedPassword) = ApiClient.createResellerOrder(token, customerEmail, planId)
-                val msg = if (generatedPassword != null) {
-                    app.getString(R.string.brand_reseller_customer_created, generatedPassword)
+                val result = ApiClient.createResellerOrder(token, customerEmail, planId)
+                val overview = try { ApiClient.resellerOverview(token) } catch (_: Exception) { _uiState.value.overview }
+                val orders = try { ApiClient.resellerOrders(token) } catch (_: Exception) { _uiState.value.orders }
+                val subscriptions = try { ApiClient.resellerSubscriptions(token) } catch (_: Exception) { _uiState.value.subscriptions }
+                val msg = if (result.generatedPassword != null) {
+                    app.getString(R.string.brand_reseller_customer_created, result.generatedPassword)
                 } else {
                     app.getString(R.string.brand_order_paid_success)
                 }
-                _uiState.update { it.copy(message = msg, error = null) }
-                refresh()
+                _uiState.update {
+                    it.copy(
+                        overview = overview,
+                        orders = orders,
+                        subscriptions = subscriptions,
+                        message = msg,
+                        error = null,
+                        pendingOrderForEmail = null,
+                        activeConnectionDetails = ResellerConnectionDetails(
+                            title = customerEmail,
+                            planName = result.planName ?: app.getString(R.string.brand_all_subscriptions),
+                            subscriptionUrl = result.subscriptionUrl,
+                            vlessLink = result.vlessLink,
+                            generatedPassword = result.generatedPassword,
+                            amountUsd = result.amountUsd,
+                            servers = result.servers,
+                        ),
+                    )
+                }
             } catch (e: ApiException) {
                 _uiState.update { it.copy(error = e.message) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = app.getString(R.string.brand_error_connection)) }
             }
         }
+    }
+
+    fun openConnectionDetails(details: ResellerConnectionDetails) {
+        _uiState.update { it.copy(activeConnectionDetails = details) }
+    }
+
+    fun dismissConnectionDetails() {
+        _uiState.update { it.copy(activeConnectionDetails = null) }
+    }
+
+    fun dismissPendingOrder() {
+        _uiState.update { it.copy(pendingOrderForEmail = null) }
     }
 
     fun createDeposit(amountUsd: Double, gateway: String, onCheckoutUrl: (String) -> Unit) {
