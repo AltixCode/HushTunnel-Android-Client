@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui.brand
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
@@ -50,7 +51,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.R
+import com.v2ray.ang.extension.toast
 import com.v2ray.ang.ui.base.BaseComponentActivity
+import com.v2ray.ang.ui.compose.QRCodeDialog
+import com.v2ray.ang.util.QRCodeDecoder
 import com.v2ray.ang.util.Utils
 import kotlinx.coroutines.delay
 import java.util.Locale
@@ -90,6 +94,9 @@ class ResellerHomeActivity : BaseComponentActivity() {
             onResetSubUuid = viewModel::resetSubscriptionUuid,
             onResetSubTraffic = viewModel::resetSubscriptionTraffic,
             onRevokeSub = viewModel::revokeSubscription,
+            onUpdateCustomerPassword = viewModel::updateCustomerPassword,
+            onResetCustomerPassword = viewModel::resetCustomerPassword,
+            onDeleteCustomer = viewModel::deleteCustomer,
             onDismissMessage = viewModel::dismissMessage,
             onLogout = {
                 viewModel.logout()
@@ -121,6 +128,9 @@ fun ResellerHomeScreen(
     onResetSubUuid: (String) -> Unit,
     onResetSubTraffic: (String) -> Unit,
     onRevokeSub: (String) -> Unit,
+    onUpdateCustomerPassword: (String, String) -> Unit,
+    onResetCustomerPassword: (String) -> Unit,
+    onDeleteCustomer: (String) -> Unit,
     onDismissMessage: () -> Unit,
     onLogout: () -> Unit,
 ) {
@@ -132,6 +142,7 @@ fun ResellerHomeScreen(
     var showChangePasswordDialog by remember { mutableStateOf(false) }
     var showBuyPersonalDialog by remember { mutableStateOf(false) }
     var renewPersonalSubId by remember { mutableStateOf<String?>(null) }
+    var selectedCustomerForDetail by remember { mutableStateOf<ResellerCustomer?>(null) }
 
     val currentLang = LocaleHelper.getCurrentLanguageTag()
     val tabs = listOf(
@@ -296,6 +307,7 @@ fun ResellerHomeScreen(
                 1 -> ResellerCustomersTab(
                     customers = state.customers,
                     onAddCustomerClick = { showAddCustomerDialog = true },
+                    onCustomerClick = { customer -> selectedCustomerForDetail = customer },
                 )
                 2 -> ResellerSubscriptionsTab(
                     subscriptions = state.subscriptions,
@@ -381,6 +393,19 @@ fun ResellerHomeScreen(
             onConfirm = { email, initialBalance ->
                 showAddSubResellerDialog = false
                 onCreateSubReseller(email, initialBalance)
+            },
+        )
+    }
+
+    selectedCustomerForDetail?.let { customer ->
+        CustomerDetailDialog(
+            customer = customer,
+            onDismiss = { selectedCustomerForDetail = null },
+            onChangePassword = { newPassword -> onUpdateCustomerPassword(customer.id, newPassword) },
+            onResetPassword = { onResetCustomerPassword(customer.id) },
+            onDelete = {
+                onDeleteCustomer(customer.id)
+                selectedCustomerForDetail = null
             },
         )
     }
@@ -597,6 +622,7 @@ fun ResellerOverviewTab(
 fun ResellerCustomersTab(
     customers: List<ResellerCustomer>,
     onAddCustomerClick: () -> Unit,
+    onCustomerClick: (ResellerCustomer) -> Unit,
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
@@ -616,6 +642,7 @@ fun ResellerCustomersTab(
         } else {
             items(customers) { c ->
                 Card(
+                    onClick = { onCustomerClick(c) },
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 ) {
@@ -1169,6 +1196,18 @@ fun CustomerDetailDialog(
 ) {
     var newPassword by remember { mutableStateOf("") }
     var showPasswordField by remember { mutableStateOf(false) }
+    var detail by remember { mutableStateOf<ResellerCustomerDetail?>(null) }
+    var qrCodeBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    LaunchedEffect(customer.id) {
+        val token = AuthStore.getToken() ?: return@LaunchedEffect
+        detail = try {
+            ApiClient.resellerCustomerDetails(token, customer.id)
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1180,6 +1219,69 @@ fun CustomerDetailDialog(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+
+                val subscriptions = detail?.subscriptions
+                if (subscriptions != null) {
+                    if (subscriptions.isEmpty()) {
+                        Text(
+                            text = stringResource(R.string.brand_reseller_no_subscriptions),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            subscriptions.forEach { sub ->
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Column(modifier = Modifier.padding(10.dp)) {
+                                        Text(
+                                            text = sub.planName,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.SemiBold,
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.brand_expires_on, sub.expiryDate.take(10)),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                        if (sub.isActive && sub.subscriptionUrl.isNotBlank()) {
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            ) {
+                                                OutlinedButton(
+                                                    onClick = { qrCodeBitmap = QRCodeDecoder.createQRCode(sub.subscriptionUrl) },
+                                                    modifier = Modifier.weight(1f),
+                                                ) {
+                                                    Text(
+                                                        text = stringResource(R.string.brand_view_connection),
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                    )
+                                                }
+                                                OutlinedButton(
+                                                    onClick = {
+                                                        Utils.setClipboard(context, sub.subscriptionUrl)
+                                                        context.toast(R.string.brand_copied_to_clipboard)
+                                                    },
+                                                    modifier = Modifier.weight(1f),
+                                                ) {
+                                                    Text(
+                                                        text = stringResource(R.string.brand_copy_sub_link),
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
                 if (showPasswordField) {
                     OutlinedTextField(
@@ -1234,6 +1336,8 @@ fun CustomerDetailDialog(
             }
         }
     )
+
+    QRCodeDialog(bitmap = qrCodeBitmap, onDismiss = { qrCodeBitmap = null })
 }
 
 

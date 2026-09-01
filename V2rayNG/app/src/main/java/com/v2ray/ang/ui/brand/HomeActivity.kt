@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui.brand
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.VpnService
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
@@ -59,6 +60,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.R
 import com.v2ray.ang.core.LauncherManager
 import com.v2ray.ang.ui.base.BaseComponentActivity
+import com.v2ray.ang.ui.compose.QRCodeDialog
+import com.v2ray.ang.util.QRCodeDecoder
 import com.v2ray.ang.util.Utils
 import com.v2ray.ang.extension.toast
 import kotlinx.coroutines.delay
@@ -643,6 +646,9 @@ fun SubscriptionCard(
     onSelectTarget: () -> Unit,
     onRenew: () -> Unit,
 ) {
+    val context = LocalContext.current
+    var qrCodeBitmap by remember { mutableStateOf<Bitmap?>(null) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -728,8 +734,34 @@ fun SubscriptionCard(
                     Text(stringResource(R.string.brand_renew))
                 }
             }
+
+            if (subscription.isActive && subscription.subscriptionUrl.isNotBlank()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedButton(
+                        onClick = { qrCodeBitmap = QRCodeDecoder.createQRCode(subscription.subscriptionUrl) },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(stringResource(R.string.brand_view_connection))
+                    }
+                    OutlinedButton(
+                        onClick = {
+                            Utils.setClipboard(context, subscription.subscriptionUrl)
+                            context.toast(R.string.brand_copied_to_clipboard)
+                        },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(stringResource(R.string.brand_copy_sub_link))
+                    }
+                }
+            }
         }
     }
+
+    QRCodeDialog(bitmap = qrCodeBitmap, onDismiss = { qrCodeBitmap = null })
 }
 
 @Composable

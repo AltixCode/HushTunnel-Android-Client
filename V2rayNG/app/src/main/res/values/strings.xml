@@ -673,4 +673,6 @@
     <string name="brand_copy_sub_link">Copy Link</string>
     <string name="brand_copied_to_clipboard">Copied to clipboard</string>
     <string name="brand_reseller_portal_btn">Reseller Portal</string>
+    <string name="brand_view_connection">View Connection</string>
+    <string name="brand_reseller_no_subscriptions">No active subscriptions</string>
 </resources>

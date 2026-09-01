@@ -83,6 +83,13 @@ data class ResellerCustomer(
     val createdAt: String,
 )
 
+data class ResellerCustomerDetail(
+    val id: String,
+    val email: String,
+    val createdAt: String,
+    val subscriptions: List<SubscriptionInfo>,
+)
+
 data class SubResellerItem(
     val id: String,
     val email: String,

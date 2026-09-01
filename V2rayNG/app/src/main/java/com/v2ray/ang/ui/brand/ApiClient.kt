@@ -210,6 +210,34 @@ object ApiClient {
         }
     }
 
+    suspend fun resellerCustomerDetails(token: String, id: String): ResellerCustomerDetail {
+        val json = request("/api/mobile/reseller/customers/$id", token = token)
+        val c = json.getJSONObject("customer")
+        val subsJson = c.optJSONArray("subscriptions") ?: JSONArray()
+        val subs = (0 until subsJson.length()).map { i ->
+            val s = subsJson.getJSONObject(i)
+            val up = s.optLong("upload", s.optLong("up", 0L))
+            val down = s.optLong("download", s.optLong("down", 0L))
+            val used = s.optLong("usedBytes", s.optLong("used", up + down))
+            val total = s.optLong("totalBytes", s.optLong("total", s.optLong("dataLimit", 0L)))
+            SubscriptionInfo(
+                id = s.getString("id"),
+                planName = s.getString("planName"),
+                expiryDate = s.getString("expiryDate"),
+                isActive = s.optBoolean("isActive", true),
+                usedBytes = used,
+                totalBytes = total,
+                subscriptionUrl = s.getString("subscriptionUrl"),
+            )
+        }
+        return ResellerCustomerDetail(
+            id = c.getString("id"),
+            email = c.getString("email"),
+            createdAt = c.optString("createdAt", ""),
+            subscriptions = subs,
+        )
+    }
+
     suspend fun createResellerCustomer(token: String, email: String): Pair<ResellerCustomer, String> {
         val json = request(
             "/api/mobile/reseller/customers", "POST", token = token,
