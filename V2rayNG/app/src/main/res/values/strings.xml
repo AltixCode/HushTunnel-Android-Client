@@ -729,6 +729,7 @@
     <string name="brand_default_server">Default</string>
 
     <string name="brand_sub_reseller_details">Sub-Reseller Details</string>
+    <string name="brand_sub_reseller_partner">Sub-Reseller Partner</string>
     <string name="brand_add_funds">Add Funds</string>
     <string name="brand_available_balance">Available Balance: $%1$.2f</string>
     <string name="brand_remaining_balance">Remaining After: $%1$.2f</string>

@@ -2238,7 +2238,7 @@ fun SubResellerDetailDialog(
         title = {
             Column {
                 Text(text = subReseller.email, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(text = "Sub-Reseller Partner", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                Text(text = stringResource(R.string.brand_sub_reseller_partner), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
             }
         },
         text = {

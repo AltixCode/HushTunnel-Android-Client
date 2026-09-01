@@ -681,4 +681,21 @@
 
     <!-- Multi-server QR/VLESS display (reseller connection details) -->
     <string name="brand_default_server">默认</string>
+
+    <string name="brand_copy_vless">复制 VLESS 链接</string>
+    <string name="brand_copy_sub_url">复制订阅链接</string>
+    <string name="brand_connection_details">连接详情</string>
+    <string name="brand_reseller_new_account_creds">客户登录凭据</string>
+    <string name="brand_copy">复制</string>
+    <string name="brand_done">完成</string>
+    <string name="brand_sub_reseller_details">子分销商详情</string>
+    <string name="brand_sub_reseller_partner">分销合作伙伴</string>
+    <string name="brand_add_funds">充值余额</string>
+    <string name="brand_available_balance">可用余额: $%1$.2f</string>
+    <string name="brand_remaining_balance">转账后余额: $%1$.2f</string>
+    <string name="brand_transfer_success_with_balance">转账成功！最新余额: $%1$s</string>
+    <string name="brand_transfer_to_user">即时转账给任何用户或子分销商</string>
+    <string name="brand_quick_amount_add">+$%1$d</string>
+    <string name="brand_max">全部</string>
+    <string name="brand_search_subresellers">🔍 搜索子分销商...</string>
 </resources>

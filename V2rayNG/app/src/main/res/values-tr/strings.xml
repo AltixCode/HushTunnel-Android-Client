@@ -582,4 +582,21 @@
 
     <!-- Multi-server QR/VLESS display (reseller connection details) -->
     <string name="brand_default_server">Varsayılan</string>
+
+    <string name="brand_copy_vless">VLESS Bağlantısını Kopyala</string>
+    <string name="brand_copy_sub_url">Abonelik Bağlantısını Kopyala</string>
+    <string name="brand_connection_details">Bağlantı Detayları</string>
+    <string name="brand_reseller_new_account_creds">Müşteri Giriş Bilgileri</string>
+    <string name="brand_copy">Kopyala</string>
+    <string name="brand_done">Tamam</string>
+    <string name="brand_sub_reseller_details">Alt Bayi Detayları</string>
+    <string name="brand_sub_reseller_partner">Alt Bayi Ortağı</string>
+    <string name="brand_add_funds">Bakiye Ekle</string>
+    <string name="brand_available_balance">Kullanılabilir Bakiye: $%1$.2f</string>
+    <string name="brand_remaining_balance">Kalan Bakiye: $%1$.2f</string>
+    <string name="brand_transfer_success_with_balance">Transfer başarılı! Yeni bakiye: $%1$s</string>
+    <string name="brand_transfer_to_user">Kullanıcıya veya bayiye anında transfer</string>
+    <string name="brand_quick_amount_add">+$%1$d</string>
+    <string name="brand_max">Maks</string>
+    <string name="brand_search_subresellers">🔍 Alt bayilerde ara...</string>
 </resources>

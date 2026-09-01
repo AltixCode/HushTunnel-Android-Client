@@ -681,4 +681,21 @@
 
     <!-- Multi-server QR/VLESS display (reseller connection details) -->
     <string name="brand_default_server">По умолчанию</string>
+
+    <string name="brand_copy_vless">Скопировать ссылку VLESS</string>
+    <string name="brand_copy_sub_url">Скопировать ссылку подписки</string>
+    <string name="brand_connection_details">Параметры подключения</string>
+    <string name="brand_reseller_new_account_creds">Учетные данные клиента</string>
+    <string name="brand_copy">Копировать</string>
+    <string name="brand_done">Готово</string>
+    <string name="brand_sub_reseller_details">Данные суб-реселлера</string>
+    <string name="brand_sub_reseller_partner">Суб-реселлер партнер</string>
+    <string name="brand_add_funds">Пополнить</string>
+    <string name="brand_available_balance">Доступный баланс: $%1$.2f</string>
+    <string name="brand_remaining_balance">Остаток: $%1$.2f</string>
+    <string name="brand_transfer_success_with_balance">Перевод успешен! Новый баланс: $%1$s</string>
+    <string name="brand_transfer_to_user">Мгновенный перевод пользователю или реселлеру</string>
+    <string name="brand_quick_amount_add">+$%1$d</string>
+    <string name="brand_max">Макс</string>
+    <string name="brand_search_subresellers">🔍 Поиск суб-реселлеров...</string>
 </resources>

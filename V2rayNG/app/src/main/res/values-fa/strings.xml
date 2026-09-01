@@ -721,4 +721,21 @@
     <!-- Multi-server QR/VLESS display (reseller connection details) -->
     <string name="brand_default_server">پیش‌فرض</string>
 
+
+    <string name="brand_copy_vless">کپی لینک VLESS</string>
+    <string name="brand_copy_sub_url">کپی لینک اشتراک</string>
+    <string name="brand_connection_details">اطلاعات اتصال</string>
+    <string name="brand_reseller_new_account_creds">اطلاعات ورود مشتری</string>
+    <string name="brand_copy">کپی</string>
+    <string name="brand_done">انجام شد</string>
+    <string name="brand_sub_reseller_details">جزئیات نماینده همکار</string>
+    <string name="brand_sub_reseller_partner">نماینده همکار</string>
+    <string name="brand_add_funds">افزایش موجودی</string>
+    <string name="brand_available_balance">موجودی در دسترس: %1$.2f دلار</string>
+    <string name="brand_remaining_balance">موجودی پس از انتقال: %1$.2f دلار</string>
+    <string name="brand_transfer_success_with_balance">انتقال با موفقیت انجام شد! موجودی جدید: %1$s دلار</string>
+    <string name="brand_transfer_to_user">انتقال آنی به هر کاربر یا نماینده همکار</string>
+    <string name="brand_quick_amount_add">+%1$d دلار</string>
+    <string name="brand_max">حداکثر</string>
+    <string name="brand_search_subresellers">🔍 جستجوی نمایندگان...</string>
 </resources>
