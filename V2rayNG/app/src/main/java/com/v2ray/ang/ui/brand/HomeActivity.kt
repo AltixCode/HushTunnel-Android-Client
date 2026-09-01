@@ -132,11 +132,7 @@ class HomeActivity : BaseComponentActivity() {
             },
             onSwitchServer = { serverId ->
                 viewModel.switchServer(serverId) {
-                    LauncherManager.stopService(this@HomeActivity)
-                    val intent = VpnService.prepare(this@HomeActivity)
-                    if (intent == null) {
-                        LauncherManager.startServiceFromToggle(this@HomeActivity)
-                    }
+                    LauncherManager.restartService(this@HomeActivity)
                 }
             },
             onChangePassword = { currentPwd, newPwd ->
