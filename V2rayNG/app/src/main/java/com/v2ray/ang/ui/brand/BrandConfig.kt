@@ -8,5 +8,5 @@ package com.v2ray.ang.ui.brand
  * deleted/recreated — a custom domain is the only permanent option.
  */
 object BrandConfig {
-    const val API_BASE_URL = "https://hushtunnel.com"
+    const val API_BASE_URL = "https://www.hushtunnel.com"
 }
