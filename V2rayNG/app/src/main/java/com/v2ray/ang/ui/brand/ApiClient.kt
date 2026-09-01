@@ -19,6 +19,27 @@ object ApiClient {
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)
+        .followRedirects(false)
+        .followSslRedirects(false)
+        .addInterceptor { chain ->
+            var request = chain.request()
+            var response = chain.proceed(request)
+            var attempts = 0
+            while (response.isRedirect && attempts < 5) {
+                val location = response.header("Location") ?: break
+                val newUrl = if (location.startsWith("http")) location else request.url.resolve(location)?.toString() ?: break
+                val authHeader = request.header("Authorization")
+                val newRequestBuilder = request.newBuilder().url(newUrl)
+                if (authHeader != null) {
+                    newRequestBuilder.header("Authorization", authHeader)
+                }
+                response.close()
+                request = newRequestBuilder.build()
+                response = chain.proceed(request)
+                attempts++
+            }
+            response
+        }
         .build()
 
     private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
