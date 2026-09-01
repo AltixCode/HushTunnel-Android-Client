@@ -43,6 +43,28 @@ class LoginActivity : BaseComponentActivity() {
 
     private val viewModel: LoginViewModel by viewModels()
 
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
+        super.onCreate(savedInstanceState)
+        val email = intent.getStringExtra("email")
+        val password = intent.getStringExtra("password")
+        if (!email.isNullOrBlank() && !password.isNullOrBlank()) {
+            viewModel.updateEmail(email)
+            viewModel.updatePassword(password)
+            viewModel.login { role ->
+                val destination = if (role.equals("RESELLER", ignoreCase = true)) {
+                    ResellerHomeActivity::class.java
+                } else {
+                    HomeActivity::class.java
+                }
+                startActivity(
+                    Intent(this, destination)
+                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+                finish()
+            }
+        }
+    }
+
     @Composable
     override fun ScreenContent() {
         val state by viewModel.uiState.collectAsStateWithLifecycle()
