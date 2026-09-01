@@ -568,4 +568,12 @@
     <string name="brand_copy_sub_link">کپی لینک اتصال</string>
     <string name="brand_copied_to_clipboard">در حافظه کپی شد</string>
     <string name="brand_reseller_portal_btn">پنل نمایندگی</string>
+
+    <!-- Sub-reseller management tab (appended: this file predates the brand_reseller_tab_* block) -->
+    <string name="brand_error_insufficient_balance">موجودی کیف پول کافی نیست</string>
+    <string name="brand_reseller_tab_subresellers">نمایندگان زیرمجموعه</string>
+    <string name="brand_reseller_add_subreseller">افزودن نماینده زیرمجموعه</string>
+    <string name="brand_reseller_no_subresellers">هنوز نماینده زیرمجموعه‌ای ثبت نشده.</string>
+    <string name="brand_reseller_subreseller_stats">%1$d مشتری · %2$d اشتراک</string>
+    <string name="brand_reseller_subreseller_initial_balance">موجودی اولیه (دلار)</string>
 </resources>

@@ -568,4 +568,12 @@
     <string name="brand_copy_sub_link">複製訂閱連結</string>
     <string name="brand_copied_to_clipboard">已複製到剪貼簿</string>
     <string name="brand_reseller_portal_btn">經銷商面板</string>
+
+    <!-- Sub-reseller management tab (appended: this file predates the brand_reseller_tab_* block) -->
+    <string name="brand_error_insufficient_balance">錢包餘額不足</string>
+    <string name="brand_reseller_tab_subresellers">子分銷商</string>
+    <string name="brand_reseller_add_subreseller">新增子分銷商</string>
+    <string name="brand_reseller_no_subresellers">尚無子分銷商。</string>
+    <string name="brand_reseller_subreseller_stats">%1$d 位客戶 · %2$d 個訂閱</string>
+    <string name="brand_reseller_subreseller_initial_balance">初始餘額 (USD)</string>
 </resources>

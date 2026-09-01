@@ -352,10 +352,38 @@ object ApiClient {
         return json.optJSONArray("transactions") ?: JSONArray()
     }
 
-    suspend fun createSubReseller(token: String, email: String, initialBalanceUsd: Double): JSONObject {
+    suspend fun resellerSubResellers(token: String): List<SubResellerItem> {
+        val json = request("/api/mobile/reseller/resellers", token = token)
+        val list = json.optJSONArray("resellers") ?: JSONArray()
+        return (0 until list.length()).map { i ->
+            val r = list.getJSONObject(i)
+            val count = r.optJSONObject("_count")
+            SubResellerItem(
+                id = r.getString("id"),
+                email = r.getString("email"),
+                balanceUsd = r.optDouble("balanceUsd", 0.0),
+                createdAt = r.optString("createdAt", ""),
+                customerCount = count?.optInt("customers", 0) ?: 0,
+                subscriptionCount = count?.optInt("subscriptions", 0) ?: 0,
+            )
+        }
+    }
+
+    /** Returns the new sub-reseller plus its one-time generated password. */
+    suspend fun createSubReseller(token: String, email: String, initialBalanceUsd: Double): Pair<SubResellerItem, String> {
         val body = JSONObject()
             .put("email", email)
             .put("initialBalanceUsd", initialBalanceUsd)
-        return request("/api/mobile/reseller/resellers", "POST", token = token, body = body)
+        val json = request("/api/mobile/reseller/resellers", "POST", token = token, body = body)
+        val r = json.getJSONObject("reseller")
+        val item = SubResellerItem(
+            id = r.getString("id"),
+            email = r.getString("email"),
+            balanceUsd = r.optDouble("balanceUsd", 0.0),
+            createdAt = "",
+            customerCount = 0,
+            subscriptionCount = 0,
+        )
+        return item to r.getString("generatedPassword")
     }
 }

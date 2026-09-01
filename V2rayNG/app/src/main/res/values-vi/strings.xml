@@ -568,4 +568,12 @@
     <string name="brand_copy_sub_link">Sao chép liên kết</string>
     <string name="brand_copied_to_clipboard">Đã sao chép vào bộ nhớ tạm</string>
     <string name="brand_reseller_portal_btn">Cổng đại lý</string>
+
+    <!-- Sub-reseller management tab (appended: this file predates the brand_reseller_tab_* block) -->
+    <string name="brand_error_insufficient_balance">Số dư ví không đủ</string>
+    <string name="brand_reseller_tab_subresellers">Đại lý phụ</string>
+    <string name="brand_reseller_add_subreseller">Thêm đại lý phụ</string>
+    <string name="brand_reseller_no_subresellers">Chưa có đại lý phụ nào.</string>
+    <string name="brand_reseller_subreseller_stats">%1$d khách hàng · %2$d gói đăng ký</string>
+    <string name="brand_reseller_subreseller_initial_balance">Số dư ban đầu (USD)</string>
 </resources>

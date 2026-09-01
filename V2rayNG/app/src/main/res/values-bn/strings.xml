@@ -568,4 +568,12 @@
     <string name="brand_copy_sub_link">লিঙ্ক কপি করুন</string>
     <string name="brand_copied_to_clipboard">ক্লিপবোর্ডে কপি করা হয়েছে</string>
     <string name="brand_reseller_portal_btn">রিসেলার পোর্টাল</string>
+
+    <!-- Sub-reseller management tab (appended: this file predates the brand_reseller_tab_* block) -->
+    <string name="brand_error_insufficient_balance">ওয়ালেট ব্যালেন্স অপর্যাপ্ত</string>
+    <string name="brand_reseller_tab_subresellers">সাব-রিসেলার</string>
+    <string name="brand_reseller_add_subreseller">সাব-রিসেলার যোগ করুন</string>
+    <string name="brand_reseller_no_subresellers">এখনও কোনো সাব-রিসেলার নেই।</string>
+    <string name="brand_reseller_subreseller_stats">%1$d জন গ্রাহক · %2$d টি সাবস্ক্রিপশন</string>
+    <string name="brand_reseller_subreseller_initial_balance">প্রাথমিক ব্যালেন্স (USD)</string>
 </resources>

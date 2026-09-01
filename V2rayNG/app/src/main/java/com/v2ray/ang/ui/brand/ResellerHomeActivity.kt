@@ -84,6 +84,7 @@ class ResellerHomeActivity : BaseComponentActivity() {
             onCreateDeposit = { _, _ ->
                 Utils.openUri(this, "https://www.hushtunnel.com")
             },
+            onCreateSubReseller = viewModel::createSubReseller,
             onExtendSub = viewModel::extendSubscription,
             onToggleSub = viewModel::toggleSubscription,
             onResetSubUuid = viewModel::resetSubscriptionUuid,
@@ -114,6 +115,7 @@ fun ResellerHomeScreen(
     onCreateCustomer: (String) -> Unit,
     onCreateOrder: (customerEmail: String, planId: String) -> Unit,
     onCreateDeposit: (amount: Double, gateway: String) -> Unit,
+    onCreateSubReseller: (email: String, initialBalanceUsd: Double) -> Unit,
     onExtendSub: (String) -> Unit,
     onToggleSub: (String, Boolean) -> Unit,
     onResetSubUuid: (String) -> Unit,
@@ -125,6 +127,7 @@ fun ResellerHomeScreen(
     var showAddCustomerDialog by remember { mutableStateOf(false) }
     var showAddOrderDialog by remember { mutableStateOf(false) }
     var showAddDepositDialog by remember { mutableStateOf(false) }
+    var showAddSubResellerDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showChangePasswordDialog by remember { mutableStateOf(false) }
     var showBuyPersonalDialog by remember { mutableStateOf(false) }
@@ -137,6 +140,7 @@ fun ResellerHomeScreen(
         stringResource(R.string.brand_reseller_tab_subscriptions),
         stringResource(R.string.brand_reseller_tab_orders),
         stringResource(R.string.brand_reseller_tab_deposits),
+        stringResource(R.string.brand_reseller_tab_subresellers),
     )
 
     val config = androidx.compose.ui.platform.LocalConfiguration.current
@@ -309,6 +313,10 @@ fun ResellerHomeScreen(
                     deposits = state.deposits,
                     onAddFundsClick = { showAddDepositDialog = true },
                 )
+                5 -> ResellerSubResellersTab(
+                    subResellers = state.subResellers,
+                    onAddSubResellerClick = { showAddSubResellerDialog = true },
+                )
             }
         }
     }
@@ -362,6 +370,17 @@ fun ResellerHomeScreen(
             onConfirm = { amount, gateway ->
                 showAddDepositDialog = false
                 onCreateDeposit(amount, gateway)
+            },
+        )
+    }
+
+    if (showAddSubResellerDialog) {
+        AddSubResellerDialog(
+            balanceUsd = state.overview.balanceUsd,
+            onDismiss = { showAddSubResellerDialog = false },
+            onConfirm = { email, initialBalance ->
+                showAddSubResellerDialog = false
+                onCreateSubReseller(email, initialBalance)
             },
         )
     }
@@ -735,6 +754,129 @@ fun ResellerOrdersTab(
             }
         }
     }
+}
+
+@Composable
+fun ResellerSubResellersTab(
+    subResellers: List<SubResellerItem>,
+    onAddSubResellerClick: () -> Unit,
+) {
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item {
+            Button(onClick = onAddSubResellerClick, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
+                Text(stringResource(R.string.brand_reseller_add_subreseller))
+            }
+        }
+
+        if (subResellers.isEmpty()) {
+            item {
+                Text(
+                    text = stringResource(R.string.brand_reseller_no_subresellers),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        } else {
+            items(subResellers) { r ->
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(text = r.email, style = MaterialTheme.typography.titleSmall)
+                            Text(
+                                text = "$${String.format(Locale.US, "%.2f", r.balanceUsd)}",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                        Text(
+                            text = stringResource(
+                                R.string.brand_reseller_subreseller_stats,
+                                r.customerCount,
+                                r.subscriptionCount,
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 2.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AddSubResellerDialog(
+    balanceUsd: Double,
+    onDismiss: () -> Unit,
+    onConfirm: (email: String, initialBalanceUsd: Double) -> Unit,
+) {
+    var email by remember { mutableStateOf("") }
+    var initialBalanceStr by remember { mutableStateOf("0") }
+    val initialBalance = initialBalanceStr.toDoubleOrNull() ?: 0.0
+    val overBudget = initialBalance > balanceUsd
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.brand_reseller_add_subreseller)) },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text(stringResource(R.string.brand_email)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = initialBalanceStr,
+                    onValueChange = { initialBalanceStr = it },
+                    label = { Text(stringResource(R.string.brand_reseller_subreseller_initial_balance)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    text = stringResource(R.string.brand_reseller_balance) + ": $${String.format(Locale.US, "%.2f", balanceUsd)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+                if (overBudget) {
+                    Text(
+                        text = stringResource(R.string.brand_error_insufficient_balance),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { if (email.isNotBlank() && !overBudget) onConfirm(email.trim(), initialBalance) },
+                enabled = email.isNotBlank() && !overBudget,
+            ) {
+                Text(stringResource(R.string.brand_reseller_add_subreseller))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.brand_cancel))
+            }
+        },
+    )
 }
 
 @Composable

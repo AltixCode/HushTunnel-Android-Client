@@ -15,6 +15,7 @@ data class ResellerUiState(
     val personalSubscriptions: List<SubscriptionInfo> = emptyList(),
     val orders: List<ResellerOrder> = emptyList(),
     val deposits: List<ResellerDeposit> = emptyList(),
+    val subResellers: List<SubResellerItem> = emptyList(),
     val plans: List<PlanInfo> = emptyList(),
     val gateways: GatewayInfo = GatewayInfo(),
     val selectedTab: Int = 0,
@@ -52,6 +53,7 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
                 val deposits = try { ApiClient.resellerDeposits(token) } catch (_: Exception) { emptyList() }
                 val plans = try { ApiClient.plans() } catch (_: Exception) { emptyList() }
                 val gateways = try { ApiClient.gateways() } catch (_: Exception) { GatewayInfo() }
+                val subResellers = try { ApiClient.resellerSubResellers(token) } catch (_: Exception) { emptyList() }
 
                 _uiState.update {
                     it.copy(
@@ -61,6 +63,7 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
                         personalSubscriptions = personalSubscriptions,
                         orders = orders,
                         deposits = deposits,
+                        subResellers = subResellers,
                         plans = plans,
                         gateways = gateways,
                         error = null,
@@ -289,6 +292,26 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
             try {
                 ApiClient.createSelfSubscription(token, planId, subscriptionId)
                 _uiState.update { it.copy(message = app.getString(R.string.brand_order_paid_success), error = null) }
+                refresh()
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(error = e.message) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = app.getString(R.string.brand_error_connection)) }
+            }
+        }
+    }
+
+    fun createSubReseller(email: String, initialBalanceUsd: Double) {
+        val token = AuthStore.getToken() ?: return
+        launchLoading {
+            try {
+                val (_, password) = ApiClient.createSubReseller(token, email, initialBalanceUsd)
+                _uiState.update {
+                    it.copy(
+                        message = app.getString(R.string.brand_reseller_customer_created, password),
+                        error = null,
+                    )
+                }
                 refresh()
             } catch (e: ApiException) {
                 _uiState.update { it.copy(error = e.message) }

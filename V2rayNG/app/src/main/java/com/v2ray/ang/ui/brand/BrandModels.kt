@@ -83,6 +83,15 @@ data class ResellerCustomer(
     val createdAt: String,
 )
 
+data class SubResellerItem(
+    val id: String,
+    val email: String,
+    val balanceUsd: Double,
+    val createdAt: String,
+    val customerCount: Int,
+    val subscriptionCount: Int,
+)
+
 data class ResellerOrder(
     val id: String,
     val customerEmail: String,

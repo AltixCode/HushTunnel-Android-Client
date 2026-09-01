@@ -566,6 +566,7 @@
     <string name="brand_error_connection">اتصال به سرور برقرار نشد — شبکه خود را بررسی کنید</string>
     <string name="brand_error_signed_out">خارج شدید</string>
     <string name="brand_error_vpn_start">شروع VPN ناموفق بود</string>
+    <string name="brand_error_insufficient_balance">موجودی کیف پول کافی نیست</string>
     <string name="brand_connect">اتصال</string>
     <string name="brand_disconnect">قطع اتصال</string>
     <string name="brand_connected">متصل</string>
@@ -621,6 +622,11 @@
     <string name="brand_reseller_tab_subscriptions">اشتراک‌ها</string>
     <string name="brand_reseller_tab_orders">سفارش‌ها</string>
     <string name="brand_reseller_tab_deposits">واریزها</string>
+    <string name="brand_reseller_tab_subresellers">نمایندگان زیرمجموعه</string>
+    <string name="brand_reseller_add_subreseller">افزودن نماینده زیرمجموعه</string>
+    <string name="brand_reseller_no_subresellers">هنوز نماینده زیرمجموعه‌ای ثبت نشده.</string>
+    <string name="brand_reseller_subreseller_stats">%1$d مشتری · %2$d اشتراک</string>
+    <string name="brand_reseller_subreseller_initial_balance">موجودی اولیه (دلار)</string>
     <string name="brand_reseller_add_customer">افزودن مشتری</string>
     <string name="brand_reseller_customer_created">مشتری ایجاد شد! رمز عبور: %1$s</string>
     <string name="brand_reseller_buy_for_customer">سفارش برای مشتری</string>

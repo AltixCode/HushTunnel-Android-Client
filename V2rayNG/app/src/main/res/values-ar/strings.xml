@@ -568,4 +568,12 @@
     <string name="brand_copy_sub_link">نسخ الرابط</string>
     <string name="brand_copied_to_clipboard">تم النسخ إلى الحافظة</string>
     <string name="brand_reseller_portal_btn">لوحة الموزع</string>
+
+    <!-- Sub-reseller management tab (appended: this file predates the brand_reseller_tab_* block) -->
+    <string name="brand_error_insufficient_balance">رصيد المحفظة غير كافٍ</string>
+    <string name="brand_reseller_tab_subresellers">الموزعون الفرعيون</string>
+    <string name="brand_reseller_add_subreseller">إضافة موزع فرعي</string>
+    <string name="brand_reseller_no_subresellers">لا يوجد موزعون فرعيون بعد.</string>
+    <string name="brand_reseller_subreseller_stats">%1$d عميل · %2$d اشتراك</string>
+    <string name="brand_reseller_subreseller_initial_balance">الرصيد الابتدائي (دولار)</string>
 </resources>

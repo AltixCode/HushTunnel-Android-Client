@@ -18,6 +18,7 @@
     <string name="brand_error_connection">Sunucuya ulaşılamadı — bağlantınızı kontrol edin</string>
     <string name="brand_error_signed_out">Oturum kapatıldı</string>
     <string name="brand_error_vpn_start">VPN başlatılamadı</string>
+    <string name="brand_error_insufficient_balance">Cüzdan bakiyesi yetersiz</string>
     <string name="brand_connect">Bağlan</string>
     <string name="brand_disconnect">Bağlantıyı Kes</string>
     <string name="brand_connected">Bağlı</string>
@@ -73,6 +74,11 @@
     <string name="brand_reseller_tab_subscriptions">Abonelikler</string>
     <string name="brand_reseller_tab_orders">Siparişler</string>
     <string name="brand_reseller_tab_deposits">Yüklemeler</string>
+    <string name="brand_reseller_tab_subresellers">Alt Bayiler</string>
+    <string name="brand_reseller_add_subreseller">Alt Bayi Ekle</string>
+    <string name="brand_reseller_no_subresellers">Henüz alt bayi yok.</string>
+    <string name="brand_reseller_subreseller_stats">%1$d müşteri · %2$d abonelik</string>
+    <string name="brand_reseller_subreseller_initial_balance">Başlangıç Bakiyesi (USD)</string>
     <string name="brand_reseller_add_customer">Müşteri Ekle</string>
     <string name="brand_reseller_customer_created">Müşteri oluşturuldu! Şifre: %1$s</string>
     <string name="brand_reseller_buy_for_customer">Müşteri İçin Sipariş</string>
