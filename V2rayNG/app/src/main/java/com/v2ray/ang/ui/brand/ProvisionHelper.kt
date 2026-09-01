@@ -5,8 +5,10 @@ import com.v2ray.ang.handler.AngConfigManager
 import com.v2ray.ang.handler.MmkvManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 /**
  * Bridges our backend's subscription feed into v2rayNG's normal (headless)
@@ -16,32 +18,57 @@ import java.util.UUID
 object ProvisionHelper {
 
     private const val REMARK = "HushTunnel"
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
+        .build()
 
     /**
      * Points the app's single subscription at [subscriptionUrl] and fetches it now.
      * Returns true if at least one server profile is selected afterwards.
      */
     suspend fun provisionSubscription(subscriptionUrl: String): Boolean = withContext(Dispatchers.IO) {
-        val existingGuid = MmkvManager.decodeSubsList().firstOrNull()?.takeIf { it.isNotBlank() }
-            ?: UUID.randomUUID().toString()
+        try {
+            val existingGuid = MmkvManager.decodeSubsList().firstOrNull()?.takeIf { it.isNotBlank() }
+                ?: UUID.randomUUID().toString()
 
-        val subItem = SubscriptionItem(
-            remarks = REMARK,
-            url = subscriptionUrl,
-            enabled = true,
-        )
-        MmkvManager.encodeSubscription(existingGuid, subItem)
-
-        AngConfigManager.updateConfigViaSubAll()
-
-        val selected = MmkvManager.getSelectServer()
-        if (selected.isNullOrEmpty()) {
-            val serverList = MmkvManager.decodeServerList(existingGuid)
-            if (serverList.isNotEmpty()) {
-                MmkvManager.setSelectServer(serverList.first())
+            val effectiveUrl = if (subscriptionUrl.startsWith("http://localhost:3000") || subscriptionUrl.startsWith("http://127.0.0.1:3000")) {
+                subscriptionUrl.replace("http://localhost:3000", BrandConfig.API_BASE_URL)
+                    .replace("http://127.0.0.1:3000", BrandConfig.API_BASE_URL)
+            } else {
+                subscriptionUrl
             }
-        }
 
-        MmkvManager.getSelectServer()?.isNotBlank() == true
+            val subItem = SubscriptionItem(
+                remarks = REMARK,
+                url = effectiveUrl,
+                enabled = true,
+                allowInsecureUrl = true,
+            )
+            MmkvManager.encodeSubscription(existingGuid, subItem)
+
+            // Direct fetch of base64 subscription config without proxy
+            val req = Request.Builder().url(effectiveUrl).build()
+            client.newCall(req).execute().use { response ->
+                if (response.isSuccessful) {
+                    val body = response.body?.string().orEmpty()
+                    if (body.isNotBlank()) {
+                        AngConfigManager.importBatchConfig(body, existingGuid, false)
+                    }
+                }
+            }
+
+            val selected = MmkvManager.getSelectServer()
+            if (selected.isNullOrEmpty()) {
+                val serverList = MmkvManager.decodeServerList(existingGuid)
+                if (serverList.isNotEmpty()) {
+                    MmkvManager.setSelectServer(serverList.first())
+                }
+            }
+
+            MmkvManager.getSelectServer()?.isNotBlank() == true
+        } catch (e: Exception) {
+            false
+        }
     }
 }

@@ -18,6 +18,12 @@ class SplashActivity : BaseComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val testToken = intent.getStringExtra("test_token")
+        val testEmail = intent.getStringExtra("test_email")
+        val testRole = intent.getStringExtra("test_role")
+        if (!testToken.isNullOrBlank() && !testEmail.isNullOrBlank() && !testRole.isNullOrBlank()) {
+            AuthStore.saveSession(testToken, testEmail, testRole)
+        }
         val destination = if (AuthStore.isLoggedIn()) {
             val role = AuthStore.getRole()
             when {

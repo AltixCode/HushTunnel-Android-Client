@@ -673,4 +673,7 @@
     <string name="brand_password_success">Password updated successfully</string>
     <string name="brand_password_mismatch">Passwords do not match</string>
     <string name="brand_password_min_length">Password must be at least 6 characters</string>
+    <string name="brand_unit_gb">%1$.1f GB</string>
+    <string name="brand_unit_mb">%1$.0f MB</string>
+    <string name="brand_plan_name_label">Gói: %1$s</string>
 </resources>

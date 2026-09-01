@@ -1,5 +1,9 @@
 package com.v2ray.ang.ui.brand
 
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.horizontalScroll
+
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.VpnService
@@ -216,11 +220,22 @@ fun HomeScreen(
                         if (isLoading) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                         } else {
-                            Text(stringResource(R.string.brand_refresh))
+                            Text(
+                                text = "🔄 " + stringResource(R.string.brand_refresh),
+                                maxLines = 1,
+                                softWrap = false,
+                                style = MaterialTheme.typography.labelMedium,
+                            )
                         }
                     }
                     TextButton(onClick = onLogout) {
-                        Text(stringResource(R.string.brand_logout), color = MaterialTheme.colorScheme.error)
+                        Text(
+                            text = stringResource(R.string.brand_logout),
+                            color = MaterialTheme.colorScheme.error,
+                            maxLines = 1,
+                            softWrap = false,
+                            style = MaterialTheme.typography.labelMedium,
+                        )
                     }
                 }
             }
@@ -243,7 +258,7 @@ fun HomeScreen(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         val isReseller = AuthStore.getRole().equals("RESELLER", ignoreCase = true)
@@ -921,13 +936,14 @@ fun OrdersDialog(
     )
 }
 
+@Composable
 private fun formatBytes(bytes: Long): String {
     val gb = bytes.toDouble() / (1024 * 1024 * 1024)
     return if (gb >= 1.0) {
-        String.format(Locale.US, "%.1f GB", gb)
+        stringResource(R.string.brand_unit_gb, gb)
     } else {
         val mb = bytes.toDouble() / (1024 * 1024)
-        String.format(Locale.US, "%.0f MB", mb)
+        stringResource(R.string.brand_unit_mb, mb)
     }
 }
 

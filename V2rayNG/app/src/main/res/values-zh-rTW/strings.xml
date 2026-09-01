@@ -673,4 +673,7 @@
     <string name="brand_password_success">密码修改成功</string>
     <string name="brand_password_mismatch">两次输入的密码不一致</string>
     <string name="brand_password_min_length">密码长度至少为6位</string>
+    <string name="brand_unit_gb">%1$.1f GB</string>
+    <string name="brand_unit_mb">%1$.0f MB</string>
+    <string name="brand_plan_name_label">套餐: %1$s</string>
 </resources>

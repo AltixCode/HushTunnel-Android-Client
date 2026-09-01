@@ -675,4 +675,7 @@
     <string name="brand_view_connection">Просмотр подключения</string>
     <string name="brand_reseller_no_subscriptions">Нет активных подписок</string>
     <string name="brand_reseller_portal_btn">Панель реселлера</string>
+    <string name="brand_unit_gb">%1$.1f ГБ</string>
+    <string name="brand_unit_mb">%1$.0f МБ</string>
+    <string name="brand_plan_name_label">Тариф: %1$s</string>
 </resources>

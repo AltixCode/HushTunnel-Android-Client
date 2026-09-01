@@ -1,5 +1,9 @@
 package com.v2ray.ang.ui.brand
 
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.horizontalScroll
+
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -189,30 +193,45 @@ fun ResellerHomeScreen(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Button(
-                        onClick = onOpenVpnClient,
-                        shape = RoundedCornerShape(20.dp),
-                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        ),
-                        modifier = Modifier.padding(end = 4.dp),
-                    ) {
-                        Text(
-                            text = "🛡️ " + stringResource(R.string.brand_open_vpn_dashboard),
-                            style = MaterialTheme.typography.labelMedium,
-                        )
-                    }
                     TextButton(onClick = onRefresh, enabled = !isLoading) {
                         if (isLoading) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                         } else {
-                            Text(stringResource(R.string.brand_refresh))
+                            Text(
+                                text = "🔄 " + stringResource(R.string.brand_refresh),
+                                maxLines = 1,
+                                softWrap = false,
+                                style = MaterialTheme.typography.labelMedium,
+                            )
                         }
                     }
                     TextButton(onClick = onLogout) {
-                        Text(stringResource(R.string.brand_logout), color = MaterialTheme.colorScheme.error)
+                        Text(
+                            text = stringResource(R.string.brand_logout),
+                            color = MaterialTheme.colorScheme.error,
+                            maxLines = 1,
+                            softWrap = false,
+                            style = MaterialTheme.typography.labelMedium,
+                        )
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Button(
+                onClick = onOpenVpnClient,
+                shape = RoundedCornerShape(12.dp),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = "🛡️ " + stringResource(R.string.brand_open_vpn_dashboard),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -261,7 +280,7 @@ fun ResellerHomeScreen(
                     Tab(
                         selected = (state.selectedTab == index),
                         onClick = { onSetTab(index) },
-                        text = { Text(title) },
+                        text = { Text(title, maxLines = 1, softWrap = false) },
                     )
                 }
             }
@@ -504,7 +523,7 @@ fun ResellerOverviewTab(
 
                     if (latestSub != null) {
                         Text(
-                            text = "Plan: ${latestSub.planName}",
+                            text = stringResource(R.string.brand_plan_name_label, latestSub.planName),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
                         )

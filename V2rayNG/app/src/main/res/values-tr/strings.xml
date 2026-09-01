@@ -576,4 +576,7 @@
     <string name="tasker_blurb_stop">Stop %1$s</string>
     <string name="connection_test_empty_message">no details available</string>
     <string name="value_unknown">unknown</string>
+    <string name="brand_unit_gb">%1$.1f GB</string>
+    <string name="brand_unit_mb">%1$.0f MB</string>
+    <string name="brand_plan_name_label">Plan: %1$s</string>
 </resources>
