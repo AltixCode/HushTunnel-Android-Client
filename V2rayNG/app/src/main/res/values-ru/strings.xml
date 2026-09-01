@@ -621,7 +621,7 @@
     <string name="brand_reseller_tab_customers">Клиенты</string>
     <string name="brand_reseller_tab_subscriptions">Подписки</string>
     <string name="brand_reseller_tab_orders">Заказы</string>
-    <string name="brand_reseller_tab_deposits">Пополнения</string>
+    <string name="brand_reseller_tab_deposits">Транзакции</string>
     <string name="brand_reseller_tab_subresellers">Суб-реселлеры</string>
     <string name="brand_reseller_add_subreseller">Добавить суб-реселлера</string>
     <string name="brand_reseller_no_subresellers">Суб-реселлеров пока нет.</string>

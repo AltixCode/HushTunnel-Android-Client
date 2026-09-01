@@ -118,6 +118,17 @@ data class ResellerSubscription(
     val totalBytes: Long,
 )
 
+data class WalletTransactionItem(
+    val id: String,
+    val type: String,
+    val amountUsd: Double,
+    val balanceBefore: Double,
+    val balanceAfter: Double,
+    val description: String?,
+    val counterpartEmail: String?,
+    val createdAt: String,
+)
+
 data class ResellerDeposit(
     val id: String,
     val amountUsd: Double,

@@ -326,9 +326,9 @@ fun ResellerHomeScreen(
                     orders = state.orders,
                     onNewOrderClick = { showAddOrderDialog = true },
                 )
-                4 -> ResellerDepositsTab(
-                    deposits = state.deposits,
-                    onAddFundsClick = { showAddDepositDialog = true },
+                4 -> ResellerTransactionsTab(
+                    transactions = state.transactions,
+                    currentBalanceUsd = state.overview.balanceUsd,
                 )
                 5 -> ResellerSubResellersTab(
                     subResellers = state.subResellers,
@@ -598,31 +598,7 @@ fun ResellerOverviewTab(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-            ) {
-                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "Balance Top-Up via Web Portal",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                    Text(
-                        text = "To deposit funds or top up your reseller balance, visit our web portal. Crypto (USDT, BTC) and Credit Cards supported.",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                    Button(
-                        onClick = onOpenAddDeposit,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
-                    ) {
-                        Text("Top Up at https://www.hushtunnel.com")
-                    }
-                }
-            }
+
         }
     }
 }
@@ -967,45 +943,126 @@ fun AddSubResellerDialog(
 }
 
 @Composable
-fun ResellerDepositsTab(
-    deposits: List<ResellerDeposit>,
-    onAddFundsClick: () -> Unit,
+fun ResellerTransactionsTab(
+    transactions: List<WalletTransactionItem>,
+    currentBalanceUsd: Double,
 ) {
+    var searchQuery by remember { mutableStateOf("") }
+    val filtered = remember(transactions, searchQuery) {
+        if (searchQuery.isBlank()) transactions
+        else transactions.filter {
+            (it.description ?: "").contains(searchQuery.trim(), ignoreCase = true) ||
+            it.type.contains(searchQuery.trim(), ignoreCase = true) ||
+            (it.counterpartEmail ?: "").contains(searchQuery.trim(), ignoreCase = true)
+        }
+    }
+
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
-            Button(onClick = onAddFundsClick, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
-                Text(stringResource(R.string.brand_reseller_add_deposit))
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = stringResource(R.string.brand_reseller_balance),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = "$${String.format(Locale.US, "%.2f", currentBalanceUsd)}",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
             }
         }
 
-        if (deposits.isEmpty()) {
+        item {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("🔍 Search transactions...") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            )
+        }
+
+        if (filtered.isEmpty()) {
             item {
                 Text(
-                    text = "No deposits yet.",
+                    text = "No transactions found.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         } else {
-            items(deposits) { d ->
+            items(filtered) { tx ->
+                val isCredit = tx.type in listOf("TRANSFER_IN", "DEPOSIT") || (tx.amountUsd > 0 && tx.balanceAfter > tx.balanceBefore)
+                val sign = if (isCredit) "+" else "-"
+                val amountColor = if (isCredit) androidx.compose.ui.graphics.Color(0xFF10B981) else MaterialTheme.colorScheme.error
+
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    shape = RoundedCornerShape(10.dp),
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(text = "$${d.amountUsd}", style = MaterialTheme.typography.titleSmall)
-                            Text(text = d.status, style = MaterialTheme.typography.labelSmall)
+                            Text(
+                                text = tx.type.replace("_", " "),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(
+                                text = "$sign$${String.format(Locale.US, "%.2f", tx.amountUsd)}",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = amountColor,
+                            )
                         }
-                        Text(
-                            text = "${d.gateway} · ${d.createdAt.take(10)}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp),
-                        )
+
+                        if (!tx.description.isNullOrBlank()) {
+                            Text(
+                                text = tx.description,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                        }
+
+                        if (!tx.counterpartEmail.isNullOrBlank()) {
+                            Text(
+                                text = "Counterpart: ${tx.counterpartEmail}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 2.dp),
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = "$${String.format(Locale.US, "%.2f", tx.balanceBefore)} → $${String.format(Locale.US, "%.2f", tx.balanceAfter)}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Text(
+                                text = tx.createdAt.take(16).replace("T", " "),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                 }
             }

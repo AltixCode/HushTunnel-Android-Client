@@ -621,7 +621,7 @@
     <string name="brand_reseller_tab_customers">客户</string>
     <string name="brand_reseller_tab_subscriptions">订阅</string>
     <string name="brand_reseller_tab_orders">订单</string>
-    <string name="brand_reseller_tab_deposits">充值</string>
+    <string name="brand_reseller_tab_deposits">交易记录</string>
     <string name="brand_reseller_tab_subresellers">子分销商</string>
     <string name="brand_reseller_add_subreseller">添加子分销商</string>
     <string name="brand_reseller_no_subresellers">暂无子分销商。</string>

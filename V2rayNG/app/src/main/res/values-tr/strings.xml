@@ -73,7 +73,7 @@
     <string name="brand_reseller_tab_customers">Müşteriler</string>
     <string name="brand_reseller_tab_subscriptions">Abonelikler</string>
     <string name="brand_reseller_tab_orders">Siparişler</string>
-    <string name="brand_reseller_tab_deposits">Yüklemeler</string>
+    <string name="brand_reseller_tab_deposits">İşlemler</string>
     <string name="brand_reseller_tab_subresellers">Alt Bayiler</string>
     <string name="brand_reseller_add_subreseller">Alt Bayi Ekle</string>
     <string name="brand_reseller_no_subresellers">Henüz alt bayi yok.</string>

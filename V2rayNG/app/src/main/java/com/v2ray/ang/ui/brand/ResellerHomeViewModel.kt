@@ -15,6 +15,7 @@ data class ResellerUiState(
     val personalSubscriptions: List<SubscriptionInfo> = emptyList(),
     val orders: List<ResellerOrder> = emptyList(),
     val deposits: List<ResellerDeposit> = emptyList(),
+    val transactions: List<WalletTransactionItem> = emptyList(),
     val subResellers: List<SubResellerItem> = emptyList(),
     val plans: List<PlanInfo> = emptyList(),
     val gateways: GatewayInfo = GatewayInfo(),
@@ -51,6 +52,7 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
                 val personalSubscriptions = try { ApiClient.me(token).subscriptions } catch (_: Exception) { emptyList() }
                 val orders = try { ApiClient.resellerOrders(token) } catch (_: Exception) { emptyList() }
                 val deposits = try { ApiClient.resellerDeposits(token) } catch (_: Exception) { emptyList() }
+                val transactions = try { ApiClient.getWalletTransactions(token) } catch (_: Exception) { emptyList() }
                 val plans = try { ApiClient.plans() } catch (_: Exception) { emptyList() }
                 val gateways = try { ApiClient.gateways() } catch (_: Exception) { GatewayInfo() }
                 val subResellers = try { ApiClient.resellerSubResellers(token) } catch (_: Exception) { emptyList() }
@@ -63,6 +65,7 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
                         personalSubscriptions = personalSubscriptions,
                         orders = orders,
                         deposits = deposits,
+                        transactions = transactions,
                         subResellers = subResellers,
                         plans = plans,
                         gateways = gateways,

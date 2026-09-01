@@ -621,7 +621,7 @@
     <string name="brand_reseller_tab_customers">Customers</string>
     <string name="brand_reseller_tab_subscriptions">Subscriptions</string>
     <string name="brand_reseller_tab_orders">Orders</string>
-    <string name="brand_reseller_tab_deposits">Deposits</string>
+    <string name="brand_reseller_tab_deposits">Transactions</string>
     <string name="brand_reseller_tab_subresellers">Sub-Resellers</string>
     <string name="brand_reseller_add_subreseller">Add Sub-Reseller</string>
     <string name="brand_reseller_no_subresellers">No sub-resellers yet.</string>

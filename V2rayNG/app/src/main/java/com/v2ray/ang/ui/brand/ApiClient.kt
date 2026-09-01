@@ -314,6 +314,24 @@ object ApiClient {
         request("/api/mobile/reseller/subscriptions/$id/revoke", "POST", token = token)
     }
 
+    suspend fun getWalletTransactions(token: String): List<WalletTransactionItem> {
+        val json = request("/api/mobile/wallet/transactions", token = token)
+        val list = json.optJSONArray("transactions") ?: JSONArray()
+        return (0 until list.length()).map { i ->
+            val t = list.getJSONObject(i)
+            WalletTransactionItem(
+                id = t.getString("id"),
+                type = t.optString("type", "UNKNOWN"),
+                amountUsd = t.optDouble("amountUsd", 0.0),
+                balanceBefore = t.optDouble("balanceBefore", 0.0),
+                balanceAfter = t.optDouble("balanceAfter", 0.0),
+                description = t.optString("description").takeIf { it.isNotBlank() },
+                counterpartEmail = t.optString("counterpartEmail").takeIf { it.isNotBlank() },
+                createdAt = t.optString("createdAt", ""),
+            )
+        }
+    }
+
     suspend fun resellerDeposits(token: String): List<ResellerDeposit> {
         val json = request("/api/mobile/reseller/deposits", token = token)
         val list = json.optJSONArray("deposits") ?: JSONArray()
