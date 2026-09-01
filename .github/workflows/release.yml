@@ -176,7 +176,7 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.hushtunnel.app
-          releaseFiles: ${{ github.workspace }}/release_artifacts/HushTunnel-1.0.0-playstore.aab
+          releaseFiles: ${{ github.workspace }}/release_artifacts/HushTunnel-${{ env.APP_VERSION_NAME }}-playstore.aab
           track: internal
           status: draft
 
@@ -198,27 +198,62 @@ jobs:
           fi
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
 
+      - name: Generate Dynamic Release Notes
+        run: |
+          VERSION="${{ env.APP_VERSION_NAME }}"
+          TAG="${{ steps.tag_info.outputs.TAG_NAME }}"
+          BUILD="${{ env.APP_VERSION_CODE }}"
+
+          # Generate SHA256 checksums
+          cd ${{ github.workspace }}/release_artifacts
+          sha256sum *.apk *.aab > SHA256SUMS.txt 2>/dev/null || sha256sum * > SHA256SUMS.txt 2>/dev/null || true
+          cd ${{ github.workspace }}
+
+          # Extract recent changelog
+          CHANGELOG=$(git log --pretty=format:"* %s (%h)" -n 12)
+
+          cat << 'HEADER_EOF' > ${{ github.workspace }}/RELEASE_NOTES.md
+          ## 🛡️ HushTunnel Android ${TAG} (Build ${BUILD})
+
+          ### 🚀 What's New & Key Highlights
+          - **Full Persian (Farsi RTL) & 10 Locales**: Complete RTL typography, localized data units (گیگابایت/مگابایت), plan names, and pricing.
+          - **Double-Entry Transactions Ledger**: Real-time balance debit/credit logs, plan payment breakdown, and complete audit trail.
+          - **Responsive Viewport Navigation**: Fluid header layout with non-wrapping controls and horizontally scrollable tab navigation.
+          - **Multi-Node Edge Switching**: Interactive server node switcher with dynamic latency checks and instant VLESS-Reality routing.
+          - **Direct Subscription Provisioning**: High-speed OkHttp subscription fetch avoiding proxy startup delays.
+          - **Store Billing Compliance**: Compliant account self-service linking directly to official control plane at [hushtunnel.com](https://www.hushtunnel.com).
+
+          ### 📦 Download Packages
+          | Package | Description | Target Architecture |
+          |---|---|---|
+          | **`HushTunnel-${VERSION}-universal.apk`** | Standalone Universal APK (Recommended) | All Android devices |
+          | **`HushTunnel-${VERSION}-arm64-v8a.apk`** | 64-bit ARM Package | Modern Android Smartphones & Tablets |
+          | **`HushTunnel-${VERSION}-armeabi-v7a.apk`** | 32-bit ARM Package | Legacy Android Devices |
+          | **`HushTunnel-${VERSION}-x86_64.apk`** | 64-bit x86 Package | Android Emulators & Chromebooks |
+          | **`HushTunnel-${VERSION}-playstore.aab`** | Google Play App Bundle | Google Play Store Distribution |
+
+          ### 📝 Recent Changes
+          HEADER_EOF
+
+          echo "$CHANGELOG" >> ${{ github.workspace }}/RELEASE_NOTES.md
+          echo "" >> ${{ github.workspace }}/RELEASE_NOTES.md
+          echo "### 🔒 Binary Integrity (SHA-256)" >> ${{ github.workspace }}/RELEASE_NOTES.md
+          echo '```text' >> ${{ github.workspace }}/RELEASE_NOTES.md
+          cat ${{ github.workspace }}/release_artifacts/SHA256SUMS.txt >> ${{ github.workspace }}/RELEASE_NOTES.md
+          echo '```' >> ${{ github.workspace }}/RELEASE_NOTES.md
+
+          # Replace environment variables in generated file
+          sed -i "s/\${TAG}/$TAG/g" ${{ github.workspace }}/RELEASE_NOTES.md
+          sed -i "s/\${BUILD}/$BUILD/g" ${{ github.workspace }}/RELEASE_NOTES.md
+          sed -i "s/\${VERSION}/$VERSION/g" ${{ github.workspace }}/RELEASE_NOTES.md
+
       - name: Create GitHub Release & Upload Binaries
         uses: softprops/action-gh-release@v2
         if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         with:
           tag_name: ${{ steps.tag_info.outputs.TAG_NAME }}
           name: ${{ inputs.release_title || steps.tag_info.outputs.TAG_NAME }}
-          body: |
-            ## HushTunnel Android Release (${{ steps.tag_info.outputs.TAG_NAME }})
-
-            ### What's New:
-            - **Multi-Server Location Switching**: Instant node selector with auto-reconnect.
-            - **SaaS Store Compliance**: Compliant multi-device account management linking to `https://www.hushtunnel.com`.
-            - **Reseller Administration**: Customer management, password resetting, and self-service provisioning.
-            - **Multi-Language Support**: English, Persian (RTL), Russian, Simplified Chinese, and Turkish.
-
-            ### Downloads:
-            - **`HushTunnel-1.0.0-universal.apk`**: Universal APK for all devices (recommended)
-            - **`HushTunnel-1.0.0-arm64-v8a.apk`**: 64-bit ARM smartphones
-            - **`HushTunnel-1.0.0-armeabi-v7a.apk`**: 32-bit ARM smartphones
-            - **`HushTunnel-1.0.0-x86_64.apk`**: Emulators and Chromebooks
-            - **`HushTunnel-1.0.0-playstore.aab`**: Google Play Store Android App Bundle
+          body_path: ${{ github.workspace }}/RELEASE_NOTES.md
           draft: false
           prerelease: ${{ inputs.is_prerelease || false }}
           files: ${{ github.workspace }}/release_artifacts/*
