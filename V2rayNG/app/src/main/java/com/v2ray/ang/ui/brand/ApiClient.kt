@@ -76,9 +76,10 @@ object ApiClient {
     }
 
     suspend fun register(email: String, password: String): AuthResult {
+        val cleanEmail = email.trim().lowercase(java.util.Locale.ROOT)
         val json = request(
             "/api/mobile/register", "POST",
-            body = JSONObject().put("email", email).put("password", password)
+            body = JSONObject().put("email", cleanEmail).put("password", password)
         )
         return AuthResult(
             token = json.getString("token"),
@@ -88,9 +89,10 @@ object ApiClient {
     }
 
     suspend fun login(email: String, password: String): AuthResult {
+        val cleanEmail = email.trim().lowercase(java.util.Locale.ROOT)
         val json = request(
             "/api/mobile/login", "POST",
-            body = JSONObject().put("email", email).put("password", password)
+            body = JSONObject().put("email", cleanEmail).put("password", password)
         )
         return AuthResult(
             token = json.getString("token"),
@@ -260,7 +262,8 @@ object ApiClient {
     }
 
     suspend fun createResellerCustomer(token: String, email: String, password: String? = null): Pair<ResellerCustomer, String> {
-        val body = JSONObject().put("email", email)
+        val cleanEmail = email.trim().lowercase(java.util.Locale.ROOT)
+        val body = JSONObject().put("email", cleanEmail)
         if (!password.isNullOrBlank()) body.put("password", password)
         val json = request(
             "/api/mobile/reseller/customers", "POST", token = token,
@@ -440,8 +443,9 @@ object ApiClient {
 
     /** Returns the new sub-reseller plus its one-time generated password. */
     suspend fun createSubReseller(token: String, email: String, initialBalanceUsd: Double): Pair<SubResellerItem, String> {
+        val cleanEmail = email.trim().lowercase(java.util.Locale.ROOT)
         val body = JSONObject()
-            .put("email", email)
+            .put("email", cleanEmail)
             .put("initialBalanceUsd", initialBalanceUsd)
         val json = request("/api/mobile/reseller/resellers", "POST", token = token, body = body)
         val r = json.getJSONObject("reseller")
