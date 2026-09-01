@@ -560,7 +560,7 @@
     <string name="brand_register_btn">ساخت حساب کاربری</string>
     <string name="brand_no_account">حساب کاربری ندارید؟ بسازید</string>
     <string name="brand_have_account">قبلاً حساب کاربری دارید؟ وارد شوید</string>
-    <string name="brand_admin_reject">از پنل وب در vpn-billing-dashboard.vercel.app برای مدیریت استفاده کنید</string>
+    <string name="brand_admin_reject">از پنل وب در hushtunnel.com برای مدیریت استفاده کنید</string>
     <string name="brand_error_empty_credentials">ایمیل و رمز عبور خود را وارد کنید</string>
     <string name="brand_error_invalid_credentials">ایمیل و رمز عبور حداقل ۸ کاراکتر وارد کنید</string>
     <string name="brand_error_connection">اتصال به سرور برقرار نشد — شبکه خود را بررسی کنید</string>
