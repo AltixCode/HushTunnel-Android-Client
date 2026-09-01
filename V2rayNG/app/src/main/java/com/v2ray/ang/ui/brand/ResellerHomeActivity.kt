@@ -332,6 +332,7 @@ fun ResellerHomeScreen(
                         showBuyPersonalDialog = true
                     },
                     onOpenAddCustomer = { showAddCustomerDialog = true },
+                    onOpenAddReseller = { showAddSubResellerDialog = true },
                     onOpenAddOrder = { showAddOrderDialog = true },
                     onOpenAddDeposit = { showAddDepositDialog = true },
                 )
@@ -491,6 +492,7 @@ fun ResellerOverviewTab(
     onOpenBuyPersonal: () -> Unit,
     onOpenRenewPersonal: (String) -> Unit,
     onOpenAddCustomer: () -> Unit,
+    onOpenAddReseller: () -> Unit,
     onOpenAddOrder: () -> Unit,
     onOpenAddDeposit: () -> Unit,
 ) {
@@ -627,6 +629,12 @@ fun ResellerOverviewTab(
 
             OutlinedButton(onClick = onOpenAddCustomer, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.brand_reseller_add_customer))
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(onClick = onOpenAddReseller, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.brand_reseller_add_subreseller))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
