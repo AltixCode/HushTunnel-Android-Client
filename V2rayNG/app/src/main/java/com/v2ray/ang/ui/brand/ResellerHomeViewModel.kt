@@ -2,13 +2,18 @@ package com.v2ray.ang.ui.brand
 
 import android.app.Application
 import com.v2ray.ang.R
+import androidx.lifecycle.viewModelScope
+import com.v2ray.ang.ui.main.MainRepository
+import com.v2ray.ang.ui.main.MainServiceEvent
 import com.v2ray.ang.ui.base.BaseViewModel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 data class ResellerUiState(
+    val isRunning: Boolean = false,
     val overview: ResellerOverview = ResellerOverview(0.0, 0, null, null),
     val customers: List<ResellerCustomer> = emptyList(),
     val subscriptions: List<ResellerSubscription> = emptyList(),
@@ -28,9 +33,31 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
 
     private val _uiState = MutableStateFlow(ResellerUiState())
     val uiState: StateFlow<ResellerUiState> = _uiState.asStateFlow()
+    private val mainRepository = MainRepository(app)
 
     init {
+        viewModelScope.launch {
+            mainRepository.mainServiceEvent.collect { event ->
+                when (event) {
+                    MainServiceEvent.StateRunning,
+                    MainServiceEvent.StateStartSuccess -> _uiState.update { it.copy(isRunning = true) }
+                    MainServiceEvent.StateNotRunning,
+                    MainServiceEvent.StateStopSuccess,
+                    MainServiceEvent.StateStartFailure -> _uiState.update { it.copy(isRunning = false) }
+                    else -> {}
+                }
+            }
+        }
         refresh()
+    }
+
+    fun checkVpnState() {
+        mainRepository.requestServiceState()
+    }
+
+    override fun onCleared() {
+        mainRepository.close()
+        super.onCleared()
     }
 
     fun setTab(index: Int) {

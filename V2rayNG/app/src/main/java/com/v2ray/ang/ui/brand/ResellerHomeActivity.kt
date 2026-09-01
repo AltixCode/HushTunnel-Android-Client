@@ -72,6 +72,12 @@ class ResellerHomeActivity : BaseComponentActivity() {
         viewModel.refresh()
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.checkVpnState()
+        viewModel.refresh()
+    }
+
     @Composable
     override fun ScreenContent() {
         val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -315,6 +321,7 @@ fun ResellerHomeScreen(
                 0 -> ResellerOverviewTab(
                     overview = state.overview,
                     personalSubscriptions = state.personalSubscriptions,
+                    isRunning = state.isRunning,
                     onOpenVpnClient = onOpenVpnClient,
                     onOpenBuyPersonal = {
                         renewPersonalSubId = null
@@ -479,6 +486,7 @@ fun ResellerHomeScreen(
 fun ResellerOverviewTab(
     overview: ResellerOverview,
     personalSubscriptions: List<SubscriptionInfo>,
+    isRunning: Boolean = false,
     onOpenVpnClient: () -> Unit,
     onOpenBuyPersonal: () -> Unit,
     onOpenRenewPersonal: (String) -> Unit,
@@ -514,7 +522,13 @@ fun ResellerOverviewTab(
                         if (latestSub != null) {
                             SuggestionChip(
                                 onClick = onOpenVpnClient,
-                                label = { Text(stringResource(R.string.brand_active), style = MaterialTheme.typography.labelSmall) },
+                                label = { 
+                                    Text(
+                                        text = if (isRunning) "🟢 " + stringResource(R.string.brand_connected) else "⚪ " + stringResource(R.string.brand_active), 
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = if (isRunning) FontWeight.Bold else FontWeight.Normal
+                                    ) 
+                                },
                             )
                         }
                     }
@@ -542,7 +556,7 @@ fun ResellerOverviewTab(
                                 onClick = onOpenVpnClient,
                                 modifier = Modifier.weight(1f),
                             ) {
-                                Text(stringResource(R.string.brand_connect))
+                                Text(if (isRunning) "🛡️ " + stringResource(R.string.brand_open_vpn_dashboard) else stringResource(R.string.brand_connect))
                             }
                             OutlinedButton(
                                 onClick = { onOpenRenewPersonal(latestSub.id) },
