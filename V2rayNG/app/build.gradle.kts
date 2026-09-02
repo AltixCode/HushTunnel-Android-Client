@@ -38,9 +38,19 @@ android {
             ?: "1.0.$gitCount"
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
+        // AGP bug (https://issuetracker.google.com/402800800, fixed upstream in
+        // 8.11.0-alpha02, not yet in the AGP version this project is pinned to):
+        // shrinkResources=true + splits.abi.isEnable=true together make R8 emit one
+        // shrunk-resources .ap_ per ABI split even for a *bundle* build, and
+        // buildPlaystoreReleasePreBundle then fails because it expects exactly one.
+        // Bundles handle per-ABI delivery themselves and never needed splits.abi in
+        // the first place, so just don't enable it for a `bundle*` task invocation —
+        // CI runs assemblePlaystoreRelease and bundlePlaystoreRelease as two separate
+        // `./gradlew` processes, so this cleanly targets only the bundle one.
+        val isBundleBuild = gradle.startParameter.taskNames.any { it.contains("bundle", ignoreCase = true) }
         splits {
             abi {
-                isEnable = true
+                isEnable = !isBundleBuild
                 reset()
                 if (!abiFilterList.isNullOrEmpty()) {
                     include(*abiFilterList.toTypedArray())
