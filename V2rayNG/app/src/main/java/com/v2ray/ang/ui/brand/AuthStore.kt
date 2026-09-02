@@ -14,6 +14,7 @@ object AuthStore {
     private const val KEY_EMAIL = "email"
     private const val KEY_ROLE = "role"
     private const val KEY_SELECTED_SUB = "selected_subscription_id"
+    private const val KEY_SELECTED_SERVER = "selected_server_id"
 
     private val storage by lazy { MMKV.mmkvWithID(ID, MMKV.MULTI_PROCESS_MODE) }
 
@@ -39,6 +40,16 @@ object AuthStore {
         }
     }
 
+    fun getSelectedServerId(): String? = storage.decodeString(KEY_SELECTED_SERVER)?.takeIf { it.isNotBlank() }
+
+    fun setSelectedServerId(serverId: String?) {
+        if (serverId.isNullOrBlank()) {
+            storage.removeValueForKey(KEY_SELECTED_SERVER)
+        } else {
+            storage.encode(KEY_SELECTED_SERVER, serverId)
+        }
+    }
+
     fun isLoggedIn(): Boolean = getToken() != null
 
     fun clear() {
@@ -46,5 +57,6 @@ object AuthStore {
         storage.removeValueForKey(KEY_EMAIL)
         storage.removeValueForKey(KEY_ROLE)
         storage.removeValueForKey(KEY_SELECTED_SUB)
+        storage.removeValueForKey(KEY_SELECTED_SERVER)
     }
 }

@@ -105,6 +105,7 @@
     <string name="brand_password_min_length">Şifre en az 6 karakter olmalıdır</string>
 
     <string name="brand_switch">Değiştir</string>
+    <string name="brand_switching_server">Sunucu değiştiriliyor…</string>
     <string name="brand_wallet">Cüzdan</string>
     <string name="brand_transfer_funds">Para Transferi</string>
     <string name="brand_recipient_email">Alıcı E-postası</string>

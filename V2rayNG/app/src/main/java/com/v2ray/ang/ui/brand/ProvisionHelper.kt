@@ -1,5 +1,6 @@
 package com.v2ray.ang.ui.brand
 
+import com.v2ray.ang.AppConfig
 import com.v2ray.ang.dto.entities.SubscriptionItem
 import com.v2ray.ang.handler.AngConfigManager
 import com.v2ray.ang.handler.MmkvManager
@@ -49,27 +50,28 @@ object ProvisionHelper {
 
             // Direct fetch of base64 subscription config without proxy
             val req = Request.Builder().url(effectiveUrl).build()
-            client.newCall(req).execute().use { response ->
-                if (response.isSuccessful) {
-                    val body = response.body?.string().orEmpty()
-                    if (body.isNotBlank()) {
-                        AngConfigManager.importBatchConfig(body, existingGuid, false)
-                    }
-                }
+            val imported = client.newCall(req).execute().use { response ->
+                if (!response.isSuccessful) return@withContext false
+                val body = response.body?.string().orEmpty()
+                if (body.isBlank()) return@withContext false
+                AngConfigManager.importBatchConfig(body, existingGuid, false).first
             }
+            if (imported <= 0) return@withContext false
 
-            val selectedByNode = selectServerByNode(preferredServer)
-            if (!selectedByNode) {
-                val selected = MmkvManager.getSelectServer()
-                if (selected.isNullOrEmpty()) {
-                    val serverList = MmkvManager.decodeServerList(existingGuid)
-                    if (serverList.isNotEmpty()) {
-                        MmkvManager.setSelectServer(serverList.first())
-                    }
-                }
+            // HushTunnel diagnostics intentionally use the local core proxy;
+            // keep it available even if a legacy v2rayNG preference disabled it.
+            MmkvManager.encodeSettings(AppConfig.PREF_ENABLE_LOCAL_PROXY, true)
+
+            val serverList = MmkvManager.decodeServerList(existingGuid)
+            if (serverList.isEmpty()) return@withContext false
+
+            val selectedByNode = selectServerByNode(preferredServer, serverList)
+            if (preferredServer != null && !selectedByNode) {
+                return@withContext false
             }
+            if (!selectedByNode) MmkvManager.setSelectServer(serverList.first())
 
-            MmkvManager.getSelectServer()?.isNotBlank() == true
+            MmkvManager.getSelectServer() in serverList
         } catch (e: Exception) {
             false
         }
@@ -78,10 +80,12 @@ object ProvisionHelper {
     /**
      * Finds the profile GUID matching the given server node and sets it as the active server.
      */
-    fun selectServerByNode(serverNode: ServerNode?): Boolean {
+    fun selectServerByNode(
+        serverNode: ServerNode?,
+        candidateGuids: List<String> = MmkvManager.decodeAllServerList(),
+    ): Boolean {
         if (serverNode == null) return false
-        val allServers = MmkvManager.decodeAllServerList()
-        for (guid in allServers) {
+        for (guid in candidateGuids) {
             val config = MmkvManager.decodeServerConfig(guid) ?: continue
             val matchesHost = config.server?.trim().equals(serverNode.host.trim(), ignoreCase = true)
             val matchesName = config.remarks.contains(serverNode.name, ignoreCase = true) ||

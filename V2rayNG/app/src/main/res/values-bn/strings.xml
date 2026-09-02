@@ -549,6 +549,7 @@
     <string name="value_unknown">অজানা</string>
 
     <string name="brand_switch">পরিবর্তন</string>
+    <string name="brand_switching_server">সার্ভার পরিবর্তন করা হচ্ছে…</string>
     <string name="brand_wallet">ওয়ালেট</string>
     <string name="brand_transfer_funds">অর্থ স্থানান্তর</string>
     <string name="brand_recipient_email">প্রাপকের ইমেল</string>

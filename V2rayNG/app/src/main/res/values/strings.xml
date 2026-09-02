@@ -654,6 +654,7 @@
     <string name="brand_password_min_length">Password must be at least 6 characters</string>
 
     <string name="brand_switch">Switch</string>
+    <string name="brand_switching_server">Switching server…</string>
     <string name="brand_wallet">Wallet</string>
     <string name="brand_transfer_funds">Transfer Funds</string>
     <string name="brand_recipient_email">Recipient Email</string>

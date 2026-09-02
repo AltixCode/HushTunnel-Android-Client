@@ -1,7 +1,9 @@
 package com.v2ray.ang.ui.brand
 
 import android.app.Application
+import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
+import com.v2ray.ang.handler.SettingsManager
 import com.v2ray.ang.ui.base.BaseViewModel
 import com.v2ray.ang.ui.main.MainRepository
 import com.v2ray.ang.ui.main.MainServiceEvent
@@ -13,6 +15,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.net.InetSocketAddress
+import java.net.Proxy
+import java.util.UUID
+
+internal fun resolveSelectedServerId(
+    servers: List<ServerNode>,
+    currentServerId: String?,
+    savedServerId: String?,
+): String? = servers.firstOrNull { it.id == currentServerId }?.id
+    ?: servers.firstOrNull { it.id == savedServerId }?.id
+    ?: servers.firstOrNull { it.isDefault }?.id
+    ?: servers.firstOrNull()?.id
 
 data class HomeUiState(
     val email: String = "",
@@ -29,6 +43,7 @@ data class HomeUiState(
     val checkoutMessage: String? = null,
     val isPollingOrder: Boolean = false,
     val isTestingConnection: Boolean = false,
+    val isSwitchingServer: Boolean = false,
     val testResult: ConnectionTestResult? = null,
 )
 
@@ -46,6 +61,7 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
 
     private val mainRepository = MainRepository(app)
     private var pollJob: Job? = null
+    private var serverSwitchTimeoutJob: Job? = null
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -55,11 +71,15 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
             mainRepository.mainServiceEvent.collect { event ->
                 when (event) {
                     MainServiceEvent.StateRunning,
-                    MainServiceEvent.StateStartSuccess -> _uiState.update { it.copy(isRunning = true) }
+                    MainServiceEvent.StateStartSuccess -> {
+                        serverSwitchTimeoutJob?.cancel()
+                        _uiState.update { it.copy(isRunning = true, isSwitchingServer = false) }
+                    }
                     MainServiceEvent.StateNotRunning,
                     MainServiceEvent.StateStopSuccess -> _uiState.update { it.copy(isRunning = false) }
                     MainServiceEvent.StateStartFailure -> {
-                        _uiState.update { it.copy(isRunning = false) }
+                        serverSwitchTimeoutJob?.cancel()
+                        _uiState.update { it.copy(isRunning = false, isSwitchingServer = false) }
                         toastError(app.getString(R.string.brand_error_vpn_start))
                     }
                     else -> {}
@@ -94,7 +114,7 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
     }
 
     fun testConnection() {
-        if (_uiState.value.isTestingConnection) return
+        if (_uiState.value.isTestingConnection || !_uiState.value.isRunning) return
         val currentServer = _uiState.value.servers.firstOrNull { it.id == _uiState.value.selectedServerId }
             ?: _uiState.value.servers.firstOrNull { it.isDefault }
             ?: _uiState.value.servers.firstOrNull()
@@ -108,10 +128,27 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
                 val client = okhttp3.OkHttpClient.Builder()
                     .connectTimeout(7, java.util.concurrent.TimeUnit.SECONDS)
                     .readTimeout(7, java.util.concurrent.TimeUnit.SECONDS)
+                    // The VPN service must exclude its own package to avoid a
+                    // routing loop. Force this diagnostic through the core's
+                    // local proxy instead of testing the app's direct socket.
+                    .proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress(AppConfig.LOOPBACK, SettingsManager.getHttpPort())))
+                    .proxyAuthenticator { _, response ->
+                        val username = SettingsManager.getSocksUsername()
+                        val password = SettingsManager.getSocksPassword()
+                        if (username.isNullOrBlank() || password.isNullOrBlank() || response.request.header("Proxy-Authorization") != null) {
+                            null
+                        } else {
+                            response.request.newBuilder()
+                                .header("Proxy-Authorization", okhttp3.Credentials.basic(username, password))
+                                .build()
+                        }
+                    }
                     .build()
 
+                val nonce = UUID.randomUUID().toString()
                 val request = okhttp3.Request.Builder()
-                    .url("https://api.ipify.org?format=json")
+                    .url("https://api.ipify.org?format=json&nonce=$nonce")
+                    .header("Cache-Control", "no-cache")
                     .build()
 
                 val response = client.newCall(request).execute()
@@ -120,7 +157,8 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
 
                 try {
                     val appleReq = okhttp3.Request.Builder()
-                        .url("https://www.apple.com")
+                        .url("https://www.apple.com/?hush_test=$nonce")
+                        .header("Cache-Control", "no-cache")
                         .build()
                     client.newCall(appleReq).execute().close()
                 } catch (_: Exception) {}
@@ -186,6 +224,7 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
 
     override fun onCleared() {
         pollJob?.cancel()
+        serverSwitchTimeoutJob?.cancel()
         mainRepository.close()
         super.onCleared()
     }
@@ -214,9 +253,11 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
                 val loadedGateways = try { ApiClient.gateways() } catch (_: Exception) { GatewayInfo() }
                 val loadedOrders = try { ApiClient.orders(token) } catch (_: Exception) { emptyList() }
 
-                val currentSelectedServer = _uiState.value.selectedServerId
-                    ?: me.servers.firstOrNull { it.isDefault }?.id
-                    ?: me.servers.firstOrNull()?.id
+                val currentSelectedServer = resolveSelectedServerId(
+                    servers = me.servers,
+                    currentServerId = _uiState.value.selectedServerId,
+                    savedServerId = AuthStore.getSelectedServerId(),
+                )
 
                 val activeServerObj = me.servers.firstOrNull { it.id == currentSelectedServer }
 
@@ -226,6 +267,7 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
                 } else if (activeServerObj != null) {
                     ProvisionHelper.selectServerByNode(activeServerObj)
                 }
+                if (provisioned) AuthStore.setSelectedServerId(currentSelectedServer)
 
                 _uiState.update {
                     it.copy(
@@ -261,7 +303,8 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
 
         if (target.isActive) {
             launchLoading {
-                val provisioned = ProvisionHelper.provisionSubscription(target.subscriptionUrl)
+                val server = _uiState.value.servers.firstOrNull { it.id == _uiState.value.selectedServerId }
+                val provisioned = ProvisionHelper.provisionSubscription(target.subscriptionUrl, server)
                 _uiState.update { it.copy(hasServer = provisioned) }
             }
         }
@@ -362,14 +405,64 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
     }
 
     
-    fun switchServer(serverId: String, onReconnect: () -> Unit) {
-        _uiState.update { it.copy(selectedServerId = serverId) }
-        val targetServer = _uiState.value.servers.firstOrNull { it.id == serverId }
-        if (targetServer != null) {
-            ProvisionHelper.selectServerByNode(targetServer)
+    fun prepareConnection(onReady: () -> Unit) {
+        val state = _uiState.value
+        val subscription = state.subscriptions.firstOrNull {
+            it.id == state.selectedSubscriptionId && it.isActive
+        } ?: state.subscriptions.firstOrNull { it.isActive }
+        val server = state.servers.firstOrNull { it.id == state.selectedServerId }
+        if (subscription == null || server == null) {
+            toastError(R.string.brand_error_vpn_start)
+            return
         }
-        if (_uiState.value.isRunning) {
-            onReconnect()
+
+        launchLoading {
+            val provisioned = ProvisionHelper.provisionSubscription(subscription.subscriptionUrl, server)
+            _uiState.update { it.copy(hasServer = provisioned) }
+            if (provisioned) {
+                AuthStore.setSelectedServerId(server.id)
+                onReady()
+            } else {
+                toastError(R.string.brand_error_vpn_start)
+            }
+        }
+    }
+
+    fun switchServer(serverId: String, onReconnect: () -> Unit) {
+        val targetServer = _uiState.value.servers.firstOrNull { it.id == serverId }
+        val subscription = _uiState.value.subscriptions.firstOrNull {
+            it.id == _uiState.value.selectedSubscriptionId && it.isActive
+        } ?: _uiState.value.subscriptions.firstOrNull { it.isActive }
+        if (targetServer == null || subscription == null) return
+
+        val wasRunning = _uiState.value.isRunning
+        _uiState.update { it.copy(isSwitchingServer = true, testResult = null) }
+        launchLoading {
+            val provisioned = ProvisionHelper.provisionSubscription(subscription.subscriptionUrl, targetServer)
+            if (!provisioned) {
+                _uiState.update { it.copy(isSwitchingServer = false) }
+                toastError(R.string.brand_error_connection)
+                return@launchLoading
+            }
+            AuthStore.setSelectedServerId(serverId)
+            _uiState.update {
+                it.copy(
+                    selectedServerId = serverId,
+                    hasServer = true,
+                    isSwitchingServer = wasRunning,
+                    testResult = null,
+                )
+            }
+            if (wasRunning) {
+                onReconnect()
+                serverSwitchTimeoutJob?.cancel()
+                serverSwitchTimeoutJob = viewModelScope.launch {
+                    delay(20_000)
+                    _uiState.update { it.copy(isSwitchingServer = false) }
+                }
+            } else {
+                _uiState.update { it.copy(isSwitchingServer = false) }
+            }
         }
     }
 

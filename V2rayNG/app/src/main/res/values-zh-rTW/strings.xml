@@ -549,6 +549,7 @@
     <string name="value_unknown">未知</string>
 
     <string name="brand_switch">切換</string>
+    <string name="brand_switching_server">正在切換伺服器…</string>
     <string name="brand_wallet">錢包</string>
     <string name="brand_transfer_funds">轉帳</string>
     <string name="brand_recipient_email">接收方電子郵件</string>

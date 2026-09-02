@@ -56,6 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -80,7 +81,6 @@ class HomeActivity : BaseComponentActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 LauncherManager.startServiceFromToggle(this)
-                viewModel.setVpnRunning(true)
             }
         }
 
@@ -101,13 +101,15 @@ class HomeActivity : BaseComponentActivity() {
         // one kept correct, via the daemon's own broadcast replies.
         if (isRunning) {
             LauncherManager.stopService(this)
-            viewModel.setVpnRunning(false)
             return
         }
+        viewModel.prepareConnection(::startPreparedVpn)
+    }
+
+    private fun startPreparedVpn() {
         val intent = VpnService.prepare(this)
         if (intent == null) {
             LauncherManager.startServiceFromToggle(this)
-            viewModel.setVpnRunning(true)
         } else {
             requestVpnPermission.launch(intent)
         }
@@ -183,6 +185,7 @@ fun HomeScreen(
     val currentLang = LocaleHelper.getCurrentLanguageTag()
     val activeSubs = state.subscriptions.filter { it.isActive }
     val selectedSub = state.subscriptions.firstOrNull { it.id == state.selectedSubscriptionId }
+    val isBusy = isLoading || state.isSwitchingServer
 
     val config = androidx.compose.ui.platform.LocalConfiguration.current
     val responsivePadding = if (config.screenWidthDp > 640) ((config.screenWidthDp - 640) / 2).dp else 16.dp
@@ -215,8 +218,8 @@ fun HomeScreen(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = onRefresh, enabled = !isLoading) {
-                        if (isLoading) {
+                    TextButton(onClick = onRefresh, enabled = !isBusy) {
+                        if (isBusy) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                         } else {
                             Text(
@@ -356,7 +359,7 @@ fun HomeScreen(
                 ) {
                     Button(
                         onClick = onConnectToggle,
-                        enabled = state.hasServer,
+                        enabled = state.hasServer && !isBusy,
                         modifier = Modifier.size(150.dp),
                         shape = CircleShape,
                         colors = ButtonDefaults.buttonColors(
@@ -368,15 +371,27 @@ fun HomeScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                         ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_qu_start_24dp),
-                                contentDescription = null,
-                                modifier = Modifier.size(34.dp),
-                                tint = Color.White,
-                            )
+                            if (state.isSwitchingServer) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(34.dp),
+                                    strokeWidth = 3.dp,
+                                    color = Color.White,
+                                )
+                            } else {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_qu_start_24dp),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(34.dp),
+                                    tint = Color.White,
+                                )
+                            }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = if (state.isRunning) stringResource(R.string.brand_disconnect) else stringResource(R.string.brand_connect),
+                                text = when {
+                                    state.isSwitchingServer -> stringResource(R.string.brand_switching_server)
+                                    state.isRunning -> stringResource(R.string.brand_disconnect)
+                                    else -> stringResource(R.string.brand_connect)
+                                },
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White,
@@ -401,7 +416,8 @@ fun HomeScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     OutlinedButton(
                         onClick = onTestConnection,
-                        enabled = !state.isTestingConnection,
+                        enabled = state.isRunning && !state.isTestingConnection,
+                        modifier = Modifier.testTag("hush.connection-test"),
                         shape = RoundedCornerShape(20.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -467,6 +483,7 @@ fun HomeScreen(
 
             Card(
                 onClick = { showServerDialog = true },
+                enabled = !isBusy,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),

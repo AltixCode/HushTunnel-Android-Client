@@ -900,7 +900,7 @@ fun ResellerSubscriptionsTab(
             items(filtered) { sub ->
                 Card(
                     onClick = { onSubClick(sub) },
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).clickable { onSubClick(sub) },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {

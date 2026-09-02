@@ -19,21 +19,21 @@ if [ -z "$TEST_EMAIL" ] || [ -z "$TEST_PASSWORD" ]; then
   exit 1
 fi
 
-echo "▶ [1/4] Assembling Release APKs..."
+echo "▶ [1/5] Assembling Release APKs..."
 cd /Users/atamohammadi/Dev/shadowlink-android/V2rayNG
 ./gradlew assembleRelease --quiet
 cd /Users/atamohammadi/Dev/shadowlink-android
 cp V2rayNG/app/build/outputs/apk/playstore/release/HushTunnel_*_universal.apk HushTunnel-1.0.0-universal.apk
 echo " ✅ Release APK built successfully."
 
-echo "▶ [2/4] Installing on Emulator..."
+echo "▶ [2/5] Installing on Emulator..."
 $ADB install -r -d HushTunnel-1.0.0-universal.apk
 $ADB shell am force-stop com.hushtunnel.app
 $ADB shell am start -n com.hushtunnel.app/com.v2ray.ang.ui.brand.SplashActivity
 sleep 3
 echo " ✅ Installed and launched com.hushtunnel.app"
 
-echo "▶ [3/4] Testing Login & Authentication Flow..."
+echo "▶ [3/5] Testing Login & Authentication Flow..."
 python3 -c '
 import subprocess, time, os
 def adb(cmd):
@@ -64,6 +64,14 @@ time.sleep(4)
 '
 echo " ✅ Logged in successfully."
 
+echo "▶ [4/5] Verifying Connection Diagnostics UI..."
+$ADB shell uiautomator dump /sdcard/hushtunnel-window.xml >/dev/null
+if ! $ADB shell cat /sdcard/hushtunnel-window.xml | rg -q "Test Connection|تست اتصال|测试连接|Проверить соединение|Bağlantıyı Test Et|hush.connection-test"; then
+  echo "ERROR: Connection test control is missing from the authenticated home screen." >&2
+  exit 1
+fi
+echo " ✅ Connection test control is present."
+
 # TODO: extend this script to cover the reseller self-service personal VPN
 # flow (buy -> verify QR/connect card renders -> renew -> disconnect), the
 # way scripts/test-e2e.ts in the vpn-billing-dashboard repo does at the
@@ -71,7 +79,7 @@ echo " ✅ Logged in successfully."
 # which needs a real device/emulator screen to verify — couldn't be added
 # reliably without one available. See AGENTS.md section 5.
 
-echo "▶ [4/4] Capturing E2E Screen Artifacts..."
+echo "▶ [5/5] Capturing E2E Screen Artifacts..."
 $ADB exec-out screencap -p > /Users/atamohammadi/Dev/shadowlink-android/store_assets/02_android_home_e2e.png
 echo " ✅ Captured Home Dashboard -> store_assets/02_android_home_e2e.png"
 

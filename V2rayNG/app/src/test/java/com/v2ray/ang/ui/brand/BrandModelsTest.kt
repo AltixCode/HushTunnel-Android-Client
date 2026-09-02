@@ -95,4 +95,16 @@ class BrandModelsTest {
         assertTrue(langs.any { it.code == "zh-CN" })
         assertTrue(langs.any { it.code == "tr" })
     }
+
+    @Test
+    fun selectedServerSurvivesRefreshAndFallsBackSafely() {
+        val servers = listOf(
+            ServerNode(id = "md", name = "Moldova", host = "143.246.213.17", isDefault = true),
+            ServerNode(id = "nl", name = "Netherlands", host = "5.255.125.216"),
+        )
+
+        assertEquals("nl", resolveSelectedServerId(servers, currentServerId = "nl", savedServerId = "md"))
+        assertEquals("nl", resolveSelectedServerId(servers, currentServerId = null, savedServerId = "nl"))
+        assertEquals("md", resolveSelectedServerId(servers, currentServerId = "removed", savedServerId = "removed"))
+    }
 }

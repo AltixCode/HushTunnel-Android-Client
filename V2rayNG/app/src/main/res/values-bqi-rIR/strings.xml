@@ -549,6 +549,7 @@
     <string name="value_unknown">نا مؽخص</string>
 
     <string name="brand_switch">تغییر سرور</string>
+    <string name="brand_switching_server">در حال تغییر سرور…</string>
     <string name="brand_wallet">کیف پول</string>
     <string name="brand_transfer_funds">انتقال وجه</string>
     <string name="brand_recipient_email">ایمیل گیرنده</string>
