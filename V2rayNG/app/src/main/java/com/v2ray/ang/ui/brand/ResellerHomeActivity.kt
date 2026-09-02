@@ -1178,6 +1178,31 @@ fun AddSubResellerDialog(
     )
 }
 
+/**
+ * Renders a wallet transaction's display text: when [WalletTransactionItem.descriptionKey] is a
+ * recognized `tx.*` key, formats the matching localized string resource with its params (in the
+ * same order as the server's English phrasing); otherwise falls back to the raw (English,
+ * pre-i18n) [WalletTransactionItem.description] for legacy rows and free-text custom notes.
+ */
+@Composable
+private fun renderTransactionDescription(tx: WalletTransactionItem): String {
+    val p = tx.params
+    return when (tx.descriptionKey) {
+        "tx.transferOut" -> stringResource(R.string.brand_tx_transfer_out, p.email ?: "")
+        "tx.transferIn" -> stringResource(R.string.brand_tx_transfer_in, p.email ?: "")
+        "tx.deposit" -> stringResource(R.string.brand_tx_deposit, p.depositId ?: "")
+        "tx.planPurchase" -> stringResource(R.string.brand_tx_plan_purchase, p.planName ?: "")
+        "tx.orderPayment" -> stringResource(R.string.brand_tx_order_payment, p.orderId ?: "")
+        "tx.personalSubscription" -> stringResource(R.string.brand_tx_personal_subscription, p.planName ?: "")
+        "tx.personalRenewal" -> stringResource(R.string.brand_tx_personal_renewal, p.planName ?: "")
+        "tx.createdAccountOrder" -> stringResource(R.string.brand_tx_created_account_order, p.email ?: "", p.planName ?: "")
+        "tx.orderForCustomer" -> stringResource(R.string.brand_tx_order_for_customer, p.email ?: "", p.planName ?: "")
+        "tx.subResellerInitialBalance" -> stringResource(R.string.brand_tx_sub_reseller_initial_balance, p.email ?: "")
+        "tx.startupBalanceFromParent" -> stringResource(R.string.brand_tx_startup_balance_from_parent)
+        else -> tx.description ?: ""
+    }
+}
+
 @Composable
 fun ResellerTransactionsTab(
     transactions: List<WalletTransactionItem>,
@@ -1278,9 +1303,10 @@ fun ResellerTransactionsTab(
                             )
                         }
 
-                        if (!tx.description.isNullOrBlank()) {
+                        val displayDescription = renderTransactionDescription(tx)
+                        if (displayDescription.isNotBlank()) {
                             Text(
-                                text = tx.description,
+                                text = displayDescription,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium,
                                 modifier = Modifier.padding(top = 4.dp),

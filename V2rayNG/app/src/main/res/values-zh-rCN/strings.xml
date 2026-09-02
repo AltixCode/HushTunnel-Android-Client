@@ -703,4 +703,17 @@
     <string name="brand_test_success">连接已验证：%1$d毫秒 · IP: %2$s</string>
     <string name="brand_test_unprotected">未受保护：当前IP %1$s</string>
     <string name="brand_test_failed">连接失败</string>
+
+    <!-- Structured wallet transaction descriptions (descriptionKey + params from server) -->
+    <string name="brand_tx_transfer_out">转账给 %1$s</string>
+    <string name="brand_tx_transfer_in">来自 %1$s 的转账</string>
+    <string name="brand_tx_deposit">钱包充值（%1$s）</string>
+    <string name="brand_tx_plan_purchase">购买套餐：%1$s</string>
+    <string name="brand_tx_order_payment">订单付款（%1$s）</string>
+    <string name="brand_tx_personal_subscription">个人 VPN 订阅：%1$s</string>
+    <string name="brand_tx_personal_renewal">个人 VPN 续订：%1$s</string>
+    <string name="brand_tx_created_account_order">创建账户及订单：%1$s（%2$s）</string>
+    <string name="brand_tx_order_for_customer">为 %1$s 下单（%2$s）</string>
+    <string name="brand_tx_sub_reseller_initial_balance">子分销商 %1$s 的初始余额</string>
+    <string name="brand_tx_startup_balance_from_parent">来自上级分销商的初始启动余额</string>
 </resources>

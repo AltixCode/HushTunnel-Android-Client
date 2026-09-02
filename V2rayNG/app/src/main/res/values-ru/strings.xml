@@ -703,4 +703,17 @@
     <string name="brand_test_success">Подключено: %1$d мс · IP: %2$s</string>
     <string name="brand_test_unprotected">Не защищено: IP %1$s</string>
     <string name="brand_test_failed">Ошибка соединения</string>
+
+    <!-- Structured wallet transaction descriptions (descriptionKey + params from server) -->
+    <string name="brand_tx_transfer_out">Перевод пользователю %1$s</string>
+    <string name="brand_tx_transfer_in">Перевод от %1$s</string>
+    <string name="brand_tx_deposit">Пополнение кошелька (%1$s)</string>
+    <string name="brand_tx_plan_purchase">Покупка тарифа: %1$s</string>
+    <string name="brand_tx_order_payment">Оплата заказа (%1$s)</string>
+    <string name="brand_tx_personal_subscription">Личная VPN-подписка: %1$s</string>
+    <string name="brand_tx_personal_renewal">Продление личной VPN-подписки: %1$s</string>
+    <string name="brand_tx_created_account_order">Создан аккаунт и заказ: %1$s (%2$s)</string>
+    <string name="brand_tx_order_for_customer">Заказ для %1$s (%2$s)</string>
+    <string name="brand_tx_sub_reseller_initial_balance">Начальный баланс для суб-реселлера %1$s</string>
+    <string name="brand_tx_startup_balance_from_parent">Начальный стартовый баланс от родительского реселлера</string>
 </resources>

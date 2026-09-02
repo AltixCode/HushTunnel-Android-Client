@@ -743,4 +743,17 @@
     <string name="brand_test_success">Connected: %1$dms · IP: %2$s</string>
     <string name="brand_test_unprotected">Unprotected: IP is %1$s</string>
     <string name="brand_test_failed">Connection Failed</string>
+
+    <!-- Structured wallet transaction descriptions (descriptionKey + params from server) -->
+    <string name="brand_tx_transfer_out">Transfer to %1$s</string>
+    <string name="brand_tx_transfer_in">Transfer from %1$s</string>
+    <string name="brand_tx_deposit">Wallet deposit (%1$s)</string>
+    <string name="brand_tx_plan_purchase">Plan purchase: %1$s</string>
+    <string name="brand_tx_order_payment">Order payment (%1$s)</string>
+    <string name="brand_tx_personal_subscription">Personal VPN subscription: %1$s</string>
+    <string name="brand_tx_personal_renewal">Personal VPN renewal: %1$s</string>
+    <string name="brand_tx_created_account_order">Created account &amp; order: %1$s (%2$s)</string>
+    <string name="brand_tx_order_for_customer">Order for %1$s (%2$s)</string>
+    <string name="brand_tx_sub_reseller_initial_balance">Initial balance for sub-reseller %1$s</string>
+    <string name="brand_tx_startup_balance_from_parent">Initial startup balance from parent reseller</string>
 </resources>

@@ -146,6 +146,14 @@ data class ResellerSubscription(
     val servers: List<ResellerServerLink> = emptyList(),
 )
 
+/** Locale-resolved params carried alongside [WalletTransactionItem.descriptionKey], as sent by the server. */
+data class WalletTransactionParams(
+    val email: String? = null,
+    val depositId: String? = null,
+    val orderId: String? = null,
+    val planName: String? = null,
+)
+
 data class WalletTransactionItem(
     val id: String,
     val type: String,
@@ -155,6 +163,9 @@ data class WalletTransactionItem(
     val description: String?,
     val counterpartEmail: String?,
     val createdAt: String,
+    /** One of the `tx.*` keys server-side, or null for legacy/free-text rows — fall back to [description]. */
+    val descriptionKey: String? = null,
+    val params: WalletTransactionParams = WalletTransactionParams(),
 )
 
 data class ResellerDeposit(

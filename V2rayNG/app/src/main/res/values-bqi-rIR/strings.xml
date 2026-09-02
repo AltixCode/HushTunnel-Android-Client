@@ -696,4 +696,17 @@
     <string name="brand_quick_amount_add">+%1$d دلار</string>
     <string name="brand_max">حداکثر</string>
     <string name="brand_search_subresellers">🔍 جستجوی نمایندگان...</string>
+
+    <!-- Structured wallet transaction descriptions (descriptionKey + params from server) -->
+    <string name="brand_tx_transfer_out">انتقال به %1$s</string>
+    <string name="brand_tx_transfer_in">انتقال از %1$s</string>
+    <string name="brand_tx_deposit">واریز به کیف پول (%1$s)</string>
+    <string name="brand_tx_plan_purchase">خرید پلن: %1$s</string>
+    <string name="brand_tx_order_payment">پرداخت سفارش (%1$s)</string>
+    <string name="brand_tx_personal_subscription">اشتراک شخصی VPN: %1$s</string>
+    <string name="brand_tx_personal_renewal">تمدید اشتراک شخصی VPN: %1$s</string>
+    <string name="brand_tx_created_account_order">ایجاد حساب و سفارش: %1$s (%2$s)</string>
+    <string name="brand_tx_order_for_customer">سفارش برای %1$s (%2$s)</string>
+    <string name="brand_tx_sub_reseller_initial_balance">موجودی اولیه برای نماینده همکار %1$s</string>
+    <string name="brand_tx_startup_balance_from_parent">موجودی اولیه راه‌اندازی از نماینده مادر</string>
 </resources>

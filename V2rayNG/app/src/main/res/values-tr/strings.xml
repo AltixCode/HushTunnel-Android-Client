@@ -604,4 +604,17 @@
     <string name="brand_test_success">Bağlantı Doğrulandı: %1$dms · IP: %2$s</string>
     <string name="brand_test_unprotected">Korumasız: IP %1$s</string>
     <string name="brand_test_failed">Bağlantı Başarısız</string>
+
+    <!-- Structured wallet transaction descriptions (descriptionKey + params from server) -->
+    <string name="brand_tx_transfer_out">%1$s kullanıcısına transfer</string>
+    <string name="brand_tx_transfer_in">%1$s kullanıcısından transfer</string>
+    <string name="brand_tx_deposit">Cüzdan yüklemesi (%1$s)</string>
+    <string name="brand_tx_plan_purchase">Plan satın alma: %1$s</string>
+    <string name="brand_tx_order_payment">Sipariş ödemesi (%1$s)</string>
+    <string name="brand_tx_personal_subscription">Kişisel VPN aboneliği: %1$s</string>
+    <string name="brand_tx_personal_renewal">Kişisel VPN yenileme: %1$s</string>
+    <string name="brand_tx_created_account_order">Hesap ve sipariş oluşturuldu: %1$s (%2$s)</string>
+    <string name="brand_tx_order_for_customer">%1$s için sipariş (%2$s)</string>
+    <string name="brand_tx_sub_reseller_initial_balance">Alt bayi %1$s için başlangıç bakiyesi</string>
+    <string name="brand_tx_startup_balance_from_parent">Üst bayiden başlangıç bakiyesi</string>
 </resources>

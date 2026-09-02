@@ -13,6 +13,21 @@ import java.util.concurrent.TimeUnit
 /** org.json quirk: a JSON `null` value round-trips as the sentinel [JSONObject.NULL], not Kotlin null. */
 private fun JSONObject.optNullableString(key: String): String? = if (isNull(key)) null else optString(key)
 
+/**
+ * Maps the app's current display language to the `?locale=` query param recognized by the mobile
+ * API (`en`, `fa`, `ru`, `tr`, `zh`) — used to get server-side locale-resolved plan names and
+ * transaction descriptions. [LocaleHelper.getCurrentLanguageTag] returns `zh-CN` for Chinese, but
+ * the server only recognizes `zh`; every other tag passes through unchanged.
+ */
+private fun currentApiLocale(): String =
+    LocaleHelper.getCurrentLanguageTag().let { if (it == "zh-CN") "zh" else it }
+
+/** Appends `?locale=<tag>` (or `&locale=` if [path] already has a query string) for the current app language. */
+private fun withLocale(path: String): String {
+    val separator = if (path.contains("?")) "&" else "?"
+    return "$path${separator}locale=${currentApiLocale()}"
+}
+
 /** Parses the `servers` array present on reseller order/subscription responses (default-first, then configured order). */
 private fun JSONObject.optResellerServers(): List<ResellerServerLink> {
     val serversJson = optJSONArray("servers") ?: JSONArray()
@@ -119,7 +134,7 @@ object ApiClient {
     }
 
     suspend fun me(token: String): MeResult {
-        val json = request("/api/mobile/me", token = token)
+        val json = request(withLocale("/api/mobile/me"), token = token)
         val subsJson = json.optJSONArray("subscriptions") ?: JSONArray()
         val subs = (0 until subsJson.length()).map { i ->
             val s = subsJson.getJSONObject(i)
@@ -160,7 +175,7 @@ object ApiClient {
     }
 
     suspend fun plans(): List<PlanInfo> {
-        val json = request("/api/mobile/plans")
+        val json = request(withLocale("/api/mobile/plans"))
         val plansJson: JSONArray = json.optJSONArray("plans") ?: JSONArray()
         return (0 until plansJson.length()).map { i ->
             val p = plansJson.getJSONObject(i)
@@ -209,7 +224,7 @@ object ApiClient {
     }
 
     suspend fun orders(token: String): List<OrderItem> {
-        val json = request("/api/mobile/orders", token = token)
+        val json = request(withLocale("/api/mobile/orders"), token = token)
         val ordersJson = json.optJSONArray("orders") ?: JSONArray()
         return (0 until ordersJson.length()).map { i ->
             val o = ordersJson.getJSONObject(i)
@@ -238,7 +253,7 @@ object ApiClient {
     }
 
     suspend fun resellerCustomers(token: String): List<ResellerCustomer> {
-        val json = request("/api/mobile/reseller/customers", token = token)
+        val json = request(withLocale("/api/mobile/reseller/customers"), token = token)
         val list = json.optJSONArray("customers") ?: JSONArray()
         return (0 until list.length()).map { i ->
             val c = list.getJSONObject(i)
@@ -251,7 +266,7 @@ object ApiClient {
     }
 
     suspend fun resellerCustomerDetails(token: String, id: String): ResellerCustomerDetail {
-        val json = request("/api/mobile/reseller/customers/$id", token = token)
+        val json = request(withLocale("/api/mobile/reseller/customers/$id"), token = token)
         val c = json.getJSONObject("customer")
         val subsJson = c.optJSONArray("subscriptions") ?: JSONArray()
         val subs = (0 until subsJson.length()).map { i ->
@@ -295,7 +310,7 @@ object ApiClient {
     }
 
     suspend fun resellerOrders(token: String): List<ResellerOrder> {
-        val json = request("/api/mobile/reseller/orders", token = token)
+        val json = request(withLocale("/api/mobile/reseller/orders"), token = token)
         val list = json.optJSONArray("orders") ?: JSONArray()
         return (0 until list.length()).map { i ->
             val o = list.getJSONObject(i)
@@ -315,7 +330,7 @@ object ApiClient {
 
     suspend fun createResellerOrder(token: String, customerEmail: String, planId: String): CreateResellerOrderResult {
         val json = request(
-            "/api/mobile/reseller/orders", "POST", token = token,
+            withLocale("/api/mobile/reseller/orders"), "POST", token = token,
             body = JSONObject().put("customerEmail", customerEmail).put("planId", planId)
         )
         return CreateResellerOrderResult(
@@ -331,7 +346,7 @@ object ApiClient {
     }
 
     suspend fun resellerSubscriptions(token: String): List<ResellerSubscription> {
-        val json = request("/api/mobile/reseller/subscriptions", token = token)
+        val json = request(withLocale("/api/mobile/reseller/subscriptions"), token = token)
         val list = json.optJSONArray("subscriptions") ?: JSONArray()
         return (0 until list.length()).map { i ->
             val s = list.getJSONObject(i)
@@ -371,10 +386,11 @@ object ApiClient {
     }
 
     suspend fun getWalletTransactions(token: String): List<WalletTransactionItem> {
-        val json = request("/api/mobile/wallet/transactions", token = token)
+        val json = request(withLocale("/api/mobile/wallet/transactions"), token = token)
         val list = json.optJSONArray("transactions") ?: JSONArray()
         return (0 until list.length()).map { i ->
             val t = list.getJSONObject(i)
+            val paramsJson = t.optJSONObject("params")
             WalletTransactionItem(
                 id = t.getString("id"),
                 type = t.optString("type", "UNKNOWN"),
@@ -384,6 +400,13 @@ object ApiClient {
                 description = t.optString("description").takeIf { it.isNotBlank() },
                 counterpartEmail = t.optString("counterpartEmail").takeIf { it.isNotBlank() },
                 createdAt = t.optString("createdAt", ""),
+                descriptionKey = t.optNullableString("descriptionKey"),
+                params = WalletTransactionParams(
+                    email = paramsJson?.optNullableString("email"),
+                    depositId = paramsJson?.optNullableString("depositId"),
+                    orderId = paramsJson?.optNullableString("orderId"),
+                    planName = paramsJson?.optNullableString("planName"),
+                ),
             )
         }
     }
