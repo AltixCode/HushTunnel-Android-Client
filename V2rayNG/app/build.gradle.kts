@@ -32,8 +32,10 @@ android {
         minSdk = 24
         targetSdk = 37
         val gitCount = getGitCommitCount()
-        versionCode = 10000000 + gitCount
-        versionName = "1.0.$gitCount"
+        versionCode = providers.gradleProperty("hushVersionCode").orNull?.toIntOrNull()
+            ?: (10000000 + gitCount)
+        versionName = providers.gradleProperty("hushVersionName").orNull
+            ?: "1.0.$gitCount"
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
         splits {

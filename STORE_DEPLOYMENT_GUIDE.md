@@ -67,7 +67,14 @@ AAB manually in Play Console. Keep the same local upload keystore for CI.
 
 ## 4. Triggering builds and releases
 
-### A. Automatic Play Store Release via Tag:
+### A. Automatic release on every main-branch push
+
+Every push to `main` builds a uniquely versioned, signed AAB and publishes it
+as a completed release on Google Play's internal-testing track. Testers receive
+the update automatically. Tags and manual workflow runs use the same behavior.
+
+### B. Tagged release
+
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
@@ -76,10 +83,14 @@ Compiles universal/ARM APKs and the Play Store `.aab`, publishes the AAB to the
 Google Play internal-testing track, and creates a GitHub Release with all
 download assets attached.
 
-### B. Manual Dispatch:
+### C. Manual dispatch
+
 1. Go to **Actions** tab on GitHub.
 2. Select **`Android Build & Play Store Release`**.
-3. Click **Run workflow** and set `upload_to_play_store` to `true`.
-4. Use `completed` to make the build available to internal testers immediately,
-   or `draft` for a first diagnostic upload that you will review in Play
-   Console before rollout.
+3. Click **Run workflow**. The build is always published to internal testing as
+   `completed`; there is no upload-disable or draft mode in this release
+   workflow.
+
+CI version codes use GitHub's monotonically increasing workflow run number, so
+manual reruns of the same commit remain valid Play updates instead of failing
+with a duplicate version-code error.
