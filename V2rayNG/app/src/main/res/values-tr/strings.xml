@@ -599,4 +599,9 @@
     <string name="brand_quick_amount_add">+$%1$d</string>
     <string name="brand_max">Maks</string>
     <string name="brand_search_subresellers">🔍 Alt bayilerde ara...</string>
+    <string name="brand_test_connection">Bağlantıyı Test Et</string>
+    <string name="brand_testing">Test ediliyor...</string>
+    <string name="brand_test_success">Bağlantı Doğrulandı: %1$dms · IP: %2$s</string>
+    <string name="brand_test_unprotected">Korumasız: IP %1$s</string>
+    <string name="brand_test_failed">Bağlantı Başarısız</string>
 </resources>

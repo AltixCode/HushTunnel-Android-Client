@@ -738,4 +738,9 @@
     <string name="brand_quick_amount_add">+$%1$d</string>
     <string name="brand_max">Max</string>
     <string name="brand_search_subresellers">🔍 Search sub-resellers...</string>
+    <string name="brand_test_connection">Test Connection</string>
+    <string name="brand_testing">Testing...</string>
+    <string name="brand_test_success">Connected: %1$dms · IP: %2$s</string>
+    <string name="brand_test_unprotected">Unprotected: IP is %1$s</string>
+    <string name="brand_test_failed">Connection Failed</string>
 </resources>

@@ -698,4 +698,9 @@
     <string name="brand_quick_amount_add">+$%1$d</string>
     <string name="brand_max">Макс</string>
     <string name="brand_search_subresellers">🔍 Поиск суб-реселлеров...</string>
+    <string name="brand_test_connection">Проверить соединение</string>
+    <string name="brand_testing">Тестирование...</string>
+    <string name="brand_test_success">Подключено: %1$d мс · IP: %2$s</string>
+    <string name="brand_test_unprotected">Не защищено: IP %1$s</string>
+    <string name="brand_test_failed">Ошибка соединения</string>
 </resources>

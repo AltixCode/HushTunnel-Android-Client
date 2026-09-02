@@ -123,6 +123,7 @@ class HomeActivity : BaseComponentActivity() {
             isLoading = isLoading,
             onRefresh = viewModel::refresh,
             onConnectToggle = { handleConnectToggle(state.isRunning) },
+            onTestConnection = viewModel::testConnection,
             onSelectSubscription = viewModel::selectSubscription,
             onBuyPlan = { planId, gateway ->
                 viewModel.buyPlan(planId, gateway) { checkoutUrl -> Utils.openUri(this, checkoutUrl) }
@@ -162,6 +163,7 @@ fun HomeScreen(
     isLoading: Boolean,
     onRefresh: () -> Unit,
     onConnectToggle: () -> Unit,
+    onTestConnection: () -> Unit = {},
     onSelectSubscription: (String) -> Unit,
     onBuyPlan: (planId: String, gateway: String) -> Unit,
     onRenewPlan: (subId: String, planId: String, gateway: String) -> Unit,
@@ -383,6 +385,75 @@ fun HomeScreen(
                                 text = if (state.isRunning) stringResource(R.string.brand_tap_to_disconnect) else stringResource(R.string.brand_tap_to_connect),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color.White.copy(alpha = 0.85f),
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Test Connection Button & Result Banner
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    OutlinedButton(
+                        onClick = onTestConnection,
+                        enabled = !state.isTestingConnection,
+                        shape = RoundedCornerShape(20.dp),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (state.isTestingConnection) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(R.string.brand_testing),
+                                    style = MaterialTheme.typography.labelMedium,
+                                )
+                            } else {
+                                Text(
+                                    text = "⚡ " + stringResource(R.string.brand_test_connection),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                            }
+                        }
+                    }
+
+                    state.testResult?.let { res ->
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val badgeBg = when (res.status) {
+                            ConnectionTestResult.Status.SUCCESS -> Color(0xFF10B981).copy(alpha = 0.12f)
+                            ConnectionTestResult.Status.WARNING -> Color(0xFFF59E0B).copy(alpha = 0.12f)
+                            ConnectionTestResult.Status.ERROR -> Color(0xFFEF4444).copy(alpha = 0.12f)
+                        }
+                        val badgeColor = when (res.status) {
+                            ConnectionTestResult.Status.SUCCESS -> Color(0xFF10B981)
+                            ConnectionTestResult.Status.WARNING -> Color(0xFFF59E0B)
+                            ConnectionTestResult.Status.ERROR -> Color(0xFFEF4444)
+                        }
+                        val badgeIcon = when (res.status) {
+                            ConnectionTestResult.Status.SUCCESS -> "🛡️ "
+                            ConnectionTestResult.Status.WARNING -> "⚠️ "
+                            ConnectionTestResult.Status.ERROR -> "❌ "
+                        }
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = badgeBg),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        ) {
+                            Text(
+                                text = badgeIcon + res.message,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium,
+                                color = badgeColor,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                             )
                         }
                     }

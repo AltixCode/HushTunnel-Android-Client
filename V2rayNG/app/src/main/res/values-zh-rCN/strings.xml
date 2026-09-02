@@ -698,4 +698,9 @@
     <string name="brand_quick_amount_add">+$%1$d</string>
     <string name="brand_max">全部</string>
     <string name="brand_search_subresellers">🔍 搜索子分销商...</string>
+    <string name="brand_test_connection">测试连接</string>
+    <string name="brand_testing">正在测试...</string>
+    <string name="brand_test_success">连接已验证：%1$d毫秒 · IP: %2$s</string>
+    <string name="brand_test_unprotected">未受保护：当前IP %1$s</string>
+    <string name="brand_test_failed">连接失败</string>
 </resources>

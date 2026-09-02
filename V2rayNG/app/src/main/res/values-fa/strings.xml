@@ -738,4 +738,9 @@
     <string name="brand_quick_amount_add">+%1$d دلار</string>
     <string name="brand_max">حداکثر</string>
     <string name="brand_search_subresellers">🔍 جستجوی نمایندگان...</string>
+    <string name="brand_test_connection">تست اتصال</string>
+    <string name="brand_testing">در حال بررسی...</string>
+    <string name="brand_test_success">اتصال تایید شد: %1$d میلی‌ثانیه · آی‌پی: %2$s</string>
+    <string name="brand_test_unprotected">غیر امن: آی‌پی شما %1$s</string>
+    <string name="brand_test_failed">خطا در برقراری ارتباط</string>
 </resources>

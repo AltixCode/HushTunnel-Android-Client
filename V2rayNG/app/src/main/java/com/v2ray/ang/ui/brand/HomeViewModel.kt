@@ -28,7 +28,19 @@ data class HomeUiState(
     val error: String? = null,
     val checkoutMessage: String? = null,
     val isPollingOrder: Boolean = false,
+    val isTestingConnection: Boolean = false,
+    val testResult: ConnectionTestResult? = null,
 )
+
+data class ConnectionTestResult(
+    val status: Status,
+    val ip: String,
+    val latencyMs: Long,
+    val serverMatches: Boolean,
+    val message: String,
+) {
+    enum class Status { SUCCESS, WARNING, ERROR }
+}
 
 class HomeViewModel(application: Application) : BaseViewModel(application) {
 
@@ -79,6 +91,97 @@ class HomeViewModel(application: Application) : BaseViewModel(application) {
 
     fun setVpnRunning(running: Boolean) {
         _uiState.update { it.copy(isRunning = running) }
+    }
+
+    fun testConnection() {
+        if (_uiState.value.isTestingConnection) return
+        val currentServer = _uiState.value.servers.firstOrNull { it.id == _uiState.value.selectedServerId }
+            ?: _uiState.value.servers.firstOrNull { it.isDefault }
+            ?: _uiState.value.servers.firstOrNull()
+        val expectedHost = currentServer?.host ?: ""
+
+        _uiState.update { it.copy(isTestingConnection = true, testResult = null) }
+
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val startTime = System.currentTimeMillis()
+            try {
+                val client = okhttp3.OkHttpClient.Builder()
+                    .connectTimeout(7, java.util.concurrent.TimeUnit.SECONDS)
+                    .readTimeout(7, java.util.concurrent.TimeUnit.SECONDS)
+                    .build()
+
+                val request = okhttp3.Request.Builder()
+                    .url("https://api.ipify.org?format=json")
+                    .build()
+
+                val response = client.newCall(request).execute()
+                val elapsed = System.currentTimeMillis() - startTime
+                val bodyString = response.body?.string() ?: ""
+
+                try {
+                    val appleReq = okhttp3.Request.Builder()
+                        .url("https://www.apple.com")
+                        .build()
+                    client.newCall(appleReq).execute().close()
+                } catch (_: Exception) {}
+
+                if (!response.isSuccessful) {
+                    _uiState.update {
+                        it.copy(
+                            isTestingConnection = false,
+                            testResult = ConnectionTestResult(
+                                status = ConnectionTestResult.Status.ERROR,
+                                ip = "",
+                                latencyMs = 0,
+                                serverMatches = false,
+                                message = app.getString(R.string.brand_test_failed)
+                            )
+                        )
+                    }
+                    return@launch
+                }
+
+                val json = org.json.JSONObject(bodyString)
+                val ip = json.optString("ip", "").trim()
+                val matches = ip.equals(expectedHost.trim(), ignoreCase = true)
+
+                _uiState.update {
+                    it.copy(
+                        isTestingConnection = false,
+                        testResult = if (matches) {
+                            ConnectionTestResult(
+                                status = ConnectionTestResult.Status.SUCCESS,
+                                ip = ip,
+                                latencyMs = elapsed,
+                                serverMatches = true,
+                                message = app.getString(R.string.brand_test_success, elapsed, ip)
+                            )
+                        } else {
+                            ConnectionTestResult(
+                                status = ConnectionTestResult.Status.WARNING,
+                                ip = ip,
+                                latencyMs = elapsed,
+                                serverMatches = false,
+                                message = app.getString(R.string.brand_test_unprotected, ip)
+                            )
+                        }
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isTestingConnection = false,
+                        testResult = ConnectionTestResult(
+                            status = ConnectionTestResult.Status.ERROR,
+                            ip = "",
+                            latencyMs = 0,
+                            serverMatches = false,
+                            message = app.getString(R.string.brand_test_failed)
+                        )
+                    )
+                }
+            }
+        }
     }
 
     override fun onCleared() {
