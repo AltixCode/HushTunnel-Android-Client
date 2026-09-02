@@ -717,4 +717,8 @@
     <string name="brand_tx_order_for_customer">Заказ для %1$s (%2$s)</string>
     <string name="brand_tx_sub_reseller_initial_balance">Начальный баланс для суб-реселлера %1$s</string>
     <string name="brand_tx_startup_balance_from_parent">Начальный стартовый баланс от родительского реселлера</string>
+    <string name="brand_confirm_disable_sub_title">Отключить подписку?</string>
+    <string name="brand_confirm_disable_sub_message">%1$s немедленно потеряет доступ к VPN. Вы можете снова включить её в любое время.</string>
+    <string name="brand_confirm_reset_uuid_title">Сбросить ID подключения?</string>
+    <string name="brand_confirm_reset_uuid_message">Текущая ссылка VLESS и QR-код пользователя %1$s немедленно перестанут работать. Отправьте ему новую ссылку после этого.</string>
 </resources>

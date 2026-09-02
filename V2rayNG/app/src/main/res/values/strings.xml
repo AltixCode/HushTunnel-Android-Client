@@ -687,6 +687,10 @@
     <string name="brand_reseller_balance_applied">Your Reseller Balance: $%1$.2f (%2$d%% off applied)</string>
     <string name="brand_confirm_with_price">Confirm ($%1$.2f)</string>
     <string name="brand_confirm">Confirm</string>
+    <string name="brand_confirm_disable_sub_title">Disable subscription?</string>
+    <string name="brand_confirm_disable_sub_message">%1$s will lose VPN access immediately. You can re-enable it anytime.</string>
+    <string name="brand_confirm_reset_uuid_title">Reset connection ID?</string>
+    <string name="brand_confirm_reset_uuid_message">%1$s\'s current VLESS link and QR code will stop working immediately. Share the new one with them after this.</string>
     <string name="brand_search_customers">🔍 Search customers by email</string>
     <string name="brand_search_orders">🔍 Search orders by customer/plan</string>
     <string name="brand_search_subscriptions">🔍 Search subscriptions</string>

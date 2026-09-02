@@ -687,6 +687,10 @@
     <string name="brand_reseller_balance_applied">موجودی نمایندگی شما: %1$.2f دلار (%2$d٪ تخفیف اعمال شده)</string>
     <string name="brand_confirm_with_price">تأیید (%1$.2f دلار)</string>
     <string name="brand_confirm">تأیید</string>
+    <string name="brand_confirm_disable_sub_title">اشتراک غیرفعال شود؟</string>
+    <string name="brand_confirm_disable_sub_message">%1$s بلافاصله دسترسی VPN را از دست می‌دهد. هر زمان می‌توانید دوباره فعالش کنید.</string>
+    <string name="brand_confirm_reset_uuid_title">شناسه اتصال بازنشانی شود؟</string>
+    <string name="brand_confirm_reset_uuid_message">لینک VLESS و کد QR فعلی %1$s بلافاصله از کار می‌افتد. لینک جدید را بعد از این با او به اشتراک بگذارید.</string>
     <string name="brand_search_customers">🔍 جستجوی مشتریان با ایمیل</string>
     <string name="brand_search_orders">🔍 جستجوی سفارش‌ها بر اساس مشتری/پلن</string>
     <string name="brand_search_subscriptions">🔍 جستجوی اشتراک‌ها</string>

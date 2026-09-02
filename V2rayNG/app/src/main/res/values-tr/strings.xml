@@ -618,4 +618,8 @@
     <string name="brand_tx_order_for_customer">%1$s için sipariş (%2$s)</string>
     <string name="brand_tx_sub_reseller_initial_balance">Alt bayi %1$s için başlangıç bakiyesi</string>
     <string name="brand_tx_startup_balance_from_parent">Üst bayiden başlangıç bakiyesi</string>
+    <string name="brand_confirm_disable_sub_title">Abonelik devre dışı bırakılsın mı?</string>
+    <string name="brand_confirm_disable_sub_message">%1$s hemen VPN erişimini kaybedecek. İstediğiniz zaman tekrar etkinleştirebilirsiniz.</string>
+    <string name="brand_confirm_reset_uuid_title">Bağlantı kimliği sıfırlansın mı?</string>
+    <string name="brand_confirm_reset_uuid_message">%1$s adlı müşterinin mevcut VLESS bağlantısı ve QR kodu hemen çalışmayı durduracak. Bundan sonra yeni bağlantıyı kendisiyle paylaşın.</string>
 </resources>

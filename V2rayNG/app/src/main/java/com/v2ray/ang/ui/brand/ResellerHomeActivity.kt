@@ -393,6 +393,7 @@ fun ResellerHomeScreen(
                     onResetUuid = onResetSubUuid,
                     onResetTraffic = onResetSubTraffic,
                     onRevoke = onRevokeSub,
+                    isLoading = isLoading,
                     onSubClick = { sub ->
                         onOpenConnectionDetails(
                             ResellerConnectionDetails(
@@ -867,15 +868,60 @@ fun ResellerSubscriptionsTab(
     onResetUuid: (String) -> Unit,
     onResetTraffic: (String) -> Unit,
     onRevoke: (String) -> Unit,
+    isLoading: Boolean = false,
     onSubClick: (ResellerSubscription) -> Unit = {},
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    // Tracks which (subscriptionId, action) is in flight so only the tapped
+    // button shows a spinner, not every button on every row.
+    var pendingAction by remember { mutableStateOf<Pair<String, String>?>(null) }
+    // Disabling a subscription cuts a real customer's access and resetting the
+    // UUID breaks their existing VLESS link/QR immediately — both need explicit
+    // confirmation before firing. (subId, customerEmail, actionKey)
+    var confirmTarget by remember { mutableStateOf<Triple<String, String, String>?>(null) }
+
+    LaunchedEffect(isLoading) {
+        if (!isLoading) pendingAction = null
+    }
+
     val filtered = remember(subscriptions, searchQuery) {
         if (searchQuery.isBlank()) subscriptions
         else subscriptions.filter {
             it.customerEmail.contains(searchQuery.trim(), ignoreCase = true) ||
             it.planName.contains(searchQuery.trim(), ignoreCase = true)
         }
+    }
+
+    confirmTarget?.let { (subId, email, actionKey) ->
+        val (titleRes, messageRes) = if (actionKey == "reset_uuid") {
+            R.string.brand_confirm_reset_uuid_title to R.string.brand_confirm_reset_uuid_message
+        } else {
+            R.string.brand_confirm_disable_sub_title to R.string.brand_confirm_disable_sub_message
+        }
+        AlertDialog(
+            onDismissRequest = { confirmTarget = null },
+            title = { Text(stringResource(titleRes)) },
+            text = { Text(stringResource(messageRes, email)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmTarget = null
+                    if (actionKey == "reset_uuid") {
+                        pendingAction = subId to "reset_uuid"
+                        onResetUuid(subId)
+                    } else {
+                        pendingAction = subId to "toggle"
+                        onToggle(subId, false)
+                    }
+                }) {
+                    Text(stringResource(R.string.brand_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmTarget = null }) {
+                    Text(stringResource(R.string.brand_cancel))
+                }
+            },
+        )
     }
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -937,14 +983,45 @@ fun ResellerSubscriptionsTab(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
-                            TextButton(onClick = { onExtend(sub.id) }) {
-                                Text(stringResource(R.string.brand_reseller_extend))
+                            TextButton(
+                                onClick = {
+                                    pendingAction = sub.id to "extend"
+                                    onExtend(sub.id)
+                                },
+                                enabled = !isLoading,
+                            ) {
+                                if (pendingAction == sub.id to "extend") {
+                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                } else {
+                                    Text(stringResource(R.string.brand_reseller_extend))
+                                }
                             }
-                            TextButton(onClick = { onToggle(sub.id, !sub.isActive) }) {
-                                Text(stringResource(R.string.brand_reseller_toggle))
+                            TextButton(
+                                onClick = {
+                                    if (sub.isActive) {
+                                        confirmTarget = Triple(sub.id, sub.customerEmail, "toggle_disable")
+                                    } else {
+                                        pendingAction = sub.id to "toggle"
+                                        onToggle(sub.id, true)
+                                    }
+                                },
+                                enabled = !isLoading,
+                            ) {
+                                if (pendingAction == sub.id to "toggle") {
+                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                } else {
+                                    Text(stringResource(R.string.brand_reseller_toggle))
+                                }
                             }
-                            TextButton(onClick = { onResetUuid(sub.id) }) {
-                                Text(stringResource(R.string.brand_reseller_reset_uuid))
+                            TextButton(
+                                onClick = { confirmTarget = Triple(sub.id, sub.customerEmail, "reset_uuid") },
+                                enabled = !isLoading,
+                            ) {
+                                if (pendingAction == sub.id to "reset_uuid") {
+                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                } else {
+                                    Text(stringResource(R.string.brand_reseller_reset_uuid))
+                                }
                             }
                         }
                     }

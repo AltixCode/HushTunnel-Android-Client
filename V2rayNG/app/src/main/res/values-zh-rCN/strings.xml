@@ -717,4 +717,8 @@
     <string name="brand_tx_order_for_customer">为 %1$s 下单（%2$s）</string>
     <string name="brand_tx_sub_reseller_initial_balance">子分销商 %1$s 的初始余额</string>
     <string name="brand_tx_startup_balance_from_parent">来自上级分销商的初始启动余额</string>
+    <string name="brand_confirm_disable_sub_title">禁用此订阅？</string>
+    <string name="brand_confirm_disable_sub_message">%1$s 将立即失去 VPN 访问权限。您可以随时重新启用。</string>
+    <string name="brand_confirm_reset_uuid_title">重置连接 ID？</string>
+    <string name="brand_confirm_reset_uuid_message">%1$s 当前的 VLESS 链接和二维码将立即失效。之后请将新链接分享给对方。</string>
 </resources>
