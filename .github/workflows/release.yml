@@ -27,9 +27,24 @@ on:
         required: false
         type: boolean
         default: false
+      play_release_status:
+        description: 'Google Play internal release status'
+        required: false
+        type: choice
+        options:
+          - completed
+          - draft
+        default: completed
 
 permissions:
   contents: write
+  id-token: write
+
+# Google Play permits only one active edit at a time. Serializing release runs
+# prevents two tags/manual runs from invalidating each other's Play edit.
+concurrency:
+  group: google-play-com.hushtunnel.app
+  cancel-in-progress: false
 
 jobs:
   build-and-release:
@@ -51,10 +66,10 @@ jobs:
 
       - name: Install Android NDK
         run: |
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+          echo "y" | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
             --channel=0 \
             --install "ndk;29.0.14206865"
-          echo "NDK_HOME=$ANDROID_HOME/ndk/29.0.14206865" >> $GITHUB_ENV
+          echo "NDK_HOME=$ANDROID_HOME/ndk/29.0.14206865" >> "$GITHUB_ENV"
 
       - name: Cache libhevtun
         id: cache-libhevtun
@@ -72,18 +87,18 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/V2rayNG/app/libs
           if [ -d "${{ github.workspace }}/libs" ]; then
-            cp -r ${{ github.workspace }}/libs/* ${{ github.workspace }}/V2rayNG/app/libs/ || true
+            cp -r "${{ github.workspace }}/libs/." "${{ github.workspace }}/V2rayNG/app/libs/" || true
           fi
 
       - name: Fetch AndroidLibXrayLite
         run: |
           if [ -d "AndroidLibXrayLite" ]; then
             pushd AndroidLibXrayLite
-            CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v2026.08.01")
-            echo "CURRENT_TAG=$CURRENT_TAG" >> $GITHUB_ENV
+            CURRENT_TAG="$(git describe --tags --abbrev=0 2>/dev/null || echo "v2026.08.01")"
+            echo "CURRENT_TAG=$CURRENT_TAG" >> "$GITHUB_ENV"
             popd
           else
-            echo "CURRENT_TAG=v2026.08.01" >> $GITHUB_ENV
+            echo "CURRENT_TAG=v2026.08.01" >> "$GITHUB_ENV"
           fi
 
       - name: Download libv2ray binary
@@ -103,52 +118,70 @@ jobs:
 
       - name: Compute Dynamic Version
         run: |
-          COMMIT_COUNT=$(git rev-list --count HEAD)
-          echo "Computed Version: 1.0.$COMMIT_COUNT (Code: $COMMIT_COUNT)"
-          echo "APP_VERSION_NAME=1.0.$COMMIT_COUNT" >> $GITHUB_ENV
-          echo "APP_VERSION_CODE=$COMMIT_COUNT" >> $GITHUB_ENV
+          COMMIT_COUNT="$(git rev-list --count HEAD)"
+          # The Play Store variant applies the existing 4,000,000 output-code
+          # offset in app/build.gradle.kts, so this is the code embedded in the
+          # generated AAB (not merely defaultConfig.versionCode).
+          VERSION_CODE=$((14000000 + COMMIT_COUNT))
+          echo "Computed Version: 1.0.$COMMIT_COUNT (Code: $VERSION_CODE)"
+          echo "APP_VERSION_NAME=1.0.$COMMIT_COUNT" >> "$GITHUB_ENV"
+          echo "APP_VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
+
+      - name: Validate signing secrets
+        env:
+          APP_KEYSTORE_BASE64: ${{ secrets.APP_KEYSTORE_BASE64 }}
+          APP_KEYSTORE_PASSWORD: ${{ secrets.APP_KEYSTORE_PASSWORD }}
+          APP_KEYSTORE_ALIAS: ${{ secrets.APP_KEYSTORE_ALIAS }}
+          APP_KEY_PASSWORD: ${{ secrets.APP_KEY_PASSWORD }}
+        run: |
+          missing=()
+          [ -n "$APP_KEYSTORE_BASE64" ] || missing+=(APP_KEYSTORE_BASE64)
+          [ -n "$APP_KEYSTORE_PASSWORD" ] || missing+=(APP_KEYSTORE_PASSWORD)
+          [ -n "$APP_KEYSTORE_ALIAS" ] || missing+=(APP_KEYSTORE_ALIAS)
+          [ -n "$APP_KEY_PASSWORD" ] || missing+=(APP_KEY_PASSWORD)
+          if [ "${#missing[@]}" -ne 0 ]; then
+            echo "::error::Missing required Android signing secrets: ${missing[*]}"
+            exit 1
+          fi
 
       - name: Configure Keystore
         id: keystore_setup
+        env:
+          APP_KEYSTORE_BASE64: ${{ secrets.APP_KEYSTORE_BASE64 }}
+          APP_KEYSTORE_PASSWORD: ${{ secrets.APP_KEYSTORE_PASSWORD }}
+          APP_KEYSTORE_ALIAS: ${{ secrets.APP_KEYSTORE_ALIAS }}
+          APP_KEY_PASSWORD: ${{ secrets.APP_KEY_PASSWORD }}
         run: |
-          mkdir -p ${{ github.workspace }}/keystore
-          if [ -n "${{ secrets.APP_KEYSTORE_BASE64 }}" ]; then
-            echo "${{ secrets.APP_KEYSTORE_BASE64 }}" | base64 -d > ${{ github.workspace }}/keystore/release.jks
-            echo "KEYSTORE_PATH=${{ github.workspace }}/keystore/release.jks" >> $GITHUB_ENV
-            echo "KEYSTORE_PASSWORD=${{ secrets.APP_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
-            echo "KEY_ALIAS=${{ secrets.APP_KEYSTORE_ALIAS }}" >> $GITHUB_ENV
-            echo "KEY_PASSWORD=${{ secrets.APP_KEY_PASSWORD }}" >> $GITHUB_ENV
-          else
-            echo "Generating CI signing key..."
-            keytool -genkeypair -v -keystore ${{ github.workspace }}/keystore/release.jks \
-              -alias hushtunnel -keyalg RSA -keysize 2048 -validity 10000 \
-              -storepass hushtunnelpass -keypass hushtunnelpass \
-              -dname "CN=HushTunnel, OU=Mobile, O=HushTunnel, L=Amsterdam, C=NL"
-            echo "KEYSTORE_PATH=${{ github.workspace }}/keystore/release.jks" >> $GITHUB_ENV
-            echo "KEYSTORE_PASSWORD=hushtunnelpass" >> $GITHUB_ENV
-            echo "KEY_ALIAS=hushtunnel" >> $GITHUB_ENV
-            echo "KEY_PASSWORD=hushtunnelpass" >> $GITHUB_ENV
-          fi
+          mkdir -p "${{ github.workspace }}/keystore"
+          printf '%s' "$APP_KEYSTORE_BASE64" | base64 --decode > "${{ github.workspace }}/keystore/release.jks"
+          keytool -list -keystore "${{ github.workspace }}/keystore/release.jks" \
+            -storepass "$APP_KEYSTORE_PASSWORD" -alias "$APP_KEYSTORE_ALIAS" >/dev/null
+          {
+            echo "KEYSTORE_PATH=${{ github.workspace }}/keystore/release.jks"
+            echo "KEYSTORE_PASSWORD=$APP_KEYSTORE_PASSWORD"
+            echo "KEY_ALIAS=$APP_KEYSTORE_ALIAS"
+            echo "KEY_PASSWORD=$APP_KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
 
       - name: Build Release APKs & Google Play Bundle (AAB)
         run: |
-          cd ${{ github.workspace }}/V2rayNG
+          cd "${{ github.workspace }}/V2rayNG"
           echo "sdk.dir=${ANDROID_HOME}" > local.properties
           chmod +x gradlew
           
-          # Build signed APKs
-          ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file=${{ env.KEYSTORE_PATH }} \
-            -Pandroid.injected.signing.store.password=${{ env.KEYSTORE_PASSWORD }} \
-            -Pandroid.injected.signing.key.alias=${{ env.KEY_ALIAS }} \
-            -Pandroid.injected.signing.key.password=${{ env.KEY_PASSWORD }}
+          # Build signed Play Store APKs
+          ./gradlew assemblePlaystoreRelease \
+            "-Pandroid.injected.signing.store.file=$KEYSTORE_PATH" \
+            "-Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD" \
+            "-Pandroid.injected.signing.key.alias=$KEY_ALIAS" \
+            "-Pandroid.injected.signing.key.password=$KEY_PASSWORD"
 
           # Build signed Play Store App Bundle (.aab)
           ./gradlew bundlePlaystoreRelease \
-            -Pandroid.injected.signing.store.file=${{ env.KEYSTORE_PATH }} \
-            -Pandroid.injected.signing.store.password=${{ env.KEYSTORE_PASSWORD }} \
-            -Pandroid.injected.signing.key.alias=${{ env.KEY_ALIAS }} \
-            -Pandroid.injected.signing.key.password=${{ env.KEY_PASSWORD }}
+            "-Pandroid.injected.signing.store.file=$KEYSTORE_PATH" \
+            "-Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD" \
+            "-Pandroid.injected.signing.key.alias=$KEY_ALIAS" \
+            "-Pandroid.injected.signing.key.password=$KEY_PASSWORD"
 
       - name: Prepare Release Artifacts
         run: |
@@ -165,20 +198,43 @@ jobs:
           cp ${{ github.workspace }}/release_artifacts/HushTunnel-${VERSION}-universal.apk ${{ github.workspace }}/release_artifacts/HushTunnel-universal.apk || true
 
           # Collect Play Store AAB Bundle
-          find ${{ github.workspace }}/V2rayNG/app/build/outputs/bundle -name "*.aab" -exec cp {} ${{ github.workspace }}/release_artifacts/HushTunnel-${VERSION}-playstore.aab \; -quit || true
+          AAB_PATH=$(find ${{ github.workspace }}/V2rayNG/app/build/outputs/bundle -name "*.aab" -print -quit)
+          if [ -z "$AAB_PATH" ]; then
+            echo "::error::Play Store AAB was not produced"
+            exit 1
+          fi
+          cp "$AAB_PATH" ${{ github.workspace }}/release_artifacts/HushTunnel-${VERSION}-playstore.aab
 
           ls -lh ${{ github.workspace }}/release_artifacts/
 
+      - name: Validate Google Play authentication configuration
+        if: inputs.upload_to_play_store == true || startsWith(github.ref, 'refs/tags/')
+        env:
+          GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          GCP_PLAY_SERVICE_ACCOUNT: ${{ vars.GCP_PLAY_SERVICE_ACCOUNT }}
+        run: |
+          [ -n "$GCP_WORKLOAD_IDENTITY_PROVIDER" ] || { echo "::error::Missing repository variable GCP_WORKLOAD_IDENTITY_PROVIDER"; exit 1; }
+          [ -n "$GCP_PLAY_SERVICE_ACCOUNT" ] || { echo "::error::Missing repository variable GCP_PLAY_SERVICE_ACCOUNT"; exit 1; }
+
+      - name: Authenticate to Google Cloud
+        id: google_auth
+        if: inputs.upload_to_play_store == true || startsWith(github.ref, 'refs/tags/')
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_PLAY_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+
       - name: Upload to Google Play Console
         if: inputs.upload_to_play_store == true || startsWith(github.ref, 'refs/tags/')
-        uses: r0adkll/upload-google-play@v1
-        continue-on-error: true
+        uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
         with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          serviceAccountJson: ${{ steps.google_auth.outputs.credentials_file_path }}
           packageName: com.hushtunnel.app
           releaseFiles: ${{ github.workspace }}/release_artifacts/HushTunnel-${{ env.APP_VERSION_NAME }}-playstore.aab
-          track: internal
-          status: draft
+          tracks: internal
+          status: ${{ inputs.play_release_status || 'completed' }}
+          releaseName: HushTunnel ${{ env.APP_VERSION_NAME }} (${{ env.APP_VERSION_CODE }})
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -196,7 +252,7 @@ jobs:
           else
             TAG_NAME="v${{ env.APP_VERSION_NAME }}"
           fi
-          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "TAG_NAME=$TAG_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Generate Dynamic Release Notes
         run: |
@@ -205,9 +261,9 @@ jobs:
           BUILD="${{ env.APP_VERSION_CODE }}"
 
           # Generate SHA256 checksums
-          cd ${{ github.workspace }}/release_artifacts
-          sha256sum *.apk *.aab > SHA256SUMS.txt 2>/dev/null || sha256sum * > SHA256SUMS.txt 2>/dev/null || true
-          cd ${{ github.workspace }}
+          cd "${{ github.workspace }}/release_artifacts"
+          sha256sum ./*.apk ./*.aab > SHA256SUMS.txt 2>/dev/null || sha256sum ./* > SHA256SUMS.txt 2>/dev/null || true
+          cd "${{ github.workspace }}"
 
           # Extract recent changelog
           CHANGELOG=$(git log --pretty=format:"* %s (%h)" -n 12)
@@ -235,12 +291,14 @@ jobs:
           ### 📝 Recent Changes
           HEADER_EOF
 
-          echo "$CHANGELOG" >> ${{ github.workspace }}/RELEASE_NOTES.md
-          echo "" >> ${{ github.workspace }}/RELEASE_NOTES.md
-          echo "### 🔒 Binary Integrity (SHA-256)" >> ${{ github.workspace }}/RELEASE_NOTES.md
-          echo '```text' >> ${{ github.workspace }}/RELEASE_NOTES.md
-          cat ${{ github.workspace }}/release_artifacts/SHA256SUMS.txt >> ${{ github.workspace }}/RELEASE_NOTES.md
-          echo '```' >> ${{ github.workspace }}/RELEASE_NOTES.md
+          {
+            echo "$CHANGELOG"
+            echo ""
+            echo "### 🔒 Binary Integrity (SHA-256)"
+            echo '```text'
+            cat "${{ github.workspace }}/release_artifacts/SHA256SUMS.txt"
+            echo '```'
+          } >> "${{ github.workspace }}/RELEASE_NOTES.md"
 
           # Replace environment variables in generated file
           sed -i "s/\${TAG}/$TAG/g" ${{ github.workspace }}/RELEASE_NOTES.md
