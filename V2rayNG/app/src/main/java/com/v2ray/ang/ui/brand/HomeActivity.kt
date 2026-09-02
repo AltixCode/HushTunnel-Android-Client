@@ -758,7 +758,7 @@ fun SubscriptionCard(
             }
 
             Text(
-                text = stringResource(R.string.brand_expires_on, subscription.expiryDate.take(10)),
+                text = stringResource(R.string.brand_expires_on, JalaliDateUtils.formatDateWithShamsi(subscription.expiryDate)),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 2.dp, bottom = 10.dp),
@@ -980,7 +980,7 @@ fun OrdersDialog(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                 ) {
                                     Text(
-                                        "${order.gateway} · ${order.createdAt.take(10)}",
+                                        "${order.gateway} · ${JalaliDateUtils.formatDateWithShamsi(order.createdAt)}",
                                         style = MaterialTheme.typography.bodySmall,
                                     )
                                     Text(

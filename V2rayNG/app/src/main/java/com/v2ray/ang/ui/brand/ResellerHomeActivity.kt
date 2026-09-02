@@ -702,7 +702,7 @@ fun ResellerOverviewTab(
                             fontWeight = FontWeight.SemiBold,
                         )
                         Text(
-                            text = stringResource(R.string.brand_expires_on, latestSub.expiryDate.take(10)),
+                            text = stringResource(R.string.brand_expires_on, JalaliDateUtils.formatDateWithShamsi(latestSub.expiryDate)),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 2.dp, bottom = 12.dp),
@@ -848,7 +848,7 @@ fun ResellerCustomersTab(
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(text = c.email, style = MaterialTheme.typography.titleSmall)
                         Text(
-                            text = stringResource(R.string.brand_created_date, c.createdAt.take(10)),
+                            text = stringResource(R.string.brand_created_date, JalaliDateUtils.formatDateWithShamsi(c.createdAt)),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -916,7 +916,7 @@ fun ResellerSubscriptionsTab(
                         }
 
                         Text(
-                            text = stringResource(R.string.brand_sub_expires_format, sub.planName, sub.expiryDate.take(10)),
+                            text = stringResource(R.string.brand_sub_expires_format, sub.planName, JalaliDateUtils.formatDateWithShamsi(sub.expiryDate)),
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(vertical = 2.dp),
                         )
@@ -1012,7 +1012,7 @@ fun ResellerOrdersTab(
                             modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
-                            Text(text = "${o.planName} · ${o.createdAt.take(10)}", style = MaterialTheme.typography.bodySmall)
+                            Text(text = "${o.planName} · ${JalaliDateUtils.formatDateWithShamsi(o.createdAt)}", style = MaterialTheme.typography.bodySmall)
                             Text(text = o.status, style = MaterialTheme.typography.labelSmall)
                         }
                     }
@@ -1307,7 +1307,7 @@ fun ResellerTransactionsTab(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Text(
-                                text = tx.createdAt.take(16).replace("T", " "),
+                                text = tx.createdAt.take(16).replace("T", " ") + (JalaliDateUtils.formatShamsiOnly(tx.createdAt)?.let { " ($it)" } ?: ""),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -1664,7 +1664,7 @@ fun CustomerDetailDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = stringResource(R.string.brand_created_date, customer.createdAt.take(10)),
+                    text = stringResource(R.string.brand_created_date, JalaliDateUtils.formatDateWithShamsi(customer.createdAt)),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -1690,7 +1690,7 @@ fun CustomerDetailDialog(
                                         fontWeight = FontWeight.SemiBold,
                                     )
                                     Text(
-                                        text = stringResource(R.string.brand_expires_on, sub.expiryDate.take(10)),
+                                        text = stringResource(R.string.brand_expires_on, JalaliDateUtils.formatDateWithShamsi(sub.expiryDate)),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -2075,7 +2075,7 @@ fun ResellerConnectionDetailDialog(
 
                 if (data.expiryDate != null) {
                     Text(
-                        text = stringResource(R.string.brand_expires_on, data.expiryDate.take(10)),
+                        text = stringResource(R.string.brand_expires_on, JalaliDateUtils.formatDateWithShamsi(data.expiryDate)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -2302,7 +2302,7 @@ fun SubResellerDetailDialog(
 
                 if (subReseller.createdAt.isNotBlank()) {
                     Text(
-                        text = stringResource(R.string.brand_created_date, subReseller.createdAt.take(10)),
+                        text = stringResource(R.string.brand_created_date, JalaliDateUtils.formatDateWithShamsi(subReseller.createdAt)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
