@@ -672,6 +672,9 @@
     <string name="brand_buy_personal_vpn">Purchase Personal VPN</string>
     <string name="brand_renew_personal_vpn">Renew Personal VPN</string>
     <string name="brand_copy_sub_link">Copy Link</string>
+    <string name="brand_show_advanced_links">Show per-server links (advanced)</string>
+    <string name="brand_hide_advanced_links">Hide per-server links</string>
+    <string name="brand_advanced_links_hint">Only needed for VPN apps that don\'t support subscription import.</string>
     <string name="brand_copied_to_clipboard">Copied to clipboard</string>
     <string name="brand_reseller_portal_btn">Reseller Portal</string>
     <string name="brand_view_connection">View Connection</string>

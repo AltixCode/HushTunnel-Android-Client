@@ -2096,6 +2096,10 @@ fun ResellerConnectionDetailDialog(
     val fallbackQrCodeBitmap = remember(data.servers, data.vlessLink) {
         if (data.servers.isEmpty() && !data.vlessLink.isNullOrBlank()) QRCodeDecoder.createQRCode(data.vlessLink) else null
     }
+    val subQrCodeBitmap = remember(data.subscriptionUrl) {
+        if (!data.subscriptionUrl.isNullOrBlank()) QRCodeDecoder.createQRCode(data.subscriptionUrl) else null
+    }
+    var showAdvanced by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -2139,8 +2143,15 @@ fun ResellerConnectionDetailDialog(
                 }
 
                 // Subscription URL is an aggregate link that works across every server when scanned by a
-                // real client, so it stays a single copy action here — not one per server.
+                // real client, so it's the primary thing shown here — not the per-server links below.
                 if (!data.subscriptionUrl.isNullOrBlank()) {
+                    if (subQrCodeBitmap != null) {
+                        Image(
+                            bitmap = subQrCodeBitmap.asImageBitmap(),
+                            contentDescription = "QR Code",
+                            modifier = Modifier.size(200.dp).background(Color.White, RoundedCornerShape(12.dp)).padding(8.dp),
+                        )
+                    }
                     OutlinedButton(
                         onClick = {
                             Utils.setClipboard(context, data.subscriptionUrl)
@@ -2150,29 +2161,49 @@ fun ResellerConnectionDetailDialog(
                     ) {
                         Text(stringResource(R.string.brand_copy_sub_link))
                     }
-                }
 
-                if (data.servers.isNotEmpty()) {
-                    data.servers.forEach { server ->
-                        ServerConnectionCard(server = server)
-                    }
-                } else if (!data.vlessLink.isNullOrBlank()) {
-                    val fallbackVlessLink = data.vlessLink
-                    if (fallbackQrCodeBitmap != null) {
-                        Image(
-                            bitmap = fallbackQrCodeBitmap.asImageBitmap(),
-                            contentDescription = "QR Code",
-                            modifier = Modifier.size(200.dp).background(Color.White, RoundedCornerShape(12.dp)).padding(8.dp),
-                        )
-                    }
-                    Button(
-                        onClick = {
-                            Utils.setClipboard(context, fallbackVlessLink)
-                            context.toast(R.string.brand_copied_to_clipboard)
-                        },
+                    TextButton(
+                        onClick = { showAdvanced = !showAdvanced },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(stringResource(R.string.brand_copy_vless))
+                        Text(
+                            stringResource(
+                                if (showAdvanced) R.string.brand_hide_advanced_links else R.string.brand_show_advanced_links
+                            )
+                        )
+                    }
+                }
+
+                if (showAdvanced || data.subscriptionUrl.isNullOrBlank()) {
+                    if (!data.subscriptionUrl.isNullOrBlank()) {
+                        Text(
+                            text = stringResource(R.string.brand_advanced_links_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    if (data.servers.isNotEmpty()) {
+                        data.servers.forEach { server ->
+                            ServerConnectionCard(server = server)
+                        }
+                    } else if (!data.vlessLink.isNullOrBlank()) {
+                        val fallbackVlessLink = data.vlessLink
+                        if (fallbackQrCodeBitmap != null) {
+                            Image(
+                                bitmap = fallbackQrCodeBitmap.asImageBitmap(),
+                                contentDescription = "QR Code",
+                                modifier = Modifier.size(200.dp).background(Color.White, RoundedCornerShape(12.dp)).padding(8.dp),
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                Utils.setClipboard(context, fallbackVlessLink)
+                                context.toast(R.string.brand_copied_to_clipboard)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.brand_copy_vless))
+                        }
                     }
                 }
 

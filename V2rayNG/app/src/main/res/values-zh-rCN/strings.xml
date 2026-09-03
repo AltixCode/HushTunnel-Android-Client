@@ -672,6 +672,9 @@
     <string name="brand_buy_personal_vpn">购买个人专属连接</string>
     <string name="brand_renew_personal_vpn">续费专属连接</string>
     <string name="brand_copy_sub_link">复制订阅链接</string>
+    <string name="brand_show_advanced_links">显示各服务器链接（高级）</string>
+    <string name="brand_hide_advanced_links">隐藏各服务器链接</string>
+    <string name="brand_advanced_links_hint">仅当所用应用不支持导入订阅链接时才需要。</string>
     <string name="brand_copied_to_clipboard">已复制到剪贴板</string>
     <string name="brand_view_connection">查看连接</string>
     <string name="brand_reseller_no_subscriptions">暂无有效订阅</string>

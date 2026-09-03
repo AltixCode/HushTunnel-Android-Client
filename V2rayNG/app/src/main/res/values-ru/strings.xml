@@ -672,6 +672,9 @@
     <string name="brand_buy_personal_vpn">Купить личный VPN</string>
     <string name="brand_renew_personal_vpn">Продлить личный VPN</string>
     <string name="brand_copy_sub_link">Скопировать ссылку</string>
+    <string name="brand_show_advanced_links">Показать ссылки по серверам (доп.)</string>
+    <string name="brand_hide_advanced_links">Скрыть ссылки по серверам</string>
+    <string name="brand_advanced_links_hint">Нужно только для приложений, не поддерживающих импорт по ссылке подписки.</string>
     <string name="brand_copied_to_clipboard">Скопировано в буфер</string>
     <string name="brand_view_connection">Просмотр подключения</string>
     <string name="brand_reseller_no_subscriptions">Нет активных подписок</string>

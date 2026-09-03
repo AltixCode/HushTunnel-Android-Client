@@ -123,6 +123,9 @@
     <string name="brand_buy_personal_vpn">Kişisel VPN Satın Al</string>
     <string name="brand_renew_personal_vpn">Kişisel VPN Yenile</string>
     <string name="brand_copy_sub_link">Bağlantıyı Kopyala</string>
+    <string name="brand_show_advanced_links">Sunucu bazlı bağlantıları göster (gelişmiş)</string>
+    <string name="brand_hide_advanced_links">Sunucu bazlı bağlantıları gizle</string>
+    <string name="brand_advanced_links_hint">Yalnızca abonelik bağlantısı içe aktarmayı desteklemeyen uygulamalar için gereklidir.</string>
     <string name="brand_copied_to_clipboard">Panoya kopyalandı</string>
     <string name="brand_view_connection">Bağlantıyı Görüntüle</string>
     <string name="brand_reseller_no_subscriptions">Aktif abonelik yok</string>
