@@ -638,6 +638,16 @@
     <string name="brand_reseller_reset_uuid">重置 UUID</string>
     <string name="brand_reseller_reset_traffic">重置流量</string>
     <string name="brand_reseller_revoke">注销订阅</string>
+    <string name="brand_reseller_disable_access">禁用访问</string>
+    <string name="brand_reseller_enable_access">启用访问</string>
+    <string name="brand_manage_subscription_section">管理订阅</string>
+    <string name="brand_reseller_extend_description">使用当前配置为该客户的套餐增加30天。当客户已付款需要继续使用服务时，请使用此操作。</string>
+    <string name="brand_reseller_disable_description">立即阻止该客户连接，但不会删除任何数据。适用于需要临时暂停访问的情况，例如客户付款延迟——您可以随时重新启用。</string>
+    <string name="brand_reseller_enable_description">重新启用该客户的访问权限，使其可以使用原有配置重新连接。</string>
+    <string name="brand_reseller_reset_uuid_description">为该客户生成一个全新的密钥连接码。客户原有的二维码和链接会立即失效，需要使用新链接才能重新连接。仅在怀疑原链接可能已泄露给他人时才使用此操作。</string>
+    <string name="brand_reseller_revoke_description">永久删除该客户的订阅并彻底断开其连接，此操作无法撤销。如果只是想暂时暂停访问，请改用"禁用访问"。</string>
+    <string name="brand_confirm_revoke_title">确定要注销此订阅吗？</string>
+    <string name="brand_confirm_revoke_message">%1$s 的订阅将被永久删除，其访问权限将立即失效。此操作无法撤销。</string>
 
 
     <string name="brand_web_store_notice">账户与订阅管理</string>

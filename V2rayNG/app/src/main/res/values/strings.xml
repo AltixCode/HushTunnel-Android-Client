@@ -638,6 +638,16 @@
     <string name="brand_reseller_reset_uuid">Reset UUID</string>
     <string name="brand_reseller_reset_traffic">Reset Traffic</string>
     <string name="brand_reseller_revoke">Revoke</string>
+    <string name="brand_reseller_disable_access">Disable Access</string>
+    <string name="brand_reseller_enable_access">Enable Access</string>
+    <string name="brand_manage_subscription_section">Manage Subscription</string>
+    <string name="brand_reseller_extend_description">Adds 30 more days to this customer\'s plan using their current setup. Use this when a customer has paid to keep using the service.</string>
+    <string name="brand_reseller_disable_description">Immediately stops this customer from connecting, without deleting anything. Use this to pause access — for example if a payment is late — you can turn it back on anytime.</string>
+    <string name="brand_reseller_enable_description">Turns this customer\'s access back on so they can connect again with their existing settings.</string>
+    <string name="brand_reseller_reset_uuid_description">Creates a brand-new secret connection code for this customer. Their old QR code and link will stop working right away, and they will need the new one to connect again. Only do this if their old link may have been shared with someone else.</string>
+    <string name="brand_reseller_revoke_description">Permanently deletes this customer\'s subscription and disconnects them for good. This cannot be undone. If you only want to pause them, use Disable Access instead.</string>
+    <string name="brand_confirm_revoke_title">Revoke this subscription?</string>
+    <string name="brand_confirm_revoke_message">%1$s\'s subscription will be permanently deleted and they will lose access right away. This cannot be undone.</string>
 
 
     <string name="brand_web_store_notice">Account &amp; Subscription Management</string>

@@ -638,6 +638,16 @@
     <string name="brand_reseller_reset_uuid">تنظیم مجدد UUID</string>
     <string name="brand_reseller_reset_traffic">تنظیم مجدد ترافیک</string>
     <string name="brand_reseller_revoke">لغو اشتراک</string>
+    <string name="brand_reseller_disable_access">غیرفعال کردن دسترسی</string>
+    <string name="brand_reseller_enable_access">فعال کردن دسترسی</string>
+    <string name="brand_manage_subscription_section">مدیریت اشتراک</string>
+    <string name="brand_reseller_extend_description">۳۰ روز دیگر به اشتراک این مشتری با همان تنظیمات فعلی اضافه می‌شود. از این گزینه زمانی استفاده کنید که مشتری برای ادامه استفاده از سرویس پرداخت کرده است.</string>
+    <string name="brand_reseller_disable_description">دسترسی این مشتری برای اتصال بلافاصله قطع می‌شود، بدون اینکه چیزی حذف شود. از این گزینه برای توقف موقت دسترسی استفاده کنید — مثلاً وقتی پرداخت مشتری با تأخیر مواجه شده — و هر زمان می‌توانید دوباره آن را فعال کنید.</string>
+    <string name="brand_reseller_enable_description">دسترسی این مشتری دوباره فعال می‌شود تا بتواند با تنظیمات قبلی خود متصل شود.</string>
+    <string name="brand_reseller_reset_uuid_description">یک کد اتصال محرمانه کاملاً جدید برای این مشتری ساخته می‌شود. کد QR و لینک قبلی او بلافاصله از کار می‌افتد و برای اتصال دوباره باید کد جدید را دریافت کند. این کار را فقط زمانی انجام دهید که احتمال می‌دهید لینک قبلی او در اختیار شخص دیگری قرار گرفته باشد.</string>
+    <string name="brand_reseller_revoke_description">اشتراک این مشتری برای همیشه حذف می‌شود و دسترسی او به طور کامل قطع خواهد شد. این کار قابل بازگشت نیست. اگر فقط می‌خواهید دسترسی را موقتاً متوقف کنید، از گزینه «غیرفعال کردن دسترسی» استفاده کنید.</string>
+    <string name="brand_confirm_revoke_title">این اشتراک لغو شود؟</string>
+    <string name="brand_confirm_revoke_message">اشتراک %1$s برای همیشه حذف خواهد شد و او بلافاصله دسترسی خود را از دست می‌دهد. این کار قابل بازگشت نیست.</string>
 
 
     <string name="brand_web_store_notice">مدیریت حساب و اشتراک</string>

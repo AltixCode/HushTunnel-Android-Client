@@ -638,6 +638,16 @@
     <string name="brand_reseller_reset_uuid">Сбросить UUID</string>
     <string name="brand_reseller_reset_traffic">Сбросить трафик</string>
     <string name="brand_reseller_revoke">Отозвать</string>
+    <string name="brand_reseller_disable_access">Отключить доступ</string>
+    <string name="brand_reseller_enable_access">Включить доступ</string>
+    <string name="brand_manage_subscription_section">Управление подпиской</string>
+    <string name="brand_reseller_extend_description">Добавляет клиенту ещё 30 дней с текущими настройками. Используйте это, если клиент оплатил продолжение обслуживания.</string>
+    <string name="brand_reseller_disable_description">Немедленно блокирует подключение клиента, ничего не удаляя. Используйте это, чтобы временно приостановить доступ — например, при задержке оплаты — и включить его снова в любой момент.</string>
+    <string name="brand_reseller_enable_description">Снова включает доступ клиента, чтобы он мог подключаться с прежними настройками.</string>
+    <string name="brand_reseller_reset_uuid_description">Создаёт для клиента совершенно новый секретный код подключения. Старый QR-код и ссылка сразу перестанут работать, и клиенту потребуется новая ссылка. Делайте это только если старая ссылка могла попасть к посторонним.</string>
+    <string name="brand_reseller_revoke_description">Полностью и безвозвратно удаляет подписку клиента и отключает его. Отменить это действие нельзя. Если нужно лишь временно приостановить доступ, используйте «Отключить доступ».</string>
+    <string name="brand_confirm_revoke_title">Отозвать эту подписку?</string>
+    <string name="brand_confirm_revoke_message">Подписка %1$s будет безвозвратно удалена, и он немедленно потеряет доступ. Это действие нельзя отменить.</string>
 
 
     <string name="brand_web_store_notice">Управление аккаунтом и подпиской</string>

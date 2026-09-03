@@ -90,6 +90,16 @@
     <string name="brand_reseller_reset_uuid">UUID Sıfırla</string>
     <string name="brand_reseller_reset_traffic">Trafiği Sıfırla</string>
     <string name="brand_reseller_revoke">İptal Et</string>
+    <string name="brand_reseller_disable_access">Erişimi Devre Dışı Bırak</string>
+    <string name="brand_reseller_enable_access">Erişimi Etkinleştir</string>
+    <string name="brand_manage_subscription_section">Aboneliği Yönet</string>
+    <string name="brand_reseller_extend_description">Bu müşterinin planına, mevcut ayarlarıyla 30 gün daha ekler. Müşteri hizmete devam etmek için ödeme yaptığında bunu kullanın.</string>
+    <string name="brand_reseller_disable_description">Hiçbir şeyi silmeden müşterinin bağlanmasını hemen durdurur. Örneğin ödeme gecikmişse erişimi geçici olarak durdurmak için kullanın — istediğiniz zaman tekrar açabilirsiniz.</string>
+    <string name="brand_reseller_enable_description">Müşterinin erişimini tekrar açar, böylece mevcut ayarlarıyla yeniden bağlanabilir.</string>
+    <string name="brand_reseller_reset_uuid_description">Bu müşteri için tamamen yeni bir gizli bağlantı kodu oluşturur. Eski QR kodu ve bağlantısı hemen çalışmayı durdurur, tekrar bağlanmak için yeni bağlantıya ihtiyaç duyar. Bunu yalnızca eski bağlantının başkasıyla paylaşılmış olabileceğini düşünüyorsanız yapın.</string>
+    <string name="brand_reseller_revoke_description">Bu müşterinin aboneliğini kalıcı olarak siler ve bağlantısını tamamen keser. Bu işlem geri alınamaz. Sadece geçici olarak durdurmak istiyorsanız bunun yerine Erişimi Devre Dışı Bırak seçeneğini kullanın.</string>
+    <string name="brand_confirm_revoke_title">Bu abonelik iptal edilsin mi?</string>
+    <string name="brand_confirm_revoke_message">%1$s kullanıcısının aboneliği kalıcı olarak silinecek ve erişimini hemen kaybedecek. Bu işlem geri alınamaz.</string>
 
     <string name="brand_web_store_notice">Hesap ve Abonelik Yönetimi</string>
     <string name="brand_web_store_desc">Aboneliklerinizi, cihazlarınızı ve hesap ayarlarınızı web portalımızdan yönetebilirsiniz:</string>

@@ -33,6 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -388,12 +389,6 @@ fun ResellerHomeScreen(
                 )
                 2 -> ResellerSubscriptionsTab(
                     subscriptions = state.subscriptions,
-                    onExtend = onExtendSub,
-                    onToggle = onToggleSub,
-                    onResetUuid = onResetSubUuid,
-                    onResetTraffic = onResetSubTraffic,
-                    onRevoke = onRevokeSub,
-                    isLoading = isLoading,
                     onSubClick = { sub ->
                         onOpenConnectionDetails(
                             ResellerConnectionDetails(
@@ -404,6 +399,7 @@ fun ResellerHomeScreen(
                                 expiryDate = sub.expiryDate,
                                 status = if (sub.isActive) "ACTIVE" else "INACTIVE",
                                 servers = sub.servers,
+                                subscriptionId = sub.id,
                             )
                         )
                     },
@@ -502,6 +498,7 @@ fun ResellerHomeScreen(
     }
 
     state.activeConnectionDetails?.let { details ->
+        val subId = details.subscriptionId
         ResellerConnectionDetailDialog(
             data = ConnectionDialogData(
                 title = details.title,
@@ -513,6 +510,16 @@ fun ResellerHomeScreen(
                 expiryDate = details.expiryDate,
                 status = details.status,
                 servers = details.servers,
+                actions = subId?.let { id ->
+                    ResellerSubscriptionActions(
+                        subscriptionId = id,
+                        isActive = details.status == "ACTIVE",
+                        onExtend = { onExtendSub(id) },
+                        onToggleDisable = { onToggleSub(id, details.status != "ACTIVE") },
+                        onResetUuid = { onResetSubUuid(id) },
+                        onRevoke = { onRevokeSub(id) },
+                    )
+                },
             ),
             onDismiss = onDismissConnectionDetails,
         )
@@ -861,26 +868,9 @@ fun ResellerCustomersTab(
 @Composable
 fun ResellerSubscriptionsTab(
     subscriptions: List<ResellerSubscription>,
-    onExtend: (String) -> Unit,
-    onToggle: (String, Boolean) -> Unit,
-    onResetUuid: (String) -> Unit,
-    onResetTraffic: (String) -> Unit,
-    onRevoke: (String) -> Unit,
-    isLoading: Boolean = false,
     onSubClick: (ResellerSubscription) -> Unit = {},
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    // Tracks which (subscriptionId, action) is in flight so only the tapped
-    // button shows a spinner, not every button on every row.
-    var pendingAction by remember { mutableStateOf<Pair<String, String>?>(null) }
-    // Disabling a subscription cuts a real customer's access and resetting the
-    // UUID breaks their existing VLESS link/QR immediately — both need explicit
-    // confirmation before firing. (subId, customerEmail, actionKey)
-    var confirmTarget by remember { mutableStateOf<Triple<String, String, String>?>(null) }
-
-    LaunchedEffect(isLoading) {
-        if (!isLoading) pendingAction = null
-    }
 
     val filtered = remember(subscriptions, searchQuery) {
         if (searchQuery.isBlank()) subscriptions
@@ -888,38 +878,6 @@ fun ResellerSubscriptionsTab(
             it.customerEmail.contains(searchQuery.trim(), ignoreCase = true) ||
             it.planName.contains(searchQuery.trim(), ignoreCase = true)
         }
-    }
-
-    confirmTarget?.let { (subId, email, actionKey) ->
-        val (titleRes, messageRes) = if (actionKey == "reset_uuid") {
-            R.string.brand_confirm_reset_uuid_title to R.string.brand_confirm_reset_uuid_message
-        } else {
-            R.string.brand_confirm_disable_sub_title to R.string.brand_confirm_disable_sub_message
-        }
-        AlertDialog(
-            onDismissRequest = { confirmTarget = null },
-            title = { Text(stringResource(titleRes)) },
-            text = { Text(stringResource(messageRes, email)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    confirmTarget = null
-                    if (actionKey == "reset_uuid") {
-                        pendingAction = subId to "reset_uuid"
-                        onResetUuid(subId)
-                    } else {
-                        pendingAction = subId to "toggle"
-                        onToggle(subId, false)
-                    }
-                }) {
-                    Text(stringResource(R.string.brand_confirm))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { confirmTarget = null }) {
-                    Text(stringResource(R.string.brand_cancel))
-                }
-            },
-        )
     }
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -973,54 +931,6 @@ fun ResellerSubscriptionsTab(
                                 progress = { progress },
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).height(4.dp),
                             )
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            TextButton(
-                                onClick = {
-                                    pendingAction = sub.id to "extend"
-                                    onExtend(sub.id)
-                                },
-                                enabled = !isLoading,
-                            ) {
-                                if (pendingAction == sub.id to "extend") {
-                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                                } else {
-                                    Text(stringResource(R.string.brand_reseller_extend))
-                                }
-                            }
-                            TextButton(
-                                onClick = {
-                                    if (sub.isActive) {
-                                        confirmTarget = Triple(sub.id, sub.customerEmail, "toggle_disable")
-                                    } else {
-                                        pendingAction = sub.id to "toggle"
-                                        onToggle(sub.id, true)
-                                    }
-                                },
-                                enabled = !isLoading,
-                            ) {
-                                if (pendingAction == sub.id to "toggle") {
-                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                                } else {
-                                    Text(stringResource(R.string.brand_reseller_toggle))
-                                }
-                            }
-                            TextButton(
-                                onClick = { confirmTarget = Triple(sub.id, sub.customerEmail, "reset_uuid") },
-                                enabled = !isLoading,
-                            ) {
-                                if (pendingAction == sub.id to "reset_uuid") {
-                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                                } else {
-                                    Text(stringResource(R.string.brand_reseller_reset_uuid))
-                                }
-                            }
                         }
                     }
                 }
@@ -2006,6 +1916,9 @@ data class ConnectionDialogData(
     val expiryDate: String? = null,
     val status: String? = null,
     val servers: List<ResellerServerLink> = emptyList(),
+    // Only set when opened from the Subscriptions tab — gates the manage
+    // -subscription actions section below the QR code.
+    val actions: ResellerSubscriptionActions? = null,
 )
 
 /**
@@ -2098,6 +2011,40 @@ fun ResellerConnectionDetailDialog(
         if (!data.subscriptionUrl.isNullOrBlank()) QRCodeDecoder.createQRCode(data.subscriptionUrl) else null
     }
     var showAdvanced by remember { mutableStateOf(false) }
+    // Disabling access, resetting the connection ID, and revoking are all
+    // destructive from the customer's point of view — each needs an explicit
+    // confirmation naming exactly what it does before it fires.
+    var confirmActionKey by remember { mutableStateOf<String?>(null) }
+
+    confirmActionKey?.let { actionKey ->
+        val (titleRes, messageRes) = when (actionKey) {
+            "reset_uuid" -> R.string.brand_confirm_reset_uuid_title to R.string.brand_confirm_reset_uuid_message
+            "revoke" -> R.string.brand_confirm_revoke_title to R.string.brand_confirm_revoke_message
+            else -> R.string.brand_confirm_disable_sub_title to R.string.brand_confirm_disable_sub_message
+        }
+        AlertDialog(
+            onDismissRequest = { confirmActionKey = null },
+            title = { Text(stringResource(titleRes)) },
+            text = { Text(stringResource(messageRes, data.title)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmActionKey = null
+                    when (actionKey) {
+                        "reset_uuid" -> data.actions?.onResetUuid?.invoke()
+                        "revoke" -> data.actions?.onRevoke?.invoke()
+                        else -> data.actions?.onToggleDisable?.invoke()
+                    }
+                }) {
+                    Text(stringResource(R.string.brand_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmActionKey = null }) {
+                    Text(stringResource(R.string.brand_cancel))
+                }
+            },
+        )
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -2212,6 +2159,54 @@ fun ResellerConnectionDetailDialog(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+
+                // Management actions live here, below the QR code and links,
+                // instead of as small buttons on the list row — those sat right
+                // next to the row's own tap target and were easy to hit by
+                // mistake (e.g. landing on Revoke while meaning to open this
+                // dialog). Each action gets a plain-language description so a
+                // non-technical reseller knows what it does before tapping it.
+                data.actions?.let { actions ->
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.brand_manage_subscription_section),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    ManageActionRow(
+                        title = stringResource(R.string.brand_reseller_extend),
+                        description = stringResource(R.string.brand_reseller_extend_description),
+                        buttonLabel = stringResource(R.string.brand_reseller_extend),
+                        isDestructive = false,
+                        onClick = actions.onExtend,
+                    )
+
+                    ManageActionRow(
+                        title = stringResource(if (actions.isActive) R.string.brand_reseller_disable_access else R.string.brand_reseller_enable_access),
+                        description = stringResource(if (actions.isActive) R.string.brand_reseller_disable_description else R.string.brand_reseller_enable_description),
+                        buttonLabel = stringResource(if (actions.isActive) R.string.brand_reseller_disable_access else R.string.brand_reseller_enable_access),
+                        isDestructive = actions.isActive,
+                        onClick = { if (actions.isActive) confirmActionKey = "disable" else actions.onToggleDisable() },
+                    )
+
+                    ManageActionRow(
+                        title = stringResource(R.string.brand_reseller_reset_uuid),
+                        description = stringResource(R.string.brand_reseller_reset_uuid_description),
+                        buttonLabel = stringResource(R.string.brand_reseller_reset_uuid),
+                        isDestructive = true,
+                        onClick = { confirmActionKey = "reset_uuid" },
+                    )
+
+                    ManageActionRow(
+                        title = stringResource(R.string.brand_reseller_revoke),
+                        description = stringResource(R.string.brand_reseller_revoke_description),
+                        buttonLabel = stringResource(R.string.brand_reseller_revoke),
+                        isDestructive = true,
+                        onClick = { confirmActionKey = "revoke" },
+                    )
+                }
             }
         },
         confirmButton = {
@@ -2220,6 +2215,51 @@ fun ResellerConnectionDetailDialog(
             }
         }
     )
+}
+
+// One row inside the connection-details dialog's "Manage Subscription"
+// section: a title, a plain-language description of what the action does and
+// when to use it, and a button — each row is its own tap target, well
+// separated from its neighbors (unlike the old tightly packed row buttons).
+@Composable
+private fun ManageActionRow(
+    title: String,
+    description: String,
+    buttonLabel: String,
+    isDestructive: Boolean,
+    onClick: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isDestructive) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.35f)
+            else MaterialTheme.colorScheme.surfaceVariant
+        ),
+        shape = RoundedCornerShape(10.dp),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(text = title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp, bottom = 8.dp),
+            )
+            if (isDestructive) {
+                OutlinedButton(
+                    onClick = onClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) {
+                    Text(buttonLabel)
+                }
+            } else {
+                OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+                    Text(buttonLabel)
+                }
+            }
+        }
+    }
 }
 
 @Composable

@@ -189,4 +189,22 @@ data class ResellerConnectionDetails(
     val expiryDate: String? = null,
     val status: String? = null,
     val servers: List<ResellerServerLink> = emptyList(),
+    // Set only when this dialog is opened from the reseller's Subscriptions tab
+    // (not from Orders, or the new-order success screen) — that's what the
+    // connection dialog uses to decide whether to show the manage-subscription
+    // actions section at all.
+    val subscriptionId: String? = null,
+)
+
+// Bundles one subscription's management actions (extend / disable-enable /
+// reset UUID / revoke), already bound to its subscription id, so the
+// connection details dialog can render and confirm them without needing its
+// own copy of the ViewModel.
+data class ResellerSubscriptionActions(
+    val subscriptionId: String,
+    val isActive: Boolean,
+    val onExtend: () -> Unit,
+    val onToggleDisable: () -> Unit,
+    val onResetUuid: () -> Unit,
+    val onRevoke: () -> Unit,
 )
