@@ -674,7 +674,7 @@
     <string name="brand_copy_sub_link">کپی لینک اتصال</string>
     <string name="brand_show_advanced_links">نمایش لینک‌های هر سرور (پیشرفته)</string>
     <string name="brand_hide_advanced_links">پنهان کردن لینک‌های هر سرور</string>
-    <string name="brand_advanced_links_hint">فقط برای اپلیکیشن‌هایی که وارد کردن لینک اشتراک را پشتیبانی نمی‌کنند لازم است.</string>
+    <string name="brand_advanced_links_hint">این لینک‌ها فقط برای یک سرور هستند و تنظیمات DNS ندارند. اگر از اپلیکیشن‌هایی مثل V2Box، NekoBox یا Shadowrocket استفاده می‌کنید، به‌جای این‌ها از لینک اشتراک بالا استفاده کنید؛ چون شامل تنظیمات DNS است، همه سرورها را نشان می‌دهد و به‌صورت خودکار به‌روزرسانی می‌شود.</string>
     <string name="brand_copied_to_clipboard">در حافظه کپی شد</string>
     <string name="brand_view_connection">مشاهده اتصال</string>
     <string name="brand_reseller_no_subscriptions">اشتراک فعالی وجود ندارد</string>

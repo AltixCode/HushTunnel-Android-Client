@@ -125,7 +125,7 @@
     <string name="brand_copy_sub_link">Bağlantıyı Kopyala</string>
     <string name="brand_show_advanced_links">Sunucu bazlı bağlantıları göster (gelişmiş)</string>
     <string name="brand_hide_advanced_links">Sunucu bazlı bağlantıları gizle</string>
-    <string name="brand_advanced_links_hint">Yalnızca abonelik bağlantısı içe aktarmayı desteklemeyen uygulamalar için gereklidir.</string>
+    <string name="brand_advanced_links_hint">Bunlar yalnızca tek bir sunucu için bağlantılardır ve DNS ayarları içermez. V2Box, NekoBox, Shadowrocket gibi uygulamalar kullanıyorsanız yukarıdaki Abonelik bağlantısını kullanın — DNS ayarlarını içerir, tüm sunucuları gösterir ve otomatik günceller.</string>
     <string name="brand_copied_to_clipboard">Panoya kopyalandı</string>
     <string name="brand_view_connection">Bağlantıyı Görüntüle</string>
     <string name="brand_reseller_no_subscriptions">Aktif abonelik yok</string>
