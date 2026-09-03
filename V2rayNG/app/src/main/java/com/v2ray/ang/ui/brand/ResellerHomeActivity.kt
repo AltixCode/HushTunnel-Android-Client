@@ -473,8 +473,6 @@ fun ResellerHomeScreen(
             onDismiss = { showAddCustomerDialog = false },
             onConfirm = { email, pwd ->
                 showAddCustomerDialog = false
-                prefilledOrderEmail = email.trim()
-                showAddOrderDialog = true
                 onCreateCustomer(email.trim(), pwd)
             },
         )
@@ -497,8 +495,8 @@ fun ResellerHomeScreen(
                 showAddOrderDialog = false
                 val targetEmail = email.ifBlank { orderDialogEmail.orEmpty() }
                 prefilledOrderEmail = ""
-                onDismissPendingOrder()
                 onCreateOrder(targetEmail, planId)
+                onDismissPendingOrder()
             },
         )
     }

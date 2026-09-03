@@ -28,7 +28,51 @@ data class ResellerUiState(
     val message: String? = null,
     val error: String? = null,
     val pendingOrderForEmail: String? = null,
+    val pendingCustomerPassword: String? = null,
     val activeConnectionDetails: ResellerConnectionDetails? = null,
+)
+
+internal fun ResellerUiState.afterCustomerCreated(
+    customer: ResellerCustomer,
+    password: String,
+    refreshedOverview: ResellerOverview,
+    refreshedCustomers: List<ResellerCustomer>,
+    successMessage: String,
+) = copy(
+    overview = refreshedOverview,
+    customers = refreshedCustomers,
+    message = successMessage,
+    error = null,
+    pendingOrderForEmail = customer.email,
+    pendingCustomerPassword = password,
+)
+
+internal fun ResellerUiState.afterOrderCreated(
+    customerEmail: String,
+    result: CreateResellerOrderResult,
+    refreshedOverview: ResellerOverview,
+    refreshedOrders: List<ResellerOrder>,
+    refreshedSubscriptions: List<ResellerSubscription>,
+    successMessage: String,
+    carriedPassword: String?,
+    fallbackPlanName: String,
+) = copy(
+    overview = refreshedOverview,
+    orders = refreshedOrders,
+    subscriptions = refreshedSubscriptions,
+    message = successMessage,
+    error = null,
+    pendingOrderForEmail = null,
+    pendingCustomerPassword = null,
+    activeConnectionDetails = ResellerConnectionDetails(
+        title = customerEmail,
+        planName = result.planName ?: fallbackPlanName,
+        subscriptionUrl = result.subscriptionUrl,
+        vlessLink = result.vlessLink,
+        generatedPassword = result.generatedPassword ?: carriedPassword,
+        amountUsd = result.amountUsd,
+        servers = result.servers,
+    ),
 )
 
 class ResellerHomeViewModel(application: Application) : BaseViewModel(application) {
@@ -122,12 +166,12 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
                 val overview = try { ApiClient.resellerOverview(token) } catch (_: Exception) { _uiState.value.overview }
                 val customers = try { ApiClient.resellerCustomers(token) } catch (_: Exception) { _uiState.value.customers }
                 _uiState.update {
-                    it.copy(
-                        overview = overview,
-                        customers = customers,
-                        message = app.getString(R.string.brand_reseller_customer_created, password),
-                        error = null,
-                        pendingOrderForEmail = customer.email,
+                    it.afterCustomerCreated(
+                        customer = customer,
+                        password = password,
+                        refreshedOverview = overview,
+                        refreshedCustomers = customers,
+                        successMessage = app.getString(R.string.brand_reseller_customer_created, password),
                     )
                 }
             } catch (e: ApiException) {
@@ -143,6 +187,11 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
         planId: String,
     ) {
         val token = AuthStore.getToken() ?: return
+        val pendingState = _uiState.value
+        val carriedPassword = pendingState.pendingCustomerPassword.takeIf {
+            pendingState.pendingOrderForEmail.equals(customerEmail, ignoreCase = true)
+        }
+        _uiState.update { it.copy(pendingOrderForEmail = null, pendingCustomerPassword = null) }
         launchLoading {
             try {
                 val result = ApiClient.createResellerOrder(token, customerEmail, planId)
@@ -155,28 +204,33 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
                     app.getString(R.string.brand_order_paid_success)
                 }
                 _uiState.update {
-                    it.copy(
-                        overview = overview,
-                        orders = orders,
-                        subscriptions = subscriptions,
-                        message = msg,
-                        error = null,
-                        pendingOrderForEmail = null,
-                        activeConnectionDetails = ResellerConnectionDetails(
-                            title = customerEmail,
-                            planName = result.planName ?: app.getString(R.string.brand_all_subscriptions),
-                            subscriptionUrl = result.subscriptionUrl,
-                            vlessLink = result.vlessLink,
-                            generatedPassword = result.generatedPassword,
-                            amountUsd = result.amountUsd,
-                            servers = result.servers,
-                        ),
+                    it.afterOrderCreated(
+                        customerEmail = customerEmail,
+                        result = result,
+                        refreshedOverview = overview,
+                        refreshedOrders = orders,
+                        refreshedSubscriptions = subscriptions,
+                        successMessage = msg,
+                        carriedPassword = carriedPassword,
+                        fallbackPlanName = app.getString(R.string.brand_all_subscriptions),
                     )
                 }
             } catch (e: ApiException) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update {
+                    it.copy(
+                        error = e.message,
+                        pendingOrderForEmail = customerEmail,
+                        pendingCustomerPassword = carriedPassword,
+                    )
+                }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = app.getString(R.string.brand_error_connection)) }
+                _uiState.update {
+                    it.copy(
+                        error = app.getString(R.string.brand_error_connection),
+                        pendingOrderForEmail = customerEmail,
+                        pendingCustomerPassword = carriedPassword,
+                    )
+                }
             }
         }
     }
@@ -190,7 +244,7 @@ class ResellerHomeViewModel(application: Application) : BaseViewModel(applicatio
     }
 
     fun dismissPendingOrder() {
-        _uiState.update { it.copy(pendingOrderForEmail = null) }
+        _uiState.update { it.copy(pendingOrderForEmail = null, pendingCustomerPassword = null) }
     }
 
     fun createDeposit(amountUsd: Double, gateway: String, onCheckoutUrl: (String) -> Unit) {
