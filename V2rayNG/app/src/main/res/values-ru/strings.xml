@@ -560,7 +560,7 @@
     <string name="brand_register_btn">Создать аккаунт</string>
     <string name="brand_no_account">Нет аккаунта? Создать</string>
     <string name="brand_have_account">Уже есть аккаунт? Войти</string>
-    <string name="brand_admin_reject">Используйте веб-панель на hushtunnel.com для управления платформой</string>
+    <string name="brand_admin_reject">Учётные записи администратора недоступны в мобильном приложении</string>
     <string name="brand_error_empty_credentials">Введите email и пароль</string>
     <string name="brand_error_invalid_credentials">Введите email и пароль длиной не менее 8 символов</string>
     <string name="brand_error_connection">Не удалось связаться с сервером — проверьте подключение</string>
@@ -648,13 +648,6 @@
     <string name="brand_reseller_revoke_description">Полностью и безвозвратно удаляет подписку клиента и отключает его. Отменить это действие нельзя. Если нужно лишь временно приостановить доступ, используйте «Отключить доступ».</string>
     <string name="brand_confirm_revoke_title">Отозвать эту подписку?</string>
     <string name="brand_confirm_revoke_message">Подписка %1$s будет безвозвратно удалена, и он немедленно потеряет доступ. Это действие нельзя отменить.</string>
-
-
-    <string name="brand_web_store_notice">Управление аккаунтом и подпиской</string>
-    <string name="brand_web_store_desc">Управление подписками, устройствами и параметрами доступно на веб-портале:</string>
-    <string name="brand_web_store_url">https://www.hushtunnel.com</string>
-    <string name="brand_web_payment_methods">Управляйте активными сервисами и настройками безопасности в личном кабинете.</string>
-    <string name="brand_web_reseller_notice">Аккаунты, оформленные через партнеров, можно продлевать у вашего провайдера или онлайн.</string>
     <string name="brand_change_password">Сменить пароль</string>
     <string name="brand_current_password">Текущий пароль</string>
     <string name="brand_new_password">Новый пароль</string>
@@ -734,4 +727,41 @@
     <string name="brand_confirm_disable_sub_message">%1$s немедленно потеряет доступ к VPN. Вы можете снова включить её в любое время.</string>
     <string name="brand_confirm_reset_uuid_title">Сбросить ID подключения?</string>
     <string name="brand_confirm_reset_uuid_message">Текущая ссылка VLESS и QR-код пользователя %1$s немедленно перестанут работать. Отправьте ему новую ссылку после этого.</string>
+    <string name="brand_iap_unavailable">Покупки в приложении сейчас недоступны. Повторите попытку позже.</string>
+    <string name="brand_iap_subscriptions">Планы подписки</string>
+    <string name="brand_iap_add_funds">Пополнить баланс</string>
+    <string name="brand_iap_auto_renew_note">Подписки автоматически продлеваются через Google Play до отмены. Автопродление действует только для подписок из приложения.</string>
+    <string name="brand_iap_wallet_note">Выберите разовую покупку Google Play для пополнения баланса HushTunnel.</string>
+    <string name="brand_iap_purchase_processing">Покупка получена. Аккаунт обновляется.</string>
+    <string name="brand_iap_restore">Восстановить покупки</string>
+    <string name="brand_iap_restored">Покупки восстановлены. Аккаунт обновляется.</string>
+    <string name="brand_iap_no_managed_subscription">Нет подписки Google Play для управления.</string>
+    <string name="brand_iap_manage_subscription">Управление подпиской Google Play</string>
+    <string name="brand_iap_store_title">Планы и баланс аккаунта</string>
+    <string name="brand_iap_store_description">Оформите подписку или пополните баланс через Google Play.</string>
+    <string name="brand_account_settings">Настройки аккаунта</string>
+    <string name="brand_privacy_title">Конфиденциальность</string>
+    <string name="brand_privacy_summary">HushTunnel не ведёт журналы просмотров, DNS-запросов, адресов трафика или содержимого сообщений.</string>
+    <string name="brand_privacy_stored">Мы храним только необходимое: email, хеш пароля, состояние подписки и квоты, ограниченную диагностику и обязательные платёжные записи.</string>
+    <string name="brand_account_delete_phrase">DELETE</string>
+    <string name="brand_account_delete_title">Удалить аккаунт</string>
+    <string name="brand_account_delete_warning">Доступ и данные подключения будут удалены навсегда. Обязательные финансовые записи сохраняются обезличенно.</string>
+    <string name="brand_account_subscription_warning">Удаление аккаунта не отменяет подписку Google Play. Сначала отмените её кнопкой выше.</string>
+    <string name="brand_account_type_delete">Введите %1$s для подтверждения</string>
+    <string name="brand_account_delete_failed">Не удалось удалить аккаунт.</string>
+    <string name="brand_account_delete_button">Удалить аккаунт навсегда</string>
+    <string name="brand_error_insufficient_balance_add_funds">Недостаточно средств. Пополните баланс в приложении и повторите попытку.</string>
+    <string name="brand_vpn_disclosure_title">Уведомление о VPN-подключении</string>
+    <string name="brand_vpn_disclosure_intro">Прочитайте это отдельное уведомление до покупки или использования HushTunnel.</string>
+    <string name="brand_vpn_disclosure_core">HushTunnel использует Android VpnService только для создания запрошенного защищённого туннеля уровня устройства к выбранному серверу HushTunnel.</string>
+    <string name="brand_vpn_disclosure_processing">При подключении Android направляет пакеты, адреса и порты назначения, DNS-запросы и содержимое через HushTunnel в памяти лишь для шифрования и пересылки. Туннель от устройства до конечного узла зашифрован.</string>
+    <string name="brand_vpn_disclosure_data">Мы не записываем и не храним историю просмотра, DNS-запросы, назначения трафика или содержимое пакетов. Хранятся только суммарные байты для квоты и данные аккаунта, покупки и краткосрочной безопасности из Политики конфиденциальности.</string>
+    <string name="brand_vpn_disclosure_monetization">Кроме временной обработки для запрошенного VPN, мы ни для каких целей не продаём, не используем и не раскрываем третьим лицам данные VPN-трафика и не перенаправляем их ради рекламы или монетизации.</string>
+    <string name="brand_vpn_disclosure_choice">«Согласиться и продолжить» фиксирует согласие. «Не сейчас» не запускает туннель и возвращает ко входу. Отключиться или удалить разрешение VPN можно в любой момент.</string>
+    <string name="brand_vpn_disclosure_accept">Согласиться и продолжить</string>
+    <string name="brand_vpn_disclosure_decline">Не сейчас</string>
+    <string name="brand_vpn_disclosure_required">Войдите и примите уведомление о VPN-соединении перед запуском туннеля.</string>
+    <string name="brand_privacy_policy">Политика конфиденциальности</string>
+    <string name="brand_terms_conditions">Условия использования</string>
+    <string name="brand_registration_legal_notice">Создавая аккаунт, вы принимаете Условия использования и подтверждаете Политику конфиденциальности.</string>
 </resources>

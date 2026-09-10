@@ -22,17 +22,16 @@ class SplashActivity : BaseComponentActivity() {
         val testEmail = intent.getStringExtra("test_email")
         val testRole = intent.getStringExtra("test_role")
         if (!testToken.isNullOrBlank() && !testEmail.isNullOrBlank() && !testRole.isNullOrBlank()) {
-            AuthStore.saveSession(testToken, testEmail, testRole)
+            AuthStore.saveSession(testToken, "e2e-test-user", testEmail, testRole)
         }
         val destination = if (AuthStore.isLoggedIn()) {
             val role = AuthStore.getRole()
             when {
-                role.equals("RESELLER", ignoreCase = true) -> ResellerHomeActivity::class.java
                 role.equals("ADMIN", ignoreCase = true) -> {
                     AuthStore.clear()
                     LoginActivity::class.java
                 }
-                else -> HomeActivity::class.java
+                else -> VpnDisclosureActivity.destinationForAuthenticatedRole(role)
             }
         } else {
             LoginActivity::class.java

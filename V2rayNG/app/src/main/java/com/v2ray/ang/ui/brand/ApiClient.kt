@@ -115,6 +115,7 @@ object ApiClient {
         )
         return AuthResult(
             token = json.getString("token"),
+            userId = json.optString("userId"),
             email = json.getString("email"),
             role = json.optString("role", "USER"),
         )
@@ -128,6 +129,7 @@ object ApiClient {
         )
         return AuthResult(
             token = json.getString("token"),
+            userId = json.optString("userId"),
             email = json.getString("email"),
             role = json.optString("role", "USER"),
         )
@@ -167,10 +169,46 @@ object ApiClient {
             )
         }
         return MeResult(
+            userId = json.optString("userId"),
             email = json.getString("email"),
             role = json.optString("role", "USER"),
             subscriptions = subs,
             servers = servers,
+        )
+    }
+
+    suspend fun iapConfig(token: String): IapConfig {
+        val json = request("/api/mobile/iap/config?platform=android", token = token)
+        val subscriptionsJson = json.optJSONArray("subscriptionProducts") ?: JSONArray()
+        val walletJson = json.optJSONArray("walletProducts") ?: JSONArray()
+        return IapConfig(
+            enabled = json.optBoolean("enabled", false),
+            publicSdkKey = json.optString("publicSdkKey"),
+            appUserId = json.optString("appUserId"),
+            entitlementId = json.optString("entitlementId"),
+            subscriptionProducts = (0 until subscriptionsJson.length()).map { index ->
+                val product = subscriptionsJson.getJSONObject(index)
+                IapSubscriptionProduct(
+                    productId = product.getString("productId"),
+                    durationDays = product.getInt("durationDays"),
+                )
+            },
+            walletProducts = (0 until walletJson.length()).map { index ->
+                val product = walletJson.getJSONObject(index)
+                IapWalletProduct(
+                    productId = product.getString("productId"),
+                    amountUsd = product.getDouble("creditUsd"),
+                )
+            },
+        )
+    }
+
+    suspend fun deleteAccount(token: String, password: String) {
+        request(
+            "/api/mobile/account",
+            method = "DELETE",
+            token = token,
+            body = JSONObject().put("password", password),
         )
     }
 

@@ -37,7 +37,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.R
+import com.v2ray.ang.AppConfig
 import com.v2ray.ang.ui.base.BaseComponentActivity
+import com.v2ray.ang.util.Utils
 
 class RegisterActivity : BaseComponentActivity() {
 
@@ -55,11 +57,7 @@ class RegisterActivity : BaseComponentActivity() {
             onPasswordChange = viewModel::updatePassword,
             onRegisterClick = {
                 viewModel.register { role ->
-                    val destination = if (role.equals("RESELLER", ignoreCase = true)) {
-                        ResellerHomeActivity::class.java
-                    } else {
-                        HomeActivity::class.java
-                    }
+                    val destination = VpnDisclosureActivity.destinationForAuthenticatedRole(role)
                     startActivity(
                         Intent(this@RegisterActivity, destination)
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -68,6 +66,8 @@ class RegisterActivity : BaseComponentActivity() {
                 }
             },
             onLoginClick = { finish() },
+            onPrivacyClick = { Utils.openUri(this@RegisterActivity, AppConfig.APP_PRIVACY_POLICY) },
+            onTermsClick = { Utils.openUri(this@RegisterActivity, AppConfig.APP_TERMS) },
         )
     }
 }
@@ -80,6 +80,8 @@ fun RegisterScreen(
     onPasswordChange: (String) -> Unit,
     onRegisterClick: () -> Unit,
     onLoginClick: () -> Unit,
+    onPrivacyClick: () -> Unit,
+    onTermsClick: () -> Unit,
 ) {
     var showLanguageDialog by remember { mutableStateOf(false) }
     val currentLang = LocaleHelper.getCurrentLanguageTag()
@@ -153,6 +155,16 @@ fun RegisterScreen(
                 } else {
                     Text(stringResource(R.string.brand_register_btn))
                 }
+            }
+
+            Text(
+                text = stringResource(R.string.brand_registration_legal_notice),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 12.dp),
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                TextButton(onClick = onTermsClick) { Text(stringResource(R.string.brand_terms_conditions)) }
+                TextButton(onClick = onPrivacyClick) { Text(stringResource(R.string.brand_privacy_policy)) }
             }
 
             TextButton(

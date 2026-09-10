@@ -44,7 +44,7 @@ class RegisterViewModel(application: Application) : BaseViewModel(application) {
                     return@launchLoading
                 }
 
-                AuthStore.saveSession(authResult.token, authResult.email, authResult.role)
+                AuthStore.saveSession(authResult.token, authResult.userId, authResult.email, authResult.role)
                 onSuccess(authResult.role)
             } catch (e: ApiException) {
                 _uiState.value = _uiState.value.copy(error = e.message)

@@ -229,6 +229,9 @@ dependencies {
     implementation(libs.lifecycle.runtime.compose)
     implementation(libs.coil.compose)
 
+    // Google Play purchases. Kept out of the F-Droid flavor entirely.
+    "playstoreImplementation"(libs.revenuecat.purchases)
+
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     // Data and Storage Libraries

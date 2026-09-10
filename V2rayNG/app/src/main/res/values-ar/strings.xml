@@ -591,7 +591,7 @@
     <string name="brand_register_btn">Create account</string>
     <string name="brand_no_account">No account? Create one</string>
     <string name="brand_have_account">Already have an account? Log in</string>
-    <string name="brand_admin_reject">Use the web dashboard at hushtunnel.com to manage the platform</string>
+    <string name="brand_admin_reject">حسابات الإدارة غير متاحة في تطبيق الهاتف</string>
     <string name="brand_error_empty_credentials">Enter your email and password</string>
     <string name="brand_error_invalid_credentials">Enter an email and a password of at least 8 characters</string>
     <string name="brand_error_connection">Couldn\'t reach the server — check your connection</string>
@@ -662,11 +662,6 @@
     <string name="brand_reseller_reset_uuid">Reset UUID</string>
     <string name="brand_reseller_reset_traffic">Reset Traffic</string>
     <string name="brand_reseller_revoke">Revoke</string>
-    <string name="brand_web_store_notice">Account &amp; Subscription Management</string>
-    <string name="brand_web_store_desc">Subscriptions, active devices, and partner access are managed via your web dashboard:</string>
-    <string name="brand_web_store_url">https://www.hushtunnel.com</string>
-    <string name="brand_web_payment_methods">Manage your active services, devices, and security settings online.</string>
-    <string name="brand_web_reseller_notice">Accounts registered through authorized partners can be managed directly or with your provider.</string>
     <string name="brand_change_password">Change Password</string>
     <string name="brand_current_password">Current Password</string>
     <string name="brand_new_password">New Password</string>
@@ -680,4 +675,41 @@
 
     <!-- Multi-server QR/VLESS display (reseller connection details) -->
     <string name="brand_default_server">افتراضي</string>
+    <string name="brand_iap_unavailable">عمليات الشراء داخل التطبيق غير متاحة حاليًا. حاول لاحقًا.</string>
+    <string name="brand_iap_subscriptions">خطط الاشتراك</string>
+    <string name="brand_iap_add_funds">إضافة رصيد</string>
+    <string name="brand_iap_auto_renew_note">تتجدد الاشتراكات تلقائيًا عبر Google Play حتى إلغائها. التجديد التلقائي للاشتراكات المشتراة داخل التطبيق فقط.</string>
+    <string name="brand_iap_wallet_note">اختر عملية شراء لمرة واحدة عبر Google Play لإضافة رصيد HushTunnel.</string>
+    <string name="brand_iap_purchase_processing">تم استلام الشراء. يجري تحديث حسابك.</string>
+    <string name="brand_iap_restore">استعادة المشتريات</string>
+    <string name="brand_iap_restored">تمت استعادة المشتريات. يجري تحديث حسابك.</string>
+    <string name="brand_iap_no_managed_subscription">لا يوجد اشتراك Google Play لإدارته.</string>
+    <string name="brand_iap_manage_subscription">إدارة اشتراك Google Play</string>
+    <string name="brand_iap_store_title">الخطط ورصيد الحساب</string>
+    <string name="brand_iap_store_description">اشترك أو أضف رصيدًا بأمان عبر Google Play.</string>
+    <string name="brand_account_settings">إعدادات الحساب</string>
+    <string name="brand_privacy_title">الخصوصية</string>
+    <string name="brand_privacy_summary">لا يسجل HushTunnel نشاط التصفح أو استعلامات DNS أو وجهات حركة المرور أو محتوى الرسائل.</string>
+    <string name="brand_privacy_stored">نخزن الحد الأدنى اللازم: البريد الإلكتروني وتجزئة كلمة المرور وحالة الاشتراك والحصة وتشخيصات تقنية محدودة وسجلات الدفع المطلوبة.</string>
+    <string name="brand_account_delete_phrase">DELETE</string>
+    <string name="brand_account_delete_title">حذف الحساب</string>
+    <string name="brand_account_delete_warning">سيتم حذف الوصول وبيانات الاتصال نهائيًا. تُحفظ السجلات المالية المطلوبة بصورة مجهولة.</string>
+    <string name="brand_account_subscription_warning">حذف الحساب لا يلغي اشتراك Google Play. ألغِه أولًا باستخدام الزر أعلاه.</string>
+    <string name="brand_account_type_delete">اكتب %1$s للتأكيد</string>
+    <string name="brand_account_delete_failed">تعذر حذف الحساب.</string>
+    <string name="brand_account_delete_button">حذف الحساب نهائيًا</string>
+    <string name="brand_error_insufficient_balance_add_funds">الرصيد غير كافٍ. أضف رصيدًا داخل التطبيق ثم حاول مجددًا.</string>
+    <string name="brand_vpn_disclosure_title">إفصاح اتصال VPN</string>
+    <string name="brand_vpn_disclosure_intro">راجع هذا الإفصاح المستقل قبل شراء HushTunnel أو استخدامه.</string>
+    <string name="brand_vpn_disclosure_core">يستخدم HushTunnel خدمة Android VpnService فقط لإنشاء النفق الآمن على مستوى الجهاز إلى خادم HushTunnel الذي تختاره.</string>
+    <string name="brand_vpn_disclosure_processing">أثناء الاتصال يمرر Android حزم الشبكة وعناوين الوجهة ومنافذها وطلبات DNS والمحتوى عبر HushTunnel في الذاكرة بالقدر اللازم للتشفير والتوجيه. النفق من الجهاز إلى نقطة النهاية مشفر.</string>
+    <string name="brand_vpn_disclosure_data">لا نسجل أو نحتفظ بسجل التصفح أو طلبات DNS أو وجهات الحركة أو محتوى الحزم. نحتفظ فقط بإجمالي البايتات للحصة وبيانات الحساب والشراء والأمان القصيرة الأجل الموضحة في سياسة الخصوصية.</string>
+    <string name="brand_vpn_disclosure_monetization">باستثناء المعالجة المؤقتة اللازمة لتوفير VPN المطلوب، لا نبيع بيانات حركة VPN أو نستخدمها أو نفصح عنها لأطراف ثالثة لأي غرض، ولا نعيد توجيهها أو نتلاعب بها للإعلان أو الربح.</string>
+    <string name="brand_vpn_disclosure_choice">يسجل «أوافق وأتابع» موافقتك. «ليس الآن» لا يشغل أي نفق ويعيدك لتسجيل الدخول. يمكنك قطع الاتصال أو إزالة إذن VPN في أي وقت.</string>
+    <string name="brand_vpn_disclosure_accept">أوافق وأتابع</string>
+    <string name="brand_vpn_disclosure_decline">ليس الآن</string>
+    <string name="brand_vpn_disclosure_required">سجّل الدخول ووافق على إفصاح اتصال VPN قبل بدء النفق.</string>
+    <string name="brand_privacy_policy">سياسة الخصوصية</string>
+    <string name="brand_terms_conditions">الشروط والأحكام</string>
+    <string name="brand_registration_legal_notice">بإنشاء حساب فإنك توافق على الشروط والأحكام وتقر بسياسة الخصوصية.</string>
 </resources>

@@ -51,11 +51,7 @@ class LoginActivity : BaseComponentActivity() {
             viewModel.updateEmail(email)
             viewModel.updatePassword(password)
             viewModel.login { role ->
-                val destination = if (role.equals("RESELLER", ignoreCase = true)) {
-                    ResellerHomeActivity::class.java
-                } else {
-                    HomeActivity::class.java
-                }
+                val destination = VpnDisclosureActivity.destinationForAuthenticatedRole(role)
                 startActivity(
                     Intent(this, destination)
                         .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -77,11 +73,7 @@ class LoginActivity : BaseComponentActivity() {
             onPasswordChange = viewModel::updatePassword,
             onLoginClick = {
                 viewModel.login { role ->
-                    val destination = if (role.equals("RESELLER", ignoreCase = true)) {
-                        ResellerHomeActivity::class.java
-                    } else {
-                        HomeActivity::class.java
-                    }
+                    val destination = VpnDisclosureActivity.destinationForAuthenticatedRole(role)
                     startActivity(
                         Intent(this@LoginActivity, destination)
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)

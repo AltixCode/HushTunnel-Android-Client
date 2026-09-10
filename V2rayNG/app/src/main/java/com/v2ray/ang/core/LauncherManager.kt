@@ -16,12 +16,16 @@ import com.v2ray.ang.root.RootManager
 import com.v2ray.ang.service.CoreProxyOnlyService
 import com.v2ray.ang.service.CoreRootService
 import com.v2ray.ang.service.CoreVpnService
+import com.v2ray.ang.ui.brand.AuthStore
+import com.v2ray.ang.ui.brand.VpnDisclosurePolicy
+import com.v2ray.ang.ui.brand.VpnDisclosureStore
 import com.v2ray.ang.util.LogUtil
 import com.v2ray.ang.util.Utils
 
 object LauncherManager {
 
     fun startServiceFromToggle(context: Context): Boolean {
+        if (!isStartAllowed(context)) return false
         if (MmkvManager.getSelectServer().isNullOrEmpty()) {
             context.toast(R.string.app_tile_first_use)
             return false
@@ -38,6 +42,8 @@ object LauncherManager {
 
     fun startService(context: Context, guid: String? = null) {
         LogUtil.i(AppConfig.TAG, "LauncherManager: startService from ${context::class.java.simpleName}")
+
+        if (!isStartAllowed(context)) return
 
         if (guid != null) {
             MmkvManager.setSelectServer(guid)
@@ -66,6 +72,18 @@ object LauncherManager {
         MessageHelper.sendMsg2ServiceForResult(context, AppConfig.MSG_STATE_RESTART, "") { handled ->
             if (!handled) startIfStopped()
         }
+    }
+
+    private fun isStartAllowed(context: Context): Boolean {
+        val allowed = VpnDisclosurePolicy.canStartTunnel(
+            isLoggedIn = AuthStore.isLoggedIn(),
+            hasAcceptedDisclosure = VpnDisclosureStore.isAccepted(),
+        )
+        if (!allowed) {
+            LogUtil.w(AppConfig.TAG, "LauncherManager: blocked app-initiated start before authentication and VPN disclosure consent")
+            context.toast(R.string.brand_vpn_disclosure_required)
+        }
+        return allowed
     }
 
     @Throws(Exception::class)

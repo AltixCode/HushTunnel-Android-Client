@@ -127,12 +127,6 @@ class HomeActivity : BaseComponentActivity() {
             onConnectToggle = { handleConnectToggle(state.isRunning) },
             onTestConnection = viewModel::testConnection,
             onSelectSubscription = viewModel::selectSubscription,
-            onBuyPlan = { planId, gateway ->
-                viewModel.buyPlan(planId, gateway) { checkoutUrl -> Utils.openUri(this, checkoutUrl) }
-            },
-            onRenewPlan = { subId, planId, gateway ->
-                viewModel.renewSubscription(subId, planId, gateway) { checkoutUrl -> Utils.openUri(this, checkoutUrl) }
-            },
             onSwitchServer = { serverId ->
                 viewModel.switchServer(serverId) {
                     LauncherManager.restartService(this@HomeActivity)
@@ -148,6 +142,16 @@ class HomeActivity : BaseComponentActivity() {
             },
             onDismissCheckoutMessage = viewModel::dismissCheckoutMessage,
             onLogout = {
+                LauncherManager.stopService(this@HomeActivity)
+                viewModel.logout()
+                startActivity(
+                    Intent(this@HomeActivity, LoginActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+                finish()
+            },
+            onAccountDeleted = {
+                LauncherManager.stopService(this@HomeActivity)
                 viewModel.logout()
                 startActivity(
                     Intent(this@HomeActivity, LoginActivity::class.java)
@@ -167,15 +171,15 @@ fun HomeScreen(
     onConnectToggle: () -> Unit,
     onTestConnection: () -> Unit = {},
     onSelectSubscription: (String) -> Unit,
-    onBuyPlan: (planId: String, gateway: String) -> Unit,
-    onRenewPlan: (subId: String, planId: String, gateway: String) -> Unit,
     onSwitchServer: (String) -> Unit,
     onChangePassword: (currentPassword: String?, newPassword: String) -> Unit,
     onDismissCheckoutMessage: () -> Unit,
     onLogout: () -> Unit,
+    onAccountDeleted: () -> Unit,
 ) {
-    var checkoutTargetSubId by remember { mutableStateOf<String?>(null) }
-    var showCheckoutDialog by remember { mutableStateOf(false) }
+    var showSubscriptionStore by remember { mutableStateOf(false) }
+    var showWalletStore by remember { mutableStateOf(false) }
+    var showAccountSettings by remember { mutableStateOf(false) }
     var showOrdersDialog by remember { mutableStateOf(false) }
     var showPasswordDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
@@ -279,6 +283,10 @@ fun HomeScreen(
                         SuggestionChip(
                             onClick = { showOrdersDialog = true },
                             label = { Text(stringResource(R.string.brand_orders_title), style = MaterialTheme.typography.labelSmall) },
+                        )
+                        SuggestionChip(
+                            onClick = { showAccountSettings = true },
+                            label = { Text(stringResource(R.string.brand_account_settings), style = MaterialTheme.typography.labelSmall) },
                         )
                     }
                 }
@@ -596,8 +604,7 @@ fun HomeScreen(
                         isSelectedTarget = isSelectedTarget,
                         onSelectTarget = { onSelectSubscription(sub.id) },
                         onRenew = {
-                            checkoutTargetSubId = sub.id
-                            showCheckoutDialog = true
+                            showSubscriptionStore = true
                         },
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -606,7 +613,7 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Web Store & Renewal Notice Card
+            // Native store purchases and wallet funding.
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
                 shape = RoundedCornerShape(16.dp),
@@ -614,32 +621,25 @@ fun HomeScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = stringResource(R.string.brand_web_store_notice),
+                        text = stringResource(R.string.brand_iap_store_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
-                        text = stringResource(R.string.brand_web_store_desc),
+                        text = stringResource(R.string.brand_iap_store_description),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     Button(
-                        onClick = { Utils.openUri(context, "https://www.hushtunnel.com") },
+                        onClick = { showSubscriptionStore = true },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
                     ) {
-                        Text("https://www.hushtunnel.com", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.brand_iap_subscriptions), fontWeight = FontWeight.Bold)
                     }
-                    Text(
-                        text = stringResource(R.string.brand_web_payment_methods),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        text = stringResource(R.string.brand_web_reseller_notice),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    OutlinedButton(onClick = { showWalletStore = true }, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(R.string.brand_iap_add_funds))
+                    }
                 }
             }
 
@@ -652,24 +652,22 @@ fun HomeScreen(
         }
     }
 
-    // Checkout / Renew Dialog with Gateway Picker
-    if (showCheckoutDialog) {
-        CheckoutPlanDialog(
-            isRenew = (checkoutTargetSubId != null),
-            plans = state.plans,
-            gateways = state.gateways,
-            onDismiss = { showCheckoutDialog = false },
-            onConfirm = { selectedPlanId, selectedGateway ->
-                showCheckoutDialog = false
-                val subId = checkoutTargetSubId
-                if (subId != null) {
-                    onRenewPlan(subId, selectedPlanId, selectedGateway)
-                } else {
-                    onBuyPlan(selectedPlanId, selectedGateway)
-                }
-            },
-        )
-    }
+    if (showSubscriptionStore) StorePurchaseDialog(
+        kind = StoreProductKind.SUBSCRIPTION,
+        onDismiss = { showSubscriptionStore = false },
+        onPurchaseComplete = onRefresh,
+    )
+
+    if (showWalletStore) StorePurchaseDialog(
+        kind = StoreProductKind.WALLET,
+        onDismiss = { showWalletStore = false },
+        onPurchaseComplete = onRefresh,
+    )
+
+    if (showAccountSettings) AccountSettingsDialog(
+        onDismiss = { showAccountSettings = false },
+        onDeleted = onAccountDeleted,
+    )
 
     if (showPasswordDialog) {
         ChangePasswordDialog(

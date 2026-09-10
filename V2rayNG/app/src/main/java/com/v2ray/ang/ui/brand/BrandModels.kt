@@ -31,6 +31,7 @@ data class ServerNode(
 )
 
 data class MeResult(
+    val userId: String,
     val email: String,
     val role: String,
     val subscriptions: List<SubscriptionInfo>,
@@ -39,8 +40,40 @@ data class MeResult(
 
 data class AuthResult(
     val token: String,
+    val userId: String,
     val email: String,
     val role: String,
+)
+
+data class IapSubscriptionProduct(
+    val productId: String,
+    val durationDays: Int,
+)
+
+data class IapWalletProduct(
+    val productId: String,
+    val amountUsd: Double,
+)
+
+data class IapConfig(
+    val enabled: Boolean,
+    val publicSdkKey: String,
+    val appUserId: String,
+    val entitlementId: String,
+    val subscriptionProducts: List<IapSubscriptionProduct>,
+    val walletProducts: List<IapWalletProduct>,
+)
+
+enum class StoreProductKind { SUBSCRIPTION, WALLET }
+
+data class StoreProductOption(
+    val id: String,
+    val title: String,
+    val description: String,
+    val formattedPrice: String,
+    val kind: StoreProductKind,
+    val durationDays: Int? = null,
+    val walletAmountUsd: Double? = null,
 )
 
 data class CheckoutResult(

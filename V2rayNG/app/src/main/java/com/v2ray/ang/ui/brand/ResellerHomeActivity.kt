@@ -63,6 +63,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.R
+import com.v2ray.ang.core.LauncherManager
 import com.v2ray.ang.extension.toast
 import com.v2ray.ang.ui.base.BaseComponentActivity
 import com.v2ray.ang.util.QRCodeDecoder
@@ -104,16 +105,11 @@ class ResellerHomeActivity : BaseComponentActivity() {
             onOpenVpnClient = {
                 startActivity(Intent(this@ResellerHomeActivity, HomeActivity::class.java))
             },
-            onBuyPersonalPlan = viewModel::buyPersonalSubscription,
-            onRenewPersonalPlan = viewModel::renewPersonalSubscription,
             onCreateCustomer = viewModel::createCustomer,
             onCreateOrder = viewModel::createOrderForCustomer,
             onOpenConnectionDetails = viewModel::openConnectionDetails,
             onDismissConnectionDetails = viewModel::dismissConnectionDetails,
             onDismissPendingOrder = viewModel::dismissPendingOrder,
-            onCreateDeposit = { _, _ ->
-                Utils.openUri(this, "https://www.hushtunnel.com")
-            },
             onCreateSubReseller = viewModel::createSubReseller,
             onTransferFunds = viewModel::transferFunds,
             onExtendSub = viewModel::extendSubscription,
@@ -134,6 +130,16 @@ class ResellerHomeActivity : BaseComponentActivity() {
             },
             onDismissMessage = viewModel::dismissMessage,
             onLogout = {
+                LauncherManager.stopService(this@ResellerHomeActivity)
+                viewModel.logout()
+                startActivity(
+                    Intent(this@ResellerHomeActivity, LoginActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+                finish()
+            },
+            onAccountDeleted = {
+                LauncherManager.stopService(this@ResellerHomeActivity)
                 viewModel.logout()
                 startActivity(
                     Intent(this@ResellerHomeActivity, LoginActivity::class.java)
@@ -152,14 +158,11 @@ fun ResellerHomeScreen(
     onRefresh: () -> Unit,
     onSetTab: (Int) -> Unit,
     onOpenVpnClient: () -> Unit,
-    onBuyPersonalPlan: (String) -> Unit,
-    onRenewPersonalPlan: (String, String) -> Unit,
     onCreateCustomer: (String, String?) -> Unit,
     onCreateOrder: (customerEmail: String, planId: String) -> Unit,
     onOpenConnectionDetails: (ResellerConnectionDetails) -> Unit,
     onDismissConnectionDetails: () -> Unit,
     onDismissPendingOrder: () -> Unit,
-    onCreateDeposit: (amount: Double, gateway: String) -> Unit,
     onCreateSubReseller: (email: String, initialBalanceUsd: Double) -> Unit,
     onTransferFunds: (recipientEmail: String, amountUsd: Double, description: String?, onSuccess: (() -> Unit)?) -> Unit,
     onExtendSub: (String) -> Unit,
@@ -173,11 +176,12 @@ fun ResellerHomeScreen(
     onChangePassword: (String?, String) -> Unit,
     onDismissMessage: () -> Unit,
     onLogout: () -> Unit,
+    onAccountDeleted: () -> Unit,
 ) {
     var showAddCustomerDialog by remember { mutableStateOf(false) }
     var showAddOrderDialog by remember { mutableStateOf(false) }
     var prefilledOrderEmail by remember { mutableStateOf("") }
-    var showAddDepositDialog by remember { mutableStateOf(false) }
+    var showWalletStore by remember { mutableStateOf(false) }
     var showAddSubResellerDialog by remember { mutableStateOf(false) }
     var showTransferFundsDialog by remember { mutableStateOf(false) }
     var transferInitialEmail by remember { mutableStateOf("") }
@@ -185,8 +189,8 @@ fun ResellerHomeScreen(
     var selectedSubResellerForDetail by remember { mutableStateOf<SubResellerItem?>(null) }
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showChangePasswordDialog by remember { mutableStateOf(false) }
-    var showBuyPersonalDialog by remember { mutableStateOf(false) }
-    var renewPersonalSubId by remember { mutableStateOf<String?>(null) }
+    var showSubscriptionStore by remember { mutableStateOf(false) }
+    var showAccountSettings by remember { mutableStateOf(false) }
     var selectedCustomerForDetail by remember { mutableStateOf<ResellerCustomer?>(null) }
     var activeConnectionDetails by remember { mutableStateOf<ConnectionDialogData?>(null) }
 
@@ -306,6 +310,13 @@ fun ResellerHomeScreen(
                     ) {
                         Text(stringResource(R.string.brand_change_password), style = MaterialTheme.typography.labelSmall)
                     }
+                    OutlinedButton(
+                        onClick = { showAccountSettings = true },
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                    ) {
+                        Text(stringResource(R.string.brand_account_settings), style = MaterialTheme.typography.labelSmall)
+                    }
                 }
             }
 
@@ -370,17 +381,15 @@ fun ResellerHomeScreen(
                     isRunning = state.isRunning,
                     onOpenVpnClient = onOpenVpnClient,
                     onOpenBuyPersonal = {
-                        renewPersonalSubId = null
-                        showBuyPersonalDialog = true
+                        showSubscriptionStore = true
                     },
-                    onOpenRenewPersonal = { subId ->
-                        renewPersonalSubId = subId
-                        showBuyPersonalDialog = true
+                    onOpenRenewPersonal = { _ ->
+                        showSubscriptionStore = true
                     },
                     onOpenAddCustomer = { showAddCustomerDialog = true },
                     onOpenAddReseller = { showAddSubResellerDialog = true },
                     onOpenAddOrder = { showAddOrderDialog = true },
-                    onOpenAddDeposit = { showAddDepositDialog = true },
+                    onOpenAddDeposit = { showWalletStore = true },
                 )
                 1 -> ResellerCustomersTab(
                     customers = state.customers,
@@ -445,24 +454,11 @@ fun ResellerHomeScreen(
     }
 
 
-    if (showBuyPersonalDialog) {
-        BuyPersonalPlanDialog(
-            plans = state.plans,
-            balanceUsd = state.overview.balanceUsd,
-            discountPct = state.overview.discountPct,
-            isRenew = (renewPersonalSubId != null),
-            onDismiss = { showBuyPersonalDialog = false },
-            onConfirm = { planId ->
-                showBuyPersonalDialog = false
-                val targetSubId = renewPersonalSubId
-                if (targetSubId != null) {
-                    onRenewPersonalPlan(targetSubId, planId)
-                } else {
-                    onBuyPersonalPlan(planId)
-                }
-            },
-        )
-    }
+    if (showSubscriptionStore) StorePurchaseDialog(
+        kind = StoreProductKind.SUBSCRIPTION,
+        onDismiss = { showSubscriptionStore = false },
+        onPurchaseComplete = onRefresh,
+    )
 
     if (showAddCustomerDialog) {
         AddCustomerDialog(
@@ -525,16 +521,16 @@ fun ResellerHomeScreen(
         )
     }
 
-    if (showAddDepositDialog) {
-        AddDepositDialog(
-            gateways = state.gateways,
-            onDismiss = { showAddDepositDialog = false },
-            onConfirm = { amount, gateway ->
-                showAddDepositDialog = false
-                onCreateDeposit(amount, gateway)
-            },
-        )
-    }
+    if (showWalletStore) StorePurchaseDialog(
+        kind = StoreProductKind.WALLET,
+        onDismiss = { showWalletStore = false },
+        onPurchaseComplete = onRefresh,
+    )
+
+    if (showAccountSettings) AccountSettingsDialog(
+        onDismiss = { showAccountSettings = false },
+        onDeleted = onAccountDeleted,
+    )
 
     if (showAddSubResellerDialog) {
         AddSubResellerDialog(
@@ -1881,7 +1877,7 @@ fun BuyPersonalPlanDialog(
 
                 if (!canAfford) {
                     Text(
-                        text = "Insufficient balance. Please deposit funds via web dashboard.",
+                        text = stringResource(R.string.brand_error_insufficient_balance_add_funds),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(top = 8.dp),

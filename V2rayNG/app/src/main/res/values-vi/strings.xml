@@ -591,7 +591,7 @@
     <string name="brand_register_btn">Create account</string>
     <string name="brand_no_account">No account? Create one</string>
     <string name="brand_have_account">Already have an account? Log in</string>
-    <string name="brand_admin_reject">Use the web dashboard at hushtunnel.com to manage the platform</string>
+    <string name="brand_admin_reject">Tài khoản quản trị không khả dụng trong ứng dụng di động</string>
     <string name="brand_error_empty_credentials">Enter your email and password</string>
     <string name="brand_error_invalid_credentials">Enter an email and a password of at least 8 characters</string>
     <string name="brand_error_connection">Couldn\'t reach the server — check your connection</string>
@@ -662,11 +662,6 @@
     <string name="brand_reseller_reset_uuid">Reset UUID</string>
     <string name="brand_reseller_reset_traffic">Reset Traffic</string>
     <string name="brand_reseller_revoke">Revoke</string>
-    <string name="brand_web_store_notice">Account &amp; Subscription Management</string>
-    <string name="brand_web_store_desc">Subscriptions, active devices, and partner access are managed via your web dashboard:</string>
-    <string name="brand_web_store_url">https://www.hushtunnel.com</string>
-    <string name="brand_web_payment_methods">Manage your active services, devices, and security settings online.</string>
-    <string name="brand_web_reseller_notice">Accounts registered through authorized partners can be managed directly or with your provider.</string>
     <string name="brand_change_password">Change Password</string>
     <string name="brand_current_password">Current Password</string>
     <string name="brand_new_password">New Password</string>
@@ -680,4 +675,41 @@
 
     <!-- Multi-server QR/VLESS display (reseller connection details) -->
     <string name="brand_default_server">Mặc định</string>
+    <string name="brand_iap_unavailable">Tính năng mua trong ứng dụng hiện không khả dụng. Vui lòng thử lại sau.</string>
+    <string name="brand_iap_subscriptions">Gói đăng ký</string>
+    <string name="brand_iap_add_funds">Nạp tiền</string>
+    <string name="brand_iap_auto_renew_note">Đăng ký tự động gia hạn qua Google Play cho đến khi hủy. Chỉ đăng ký mua trong ứng dụng mới tự động gia hạn.</string>
+    <string name="brand_iap_wallet_note">Chọn giao dịch Google Play một lần để thêm tiền vào số dư HushTunnel.</string>
+    <string name="brand_iap_purchase_processing">Đã nhận giao dịch. Tài khoản của bạn đang được cập nhật.</string>
+    <string name="brand_iap_restore">Khôi phục giao dịch</string>
+    <string name="brand_iap_restored">Đã khôi phục giao dịch. Tài khoản đang làm mới.</string>
+    <string name="brand_iap_no_managed_subscription">Không có đăng ký Google Play để quản lý.</string>
+    <string name="brand_iap_manage_subscription">Quản lý đăng ký Google Play</string>
+    <string name="brand_iap_store_title">Gói và số dư tài khoản</string>
+    <string name="brand_iap_store_description">Đăng ký hoặc nạp tiền an toàn bằng Google Play.</string>
+    <string name="brand_account_settings">Cài đặt tài khoản</string>
+    <string name="brand_privacy_title">Quyền riêng tư</string>
+    <string name="brand_privacy_summary">HushTunnel không ghi nhật ký hoạt động duyệt web, truy vấn DNS, đích lưu lượng hay nội dung tin nhắn.</string>
+    <string name="brand_privacy_stored">Chúng tôi chỉ lưu dữ liệu cần thiết: email, mã băm mật khẩu, trạng thái đăng ký và hạn mức, chẩn đoán kỹ thuật giới hạn và hồ sơ thanh toán bắt buộc.</string>
+    <string name="brand_account_delete_phrase">DELETE</string>
+    <string name="brand_account_delete_title">Xóa tài khoản</string>
+    <string name="brand_account_delete_warning">Quyền truy cập và thông tin kết nối sẽ bị xóa vĩnh viễn. Hồ sơ tài chính bắt buộc được giữ ở dạng ẩn danh.</string>
+    <string name="brand_account_subscription_warning">Xóa tài khoản không hủy đăng ký Google Play. Hãy hủy trước bằng nút phía trên.</string>
+    <string name="brand_account_type_delete">Nhập %1$s để xác nhận</string>
+    <string name="brand_account_delete_failed">Không thể xóa tài khoản.</string>
+    <string name="brand_account_delete_button">Xóa tài khoản vĩnh viễn</string>
+    <string name="brand_error_insufficient_balance_add_funds">Số dư không đủ. Hãy nạp tiền trong ứng dụng rồi thử lại.</string>
+    <string name="brand_vpn_disclosure_title">Thông báo kết nối VPN</string>
+    <string name="brand_vpn_disclosure_intro">Hãy đọc thông báo riêng này trước khi mua hoặc dùng HushTunnel.</string>
+    <string name="brand_vpn_disclosure_core">HushTunnel chỉ dùng Android VpnService để tạo đường hầm an toàn cấp thiết bị mà bạn yêu cầu tới máy chủ HushTunnel đã chọn.</string>
+    <string name="brand_vpn_disclosure_processing">Khi kết nối, Android chuyển gói mạng, địa chỉ và cổng đích, yêu cầu DNS và nội dung qua HushTunnel trong bộ nhớ chỉ khi cần để mã hóa và chuyển tiếp. Đường hầm từ thiết bị tới điểm cuối được mã hóa.</string>
+    <string name="brand_vpn_disclosure_data">Chúng tôi không ghi hay giữ lịch sử duyệt web, yêu cầu DNS, đích lưu lượng hoặc nội dung gói. Chỉ tổng số byte cho hạn mức và dữ liệu tài khoản, giao dịch, bảo mật ngắn hạn nêu trong Chính sách quyền riêng tư được giữ lại.</string>
+    <string name="brand_vpn_disclosure_monetization">Ngoài việc xử lý tạm thời cần thiết để cung cấp VPN bạn yêu cầu, chúng tôi không bán, sử dụng hoặc tiết lộ dữ liệu lưu lượng VPN cho bên thứ ba vì bất kỳ mục đích nào và không chuyển hướng hoặc thao túng lưu lượng để quảng cáo hay kiếm tiền.</string>
+    <string name="brand_vpn_disclosure_choice">Đồng ý và tiếp tục sẽ ghi nhận sự đồng ý. Để sau không khởi động đường hầm và quay lại đăng nhập. Bạn có thể ngắt kết nối hoặc gỡ quyền VPN bất cứ lúc nào.</string>
+    <string name="brand_vpn_disclosure_accept">Đồng ý và tiếp tục</string>
+    <string name="brand_vpn_disclosure_decline">Để sau</string>
+    <string name="brand_vpn_disclosure_required">Hãy đăng nhập và chấp nhận thông báo kết nối VPN trước khi khởi động đường hầm.</string>
+    <string name="brand_privacy_policy">Chính sách quyền riêng tư</string>
+    <string name="brand_terms_conditions">Điều khoản và Điều kiện</string>
+    <string name="brand_registration_legal_notice">Khi tạo tài khoản, bạn đồng ý với Điều khoản và Điều kiện và xác nhận Chính sách quyền riêng tư.</string>
 </resources>

@@ -591,7 +591,7 @@
     <string name="brand_register_btn">Create account</string>
     <string name="brand_no_account">No account? Create one</string>
     <string name="brand_have_account">Already have an account? Log in</string>
-    <string name="brand_admin_reject">Use the web dashboard at hushtunnel.com to manage the platform</string>
+    <string name="brand_admin_reject">মোবাইল অ্যাপে প্রশাসনিক অ্যাকাউন্ট উপলভ্য নয়</string>
     <string name="brand_error_empty_credentials">Enter your email and password</string>
     <string name="brand_error_invalid_credentials">Enter an email and a password of at least 8 characters</string>
     <string name="brand_error_connection">Couldn\'t reach the server — check your connection</string>
@@ -662,11 +662,6 @@
     <string name="brand_reseller_reset_uuid">Reset UUID</string>
     <string name="brand_reseller_reset_traffic">Reset Traffic</string>
     <string name="brand_reseller_revoke">Revoke</string>
-    <string name="brand_web_store_notice">Account &amp; Subscription Management</string>
-    <string name="brand_web_store_desc">Subscriptions, active devices, and partner access are managed via your web dashboard:</string>
-    <string name="brand_web_store_url">https://www.hushtunnel.com</string>
-    <string name="brand_web_payment_methods">Manage your active services, devices, and security settings online.</string>
-    <string name="brand_web_reseller_notice">Accounts registered through authorized partners can be managed directly or with your provider.</string>
     <string name="brand_change_password">Change Password</string>
     <string name="brand_current_password">Current Password</string>
     <string name="brand_new_password">New Password</string>
@@ -680,4 +675,41 @@
 
     <!-- Multi-server QR/VLESS display (reseller connection details) -->
     <string name="brand_default_server">ডিফল্ট</string>
+    <string name="brand_iap_unavailable">ইন-অ্যাপ ক্রয় এখন উপলভ্য নয়। পরে আবার চেষ্টা করুন।</string>
+    <string name="brand_iap_subscriptions">সাবস্ক্রিপশন প্ল্যান</string>
+    <string name="brand_iap_add_funds">ব্যালেন্স যোগ করুন</string>
+    <string name="brand_iap_auto_renew_note">বাতিল না করা পর্যন্ত সাবস্ক্রিপশন Google Play-এর মাধ্যমে স্বয়ংক্রিয়ভাবে নবায়ন হয়। শুধু অ্যাপে কেনা সাবস্ক্রিপশন স্বয়ংক্রিয়ভাবে নবায়ন হয়।</string>
+    <string name="brand_iap_wallet_note">HushTunnel ব্যালেন্সে অর্থ যোগ করতে এককালীন Google Play ক্রয় বেছে নিন।</string>
+    <string name="brand_iap_purchase_processing">ক্রয় গ্রহণ করা হয়েছে। আপনার অ্যাকাউন্ট আপডেট হচ্ছে।</string>
+    <string name="brand_iap_restore">ক্রয় পুনরুদ্ধার করুন</string>
+    <string name="brand_iap_restored">ক্রয় পুনরুদ্ধার হয়েছে। অ্যাকাউন্ট রিফ্রেশ হচ্ছে।</string>
+    <string name="brand_iap_no_managed_subscription">পরিচালনার জন্য কোনো Google Play সাবস্ক্রিপশন নেই।</string>
+    <string name="brand_iap_manage_subscription">Google Play সাবস্ক্রিপশন পরিচালনা করুন</string>
+    <string name="brand_iap_store_title">প্ল্যান ও অ্যাকাউন্ট ব্যালেন্স</string>
+    <string name="brand_iap_store_description">Google Play দিয়ে নিরাপদে সাবস্ক্রাইব বা ব্যালেন্স যোগ করুন।</string>
+    <string name="brand_account_settings">অ্যাকাউন্ট সেটিংস</string>
+    <string name="brand_privacy_title">গোপনীয়তা</string>
+    <string name="brand_privacy_summary">HushTunnel ব্রাউজিং কার্যকলাপ, DNS অনুরোধ, ট্রাফিক গন্তব্য বা বার্তার বিষয়বস্তু লগ করে না।</string>
+    <string name="brand_privacy_stored">শুধু প্রয়োজনীয় তথ্য রাখি: ইমেইল, পাসওয়ার্ড হ্যাশ, সাবস্ক্রিপশন ও কোটা অবস্থা, সীমিত প্রযুক্তিগত ডায়াগনস্টিক এবং প্রয়োজনীয় পেমেন্ট রেকর্ড।</string>
+    <string name="brand_account_delete_phrase">DELETE</string>
+    <string name="brand_account_delete_title">অ্যাকাউন্ট মুছুন</string>
+    <string name="brand_account_delete_warning">অ্যাক্সেস ও সংযোগ তথ্য স্থায়ীভাবে মুছে যাবে। প্রয়োজনীয় আর্থিক রেকর্ড বেনামীভাবে রাখা হবে।</string>
+    <string name="brand_account_subscription_warning">অ্যাকাউন্ট মুছলে Google Play সাবস্ক্রিপশন বাতিল হয় না। আগে উপরের বোতাম দিয়ে বাতিল করুন।</string>
+    <string name="brand_account_type_delete">নিশ্চিত করতে %1$s লিখুন</string>
+    <string name="brand_account_delete_failed">অ্যাকাউন্ট মোছা যায়নি।</string>
+    <string name="brand_account_delete_button">স্থায়ীভাবে অ্যাকাউন্ট মুছুন</string>
+    <string name="brand_error_insufficient_balance_add_funds">ব্যালেন্স যথেষ্ট নয়। অ্যাপে ব্যালেন্স যোগ করে আবার চেষ্টা করুন।</string>
+    <string name="brand_vpn_disclosure_title">VPN সংযোগ প্রকাশ</string>
+    <string name="brand_vpn_disclosure_intro">HushTunnel কেনা বা ব্যবহারের আগে এই পৃথক প্রকাশটি পড়ুন।</string>
+    <string name="brand_vpn_disclosure_core">HushTunnel কেবল আপনার নির্বাচিত HushTunnel সার্ভারে অনুরোধ করা নিরাপদ ডিভাইস-স্তরের টানেল তৈরির জন্য Android VpnService ব্যবহার করে।</string>
+    <string name="brand_vpn_disclosure_processing">সংযুক্ত অবস্থায় Android নেটওয়ার্ক প্যাকেট, গন্তব্য ঠিকানা ও পোর্ট, DNS অনুরোধ এবং বিষয়বস্তু শুধু সংযোগ এনক্রিপ্ট ও ফরওয়ার্ড করার প্রয়োজনে মেমরিতে HushTunnel-এর মাধ্যমে পাঠায়। ডিভাইস থেকে টানেল প্রান্ত পর্যন্ত এনক্রিপ্ট করা থাকে।</string>
+    <string name="brand_vpn_disclosure_data">আমরা ব্রাউজিং ইতিহাস, DNS অনুরোধ, ট্রাফিক গন্তব্য বা পেলোড সংরক্ষণ করি না। শুধু প্ল্যান কোটার মোট বাইট এবং গোপনীয়তা নীতিতে বর্ণিত অ্যাকাউন্ট, ক্রয় ও স্বল্পমেয়াদি নিরাপত্তা তথ্য রাখা হয়।</string>
+    <string name="brand_vpn_disclosure_monetization">আপনার অনুরোধের VPN দিতে প্রয়োজনীয় সাময়িক প্রক্রিয়াকরণ ছাড়া আমরা কোনো উদ্দেশ্যে VPN ট্রাফিক তথ্য বিক্রি, ব্যবহার বা তৃতীয় পক্ষকে প্রকাশ করি না এবং বিজ্ঞাপন বা আয়ের জন্য তা ঘুরিয়ে বা পরিবর্তন করি না।</string>
+    <string name="brand_vpn_disclosure_choice">সম্মতি দিয়ে চালিয়ে গেলে আপনার সম্মতি নথিভুক্ত হয়। এখন নয় বেছে নিলে টানেল চালু হয় না এবং লগইনে ফেরা হয়। যেকোনো সময় সংযোগ বিচ্ছিন্ন বা VPN অনুমতি সরাতে পারেন।</string>
+    <string name="brand_vpn_disclosure_accept">সম্মতি দিয়ে চালিয়ে যান</string>
+    <string name="brand_vpn_disclosure_decline">এখন নয়</string>
+    <string name="brand_vpn_disclosure_required">টানেল চালু করার আগে সাইন ইন করুন এবং VPN সংযোগ প্রকাশে সম্মতি দিন।</string>
+    <string name="brand_privacy_policy">গোপনীয়তা নীতি</string>
+    <string name="brand_terms_conditions">শর্তাবলি</string>
+    <string name="brand_registration_legal_notice">অ্যাকাউন্ট তৈরি করে আপনি শর্তাবলিতে সম্মত হন এবং গোপনীয়তা নীতি স্বীকার করেন।</string>
 </resources>

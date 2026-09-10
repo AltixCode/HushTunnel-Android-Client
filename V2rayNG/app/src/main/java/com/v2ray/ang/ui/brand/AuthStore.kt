@@ -11,6 +11,7 @@ import com.tencent.mmkv.MMKV
 object AuthStore {
     private const val ID = "BRAND_AUTH"
     private const val KEY_TOKEN = "token"
+    private const val KEY_USER_ID = "user_id"
     private const val KEY_EMAIL = "email"
     private const val KEY_ROLE = "role"
     private const val KEY_SELECTED_SUB = "selected_subscription_id"
@@ -18,13 +19,16 @@ object AuthStore {
 
     private val storage by lazy { MMKV.mmkvWithID(ID, MMKV.MULTI_PROCESS_MODE) }
 
-    fun saveSession(token: String, email: String, role: String) {
+    fun saveSession(token: String, userId: String, email: String, role: String) {
         storage.encode(KEY_TOKEN, token)
+        storage.encode(KEY_USER_ID, userId)
         storage.encode(KEY_EMAIL, email)
         storage.encode(KEY_ROLE, role)
     }
 
     fun getToken(): String? = storage.decodeString(KEY_TOKEN)?.takeIf { it.isNotBlank() }
+
+    fun getUserId(): String? = storage.decodeString(KEY_USER_ID)?.takeIf { it.isNotBlank() }
 
     fun getEmail(): String? = storage.decodeString(KEY_EMAIL)?.takeIf { it.isNotBlank() }
 
@@ -54,6 +58,7 @@ object AuthStore {
 
     fun clear() {
         storage.removeValueForKey(KEY_TOKEN)
+        storage.removeValueForKey(KEY_USER_ID)
         storage.removeValueForKey(KEY_EMAIL)
         storage.removeValueForKey(KEY_ROLE)
         storage.removeValueForKey(KEY_SELECTED_SUB)

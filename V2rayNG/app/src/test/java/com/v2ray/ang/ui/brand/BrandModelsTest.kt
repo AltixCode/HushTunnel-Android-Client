@@ -48,6 +48,7 @@ class BrandModelsTest {
     @Test
     fun testMeResultRoleParsing() {
         val userMe = MeResult(
+            userId = "user-1",
             email = "user@example.com",
             role = "USER",
             subscriptions = listOf(),
@@ -55,11 +56,27 @@ class BrandModelsTest {
         assertEquals("USER", userMe.role)
 
         val resellerMe = MeResult(
+            userId = "reseller-1",
             email = "reseller@example.com",
             role = "RESELLER",
             subscriptions = listOf(),
         )
         assertEquals("RESELLER", resellerMe.role)
+    }
+
+    @Test
+    fun storeProductsKeepSubscriptionsAndWalletFundingDistinct() {
+        val config = IapConfig(
+            enabled = true,
+            publicSdkKey = "goog_test",
+            appUserId = "user-1",
+            entitlementId = "hushtunnel_access",
+            subscriptionProducts = listOf(IapSubscriptionProduct("hushtunnel_1_month", 30)),
+            walletProducts = listOf(IapWalletProduct("hushtunnel_funds_10", 10.0)),
+        )
+        assertEquals(30, config.subscriptionProducts.single().durationDays)
+        assertEquals(10.0, config.walletProducts.single().amountUsd, 0.001)
+        assertEquals("user-1", config.appUserId)
     }
 
     @Test
