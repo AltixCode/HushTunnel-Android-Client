@@ -226,6 +226,7 @@ jobs:
           releaseFiles: ${{ github.workspace }}/release_artifacts/HushTunnel-${{ env.APP_VERSION_NAME }}-playstore.aab
           tracks: internal
           status: completed
+          changesNotSentForReview: true
           releaseName: HushTunnel ${{ env.APP_VERSION_NAME }} (${{ env.APP_VERSION_CODE }})
 
       - name: Upload Artifacts
