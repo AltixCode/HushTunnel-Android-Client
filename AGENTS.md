@@ -1,8 +1,10 @@
 # HushTunnel Android Client Guidelines
 
-## 1. Brand Identity
+## 1. Brand Identity & Master Guide
 - **Product Name**: Strictly **HushTunnel** (or **Hush Tunnel**), never with "VPN" appended.
 - **Application ID**: `com.hushtunnel.app` (namespace `com.v2ray.ang`).
+- **Master Ecosystem Guide**: See `../AGENTS.md` for overall multi-repo architecture, RevenueCat mappings, and store procedures.
+- **In-App Subscriptions**: Powered by RevenueCat SDK 10.15.1 (Play flavor). Subscriptions use Google Play base plans: `hushtunnel_1_month:monthly-autorenewing`, `hushtunnel_3_months:three-months-autorenewing`, `hushtunnel_12_months:annual-autorenewing`, and consumable wallet products (`hushtunnel_funds_5` through `hushtunnel_funds_100`).
 
 ## 2. Localization
 - 10 full languages supported in `res/values*/strings.xml` (English, Persian, Russian, Chinese Simplified/Traditional, Turkish, Arabic, Bengali, Vietnamese, Bakhtiari).

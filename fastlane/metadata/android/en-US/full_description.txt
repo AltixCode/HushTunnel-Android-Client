@@ -17,6 +17,14 @@ Account information, subscription state, aggregate quota use, and necessary purc
 
 Features include encrypted tunnel connectivity, server selection, native subscriptions, wallet funding, purchase restoration, account controls, and permanent in-app account deletion.
 
+In-App Subscriptions:
+• HushTunnel 1 Month: 30 days of full VPN access
+• HushTunnel 3 Months: 90 days of full VPN access
+• HushTunnel 12 Months: 365 days of full VPN access
+
+Subscriptions automatically renew unless canceled at least 24 hours before the end of the current billing cycle. You can manage or cancel your subscription at any time in your Google Play account settings.
+
 Privacy Policy: https://www.hushtunnel.com/privacy
 Terms and Conditions: https://www.hushtunnel.com/terms
 Support: support@hushtunnel.com
+
