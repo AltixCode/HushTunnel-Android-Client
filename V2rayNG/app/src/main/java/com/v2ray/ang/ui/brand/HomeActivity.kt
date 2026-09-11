@@ -188,6 +188,8 @@ fun HomeScreen(
     val context = LocalContext.current
     val currentLang = LocaleHelper.getCurrentLanguageTag()
     val activeSubs = state.subscriptions.filter { it.isActive }
+    val hasActiveSubscription = activeSubs.isNotEmpty()
+    val showTunnelControls = hasActiveSubscription || state.isRunning
     val selectedSub = state.subscriptions.firstOrNull { it.id == state.selectedSubscriptionId }
     val isBusy = isLoading || state.isSwitchingServer
 
@@ -294,265 +296,327 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Prominent Status Card
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = if (state.isRunning) Color(0xFF10B981).copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                ),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-            ) {
-                Row(
+            if (showTunnelControls) {
+                // Prominent Status Card
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (state.isRunning) Color(0xFF10B981).copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    ),
+                    shape = RoundedCornerShape(16.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(14.dp)
-                                .background(
-                                    color = if (state.isRunning) Color(0xFF10B981) else Color(0xFF9CA3AF),
-                                    shape = CircleShape,
-                                )
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = if (state.isRunning) stringResource(R.string.brand_connected) else stringResource(R.string.brand_disconnected),
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = if (state.isRunning) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurface,
-                            )
-                            Text(
-                                text = if (state.isRunning) stringResource(R.string.brand_vpn_active_hint) else stringResource(R.string.brand_tap_to_connect),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-
-                    if (state.isRunning) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_lock_24dp),
-                            contentDescription = null,
-                            tint = Color(0xFF10B981),
-                            modifier = Modifier.size(24.dp),
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Main Connect / Disconnect Circle
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 12.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                val buttonColor = if (state.isRunning) Color(0xFFE11D48) else MaterialTheme.colorScheme.primary
-                val borderPulseColor = if (state.isRunning) Color(0xFFE11D48).copy(alpha = 0.25f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-
-                Box(
-                    modifier = Modifier
-                        .size(174.dp)
-                        .background(borderPulseColor, shape = CircleShape),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Button(
-                        onClick = onConnectToggle,
-                        enabled = state.hasServer && !isBusy,
-                        modifier = Modifier.size(150.dp),
-                        shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = buttonColor,
-                            contentColor = Color.White,
-                        ),
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                        ) {
-                            if (state.isSwitchingServer) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(34.dp),
-                                    strokeWidth = 3.dp,
-                                    color = Color.White,
-                                )
-                            } else {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_qu_start_24dp),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(34.dp),
-                                    tint = Color.White,
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = when {
-                                    state.isSwitchingServer -> stringResource(R.string.brand_switching_server)
-                                    state.isRunning -> stringResource(R.string.brand_disconnect)
-                                    else -> stringResource(R.string.brand_connect)
-                                },
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                            )
-                            Text(
-                                text = if (state.isRunning) stringResource(R.string.brand_tap_to_disconnect) else stringResource(R.string.brand_tap_to_connect),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color.White.copy(alpha = 0.85f),
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Test Connection Button & Result Banner
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    OutlinedButton(
-                        onClick = onTestConnection,
-                        enabled = state.isRunning && !state.isTestingConnection,
-                        modifier = Modifier.testTag("hush.connection-test"),
-                        shape = RoundedCornerShape(20.dp),
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (state.isTestingConnection) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
-                                    strokeWidth = 2.dp,
-                                    color = MaterialTheme.colorScheme.primary,
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = stringResource(R.string.brand_testing),
-                                    style = MaterialTheme.typography.labelMedium,
-                                )
-                            } else {
-                                Text(
-                                    text = "⚡ " + stringResource(R.string.brand_test_connection),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                )
-                            }
-                        }
-                    }
-
-                    state.testResult?.let { res ->
-                        Spacer(modifier = Modifier.height(8.dp))
-                        val badgeBg = when (res.status) {
-                            ConnectionTestResult.Status.SUCCESS -> Color(0xFF10B981).copy(alpha = 0.12f)
-                            ConnectionTestResult.Status.WARNING -> Color(0xFFF59E0B).copy(alpha = 0.12f)
-                            ConnectionTestResult.Status.ERROR -> Color(0xFFEF4444).copy(alpha = 0.12f)
-                        }
-                        val badgeColor = when (res.status) {
-                            ConnectionTestResult.Status.SUCCESS -> Color(0xFF10B981)
-                            ConnectionTestResult.Status.WARNING -> Color(0xFFF59E0B)
-                            ConnectionTestResult.Status.ERROR -> Color(0xFFEF4444)
-                        }
-                        val badgeIcon = when (res.status) {
-                            ConnectionTestResult.Status.SUCCESS -> "🛡️ "
-                            ConnectionTestResult.Status.WARNING -> "⚠️ "
-                            ConnectionTestResult.Status.ERROR -> "❌ "
-                        }
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = badgeBg),
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                        ) {
-                            Text(
-                                text = badgeIcon + res.message,
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Medium,
-                                color = badgeColor,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Server Location Selector Card
-            val activeServer = state.servers.firstOrNull { it.id == state.selectedServerId }
-                ?: state.servers.firstOrNull { it.isDefault }
-                ?: state.servers.firstOrNull()
-
-            Card(
-                onClick = { showServerDialog = true },
-                enabled = !isBusy,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
+                        .padding(vertical = 4.dp),
                 ) {
                     Row(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Text(text = activeServer?.flag ?: "🌐", style = MaterialTheme.typography.headlineSmall)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column(modifier = Modifier.weight(1f, fill = false)) {
-                            Text(
-                                text = activeServer?.name ?: "Netherlands 01 (Amsterdam)",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(14.dp)
+                                    .background(
+                                        color = if (state.isRunning) Color(0xFF10B981) else Color(0xFF9CA3AF),
+                                        shape = CircleShape,
+                                    )
                             )
-                            Text(
-                                text = "${activeServer?.city ?: activeServer?.countryCode ?: "Amsterdam"} · VLESS-Reality",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = if (state.isRunning) stringResource(R.string.brand_connected) else stringResource(R.string.brand_disconnected),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (state.isRunning) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurface,
+                                )
+                                Text(
+                                    text = if (state.isRunning) stringResource(R.string.brand_vpn_active_hint) else stringResource(R.string.brand_tap_to_connect),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+
+                        if (state.isRunning) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_lock_24dp),
+                                contentDescription = null,
+                                tint = Color(0xFF10B981),
+                                modifier = Modifier.size(24.dp),
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = { showServerDialog = true },
-                        shape = RoundedCornerShape(20.dp),
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Main Connect / Disconnect Circle
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    val buttonColor = if (state.isRunning) Color(0xFFE11D48) else MaterialTheme.colorScheme.primary
+                    val borderPulseColor = if (state.isRunning) Color(0xFFE11D48).copy(alpha = 0.25f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+
+                    Box(
+                        modifier = Modifier
+                            .size(174.dp)
+                            .background(borderPulseColor, shape = CircleShape),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Text(
-                            text = stringResource(R.string.brand_switch),
-                            maxLines = 1,
-                        )
+                        Button(
+                            onClick = onConnectToggle,
+                            enabled = state.hasServer && !isBusy,
+                            modifier = Modifier.size(150.dp),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = buttonColor,
+                                contentColor = Color.White,
+                            ),
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                            ) {
+                                if (state.isSwitchingServer) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(34.dp),
+                                        strokeWidth = 3.dp,
+                                        color = Color.White,
+                                    )
+                                } else {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_qu_start_24dp),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(34.dp),
+                                        tint = Color.White,
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = when {
+                                        state.isSwitchingServer -> stringResource(R.string.brand_switching_server)
+                                        state.isRunning -> stringResource(R.string.brand_disconnect)
+                                        else -> stringResource(R.string.brand_connect)
+                                    },
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                )
+                                Text(
+                                    text = if (state.isRunning) stringResource(R.string.brand_tap_to_disconnect) else stringResource(R.string.brand_tap_to_connect),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color.White.copy(alpha = 0.85f),
+                                )
+                            }
+                        }
                     }
                 }
-            }
 
-            // Connection Status / Server hint
-            if (!state.hasServer) {
+                // Test Connection Button & Result Banner
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        OutlinedButton(
+                            onClick = onTestConnection,
+                            enabled = state.isRunning && !state.isTestingConnection,
+                            modifier = Modifier.testTag("hush.connection-test"),
+                            shape = RoundedCornerShape(20.dp),
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (state.isTestingConnection) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = stringResource(R.string.brand_testing),
+                                        style = MaterialTheme.typography.labelMedium,
+                                    )
+                                } else {
+                                    Text(
+                                        text = "⚡ " + stringResource(R.string.brand_test_connection),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
+                                }
+                            }
+                        }
+
+                        state.testResult?.let { res ->
+                            Spacer(modifier = Modifier.height(8.dp))
+                            val badgeBg = when (res.status) {
+                                ConnectionTestResult.Status.SUCCESS -> Color(0xFF10B981).copy(alpha = 0.12f)
+                                ConnectionTestResult.Status.WARNING -> Color(0xFFF59E0B).copy(alpha = 0.12f)
+                                ConnectionTestResult.Status.ERROR -> Color(0xFFEF4444).copy(alpha = 0.12f)
+                            }
+                            val badgeColor = when (res.status) {
+                                ConnectionTestResult.Status.SUCCESS -> Color(0xFF10B981)
+                                ConnectionTestResult.Status.WARNING -> Color(0xFFF59E0B)
+                                ConnectionTestResult.Status.ERROR -> Color(0xFFEF4444)
+                            }
+                            val badgeIcon = when (res.status) {
+                                ConnectionTestResult.Status.SUCCESS -> "🛡️ "
+                                ConnectionTestResult.Status.WARNING -> "⚠️ "
+                                ConnectionTestResult.Status.ERROR -> "❌ "
+                            }
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = badgeBg),
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                            ) {
+                                Text(
+                                    text = badgeIcon + res.message,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Medium,
+                                    color = badgeColor,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Server Location Selector Card
+                val activeServer = state.servers.firstOrNull { it.id == state.selectedServerId }
+                    ?: state.servers.firstOrNull { it.isDefault }
+                    ?: state.servers.firstOrNull()
+
                 Card(
+                    onClick = { showServerDialog = true },
+                    enabled = !isBusy,
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    shape = RoundedCornerShape(16.dp),
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(text = activeServer?.flag ?: "🌐", style = MaterialTheme.typography.headlineSmall)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f, fill = false)) {
+                                Text(
+                                    text = activeServer?.name ?: "Netherlands 01 (Amsterdam)",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                )
+                                Text(
+                                    text = "${activeServer?.city ?: activeServer?.countryCode ?: "Amsterdam"} · VLESS-Reality",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = { showServerDialog = true },
+                            shape = RoundedCornerShape(20.dp),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.brand_switch),
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                }
+
+                // Connection Status / Server hint
+                if (!state.hasServer) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = stringResource(R.string.brand_no_active_sub),
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                            Text(
+                                text = stringResource(R.string.brand_no_active_sub_hint),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                        }
+                    }
+                }
+            } else {
+                // No active subscription card
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                    ),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                                    shape = CircleShape,
+                                ),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_lock_24dp),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(32.dp),
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = stringResource(R.string.brand_no_active_sub),
                             style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = stringResource(R.string.brand_no_active_sub_hint),
                             style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(top = 4.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         )
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Button(
+                            onClick = { showSubscriptionStore = true },
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.brand_iap_subscriptions),
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
                     }
                 }
             }
