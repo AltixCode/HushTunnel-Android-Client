@@ -234,6 +234,8 @@ jobs:
         with:
           name: HushTunnel-Android-Builds
           path: ${{ github.workspace }}/release_artifacts/*
+          # Release IPAs/AABs are large; the retention workflow keeps only the newest two.
+          retention-days: 14
 
       - name: Determine Release Tag
         id: tag_info
