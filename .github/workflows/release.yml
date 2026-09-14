@@ -233,9 +233,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: HushTunnel-Android-Builds
-          path: ${{ github.workspace }}/release_artifacts/*
-          # Release IPAs/AABs are large; the retention workflow keeps only the newest two.
-          retention-days: 14
+          # Only the arm64-v8a APK. Uploading release_artifacts/* meant every run stored four
+          # APK variants, an alias copy and the AAB — the AAB already goes straight to Play,
+          # and the other ABIs are rebuildable from the same tag.
+          path: ${{ github.workspace }}/release_artifacts/HushTunnel-${{ env.APP_VERSION_NAME }}-arm64-v8a.apk
+          # The artifact-retention workflow also keeps only the newest two.
+          retention-days: 3
 
       - name: Determine Release Tag
         id: tag_info
