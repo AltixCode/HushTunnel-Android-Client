@@ -230,7 +230,7 @@ jobs:
           releaseName: HushTunnel ${{ env.APP_VERSION_NAME }} (${{ env.APP_VERSION_CODE }})
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: HushTunnel-Android-Builds
           # Only the arm64-v8a APK. Uploading release_artifacts/* meant every run stored four
