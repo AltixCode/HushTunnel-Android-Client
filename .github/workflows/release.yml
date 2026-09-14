@@ -60,7 +60,7 @@ jobs:
 
       - name: Cache libhevtun
         id: cache-libhevtun
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/libs
           key: libhevtun-${{ runner.os }}-${{ env.NDK_HOME }}-${{ hashFiles('compile-hevtun.sh') }}
