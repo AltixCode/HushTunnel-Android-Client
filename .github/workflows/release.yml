@@ -100,25 +100,18 @@ jobs:
             cp -r "${{ github.workspace }}/libs/." "${{ github.workspace }}/V2rayNG/app/libs/" || true
           fi
 
-      - name: Fetch AndroidLibXrayLite
-        run: |
-          if [ -d "AndroidLibXrayLite" ]; then
-            pushd AndroidLibXrayLite
-            CURRENT_TAG="$(git describe --tags --abbrev=0 2>/dev/null || echo "v2026.08.01")"
-            echo "CURRENT_TAG=$CURRENT_TAG" >> "$GITHUB_ENV"
-            popd
-          else
-            echo "CURRENT_TAG=v2026.08.01" >> "$GITHUB_ENV"
-          fi
-
       - name: Download libv2ray binary
-        uses: robinraju/release-downloader@v1.12
-        continue-on-error: true
-        with:
-          repository: '2dust/AndroidLibXrayLite'
-          tag: ${{ env.CURRENT_TAG }}
-          fileName: 'libv2ray.aar'
-          out-file-path: V2rayNG/app/libs/
+        run: |
+          mkdir -p ${{ github.workspace }}/V2rayNG/app/libs
+          if [ ! -s "${{ github.workspace }}/V2rayNG/app/libs/libv2ray.aar" ]; then
+            echo "Downloading libv2ray.aar from releases..."
+            curl -fsSL -o "${{ github.workspace }}/V2rayNG/app/libs/libv2ray.aar" \
+              "https://github.com/2dust/AndroidLibXrayLite/releases/download/v26.9.9/libv2ray.aar" || \
+            curl -fsSL -o "${{ github.workspace }}/V2rayNG/app/libs/libv2ray.aar" \
+              "https://github.com/2dust/AndroidLibXrayLite/releases/download/v2026.08.01/libv2ray.aar"
+          fi
+          [ -s "${{ github.workspace }}/V2rayNG/app/libs/libv2ray.aar" ] || { echo "::error::Failed to download libv2ray.aar"; exit 1; }
+          ls -lh "${{ github.workspace }}/V2rayNG/app/libs/libv2ray.aar"
 
       - name: Compute Dynamic Version
         run: |
