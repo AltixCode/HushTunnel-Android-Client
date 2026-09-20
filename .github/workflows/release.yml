@@ -171,7 +171,7 @@ jobs:
           chmod +x gradlew
           
           # Build signed Play Store APKs
-          ./gradlew assemblePlaystoreRelease \
+          ./gradlew assemblePlaystoreRelease --no-daemon \
             "-PhushVersionCode=$APP_BASE_VERSION_CODE" \
             "-PhushVersionName=$APP_VERSION_NAME" \
             "-Pandroid.injected.signing.store.file=$KEYSTORE_PATH" \
@@ -180,7 +180,7 @@ jobs:
             "-Pandroid.injected.signing.key.password=$KEY_PASSWORD"
 
           # Build signed Play Store App Bundle (.aab)
-          ./gradlew bundlePlaystoreRelease \
+          ./gradlew bundlePlaystoreRelease --no-daemon \
             "-PhushVersionCode=$APP_BASE_VERSION_CODE" \
             "-PhushVersionName=$APP_VERSION_NAME" \
             "-Pandroid.injected.signing.store.file=$KEYSTORE_PATH" \
