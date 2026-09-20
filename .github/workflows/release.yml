@@ -224,9 +224,8 @@ jobs:
           serviceAccountJson: ${{ steps.google_auth.outputs.credentials_file_path }}
           packageName: com.hushtunnel.app
           releaseFiles: ${{ github.workspace }}/release_artifacts/HushTunnel-${{ env.APP_VERSION_NAME }}-playstore.aab
-          tracks: internal
+          track: internal
           status: completed
-          changesNotSentForReview: true
           releaseName: HushTunnel ${{ env.APP_VERSION_NAME }} (${{ env.APP_VERSION_CODE }})
 
       - name: Upload Artifacts
