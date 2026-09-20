@@ -56,14 +56,29 @@ jobs:
           echo "y" | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
             --channel=0 \
             --install "ndk;29.0.14206865"
-          echo "NDK_HOME=$ANDROID_HOME/ndk/29.0.14206865" >> "$GITHUB_ENV"
+          # Resolve the actual NDK directory — ANDROID_HOME may point to a different
+          # volume than where sdkmanager installed it (e.g. symlink or external drive).
+          NDK_CANDIDATE="$ANDROID_HOME/ndk/29.0.14206865"
+          if [ ! -d "$NDK_CANDIDATE" ]; then
+            FOUND=$(find "${ANDROID_SDK_ROOT:-$ANDROID_HOME}" /Users /Volumes -maxdepth 8 -type d \
+              -name "29.0.14206865" -path "*/ndk/*" 2>/dev/null | head -1)
+            if [ -n "$FOUND" ]; then
+              NDK_CANDIDATE="$FOUND"
+            fi
+          fi
+          echo "NDK path resolved: $NDK_CANDIDATE"
+          [ -d "$NDK_CANDIDATE" ] || { echo "::error::NDK 29.0.14206865 not found after install"; exit 1; }
+          echo "NDK_HOME=$NDK_CANDIDATE" >> "$GITHUB_ENV"
 
       - name: Cache libhevtun
         id: cache-libhevtun
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/libs
-          key: libhevtun-${{ runner.os }}-${{ env.NDK_HOME }}-${{ hashFiles('compile-hevtun.sh') }}
+          # Hardcode the NDK version so the cache key is stable regardless of when
+          # ${{ env.NDK_HOME }} is evaluated (it's set in the previous step's run block
+          # and may be empty when the cache action's key expression is first evaluated).
+          key: libhevtun-${{ runner.os }}-29.0.14206865-${{ hashFiles('compile-hevtun.sh') }}
 
       - name: Build libhevtun
         if: steps.cache-libhevtun.outputs.cache-hit != 'true'
@@ -229,6 +244,8 @@ jobs:
           releaseName: HushTunnel ${{ env.APP_VERSION_NAME }} (${{ env.APP_VERSION_CODE }})
 
       - name: Upload Artifacts
+        # actions/upload-artifact@v4 requires GitHub.com artifact API — not supported on Forgejo (GHES).
+        if: github.server_url == 'https://github.com'
         uses: actions/upload-artifact@v4
         with:
           name: HushTunnel-Android-Builds
@@ -241,6 +258,8 @@ jobs:
 
       - name: Determine Release Tag
         id: tag_info
+        # GitHub release steps only work on GitHub.com.
+        if: github.server_url == 'https://github.com'
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.release_tag }}" ]; then
             TAG_NAME="${{ inputs.release_tag }}"
@@ -252,6 +271,7 @@ jobs:
           echo "TAG_NAME=$TAG_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Generate Dynamic Release Notes
+        if: github.server_url == 'https://github.com'
         run: |
           VERSION="${{ env.APP_VERSION_NAME }}"
           TAG="${{ steps.tag_info.outputs.TAG_NAME }}"
@@ -304,7 +324,7 @@ jobs:
 
       - name: Create GitHub Release & Upload Binaries
         uses: softprops/action-gh-release@v2
-        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
+        if: github.server_url == 'https://github.com' && (github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main')
         with:
           tag_name: ${{ steps.tag_info.outputs.TAG_NAME }}
           name: ${{ inputs.release_title || steps.tag_info.outputs.TAG_NAME }}
