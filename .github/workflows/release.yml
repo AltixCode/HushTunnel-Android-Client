@@ -44,6 +44,12 @@ jobs:
           submodules: 'recursive'
           fetch-depth: 0
 
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -53,7 +59,9 @@ jobs:
 
       - name: Install Android NDK
         run: |
-          echo "y" | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+          SDKMANAGER=$(find "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -1)
+          [ -n "$SDKMANAGER" ] || SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          echo "y" | "$SDKMANAGER" \
             --channel=0 \
             --install "ndk;29.0.14206865"
           # Resolve the actual NDK directory — ANDROID_HOME may point to a different
@@ -111,12 +119,6 @@ jobs:
           tag: ${{ env.CURRENT_TAG }}
           fileName: 'libv2ray.aar'
           out-file-path: V2rayNG/app/libs/
-
-      - name: Setup Java JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
 
       - name: Compute Dynamic Version
         run: |
@@ -217,30 +219,15 @@ jobs:
 
           ls -lh ${{ github.workspace }}/release_artifacts/
 
-      - name: Validate Google Play authentication configuration
-        env:
-          GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          GCP_PLAY_SERVICE_ACCOUNT: ${{ vars.GCP_PLAY_SERVICE_ACCOUNT }}
-        run: |
-          [ -n "$GCP_WORKLOAD_IDENTITY_PROVIDER" ] || { echo "::error::Missing repository variable GCP_WORKLOAD_IDENTITY_PROVIDER"; exit 1; }
-          [ -n "$GCP_PLAY_SERVICE_ACCOUNT" ] || { echo "::error::Missing repository variable GCP_PLAY_SERVICE_ACCOUNT"; exit 1; }
-
-      - name: Authenticate to Google Cloud
-        id: google_auth
-        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
-        with:
-          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.GCP_PLAY_SERVICE_ACCOUNT }}
-          create_credentials_file: true
-
       - name: Upload to Google Play Console
-        uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
+        uses: r0adkll/upload-google-play@935ef9c68bb393a8e6116b1575626a7f5be3a7fb
         with:
-          serviceAccountJson: ${{ steps.google_auth.outputs.credentials_file_path }}
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
           packageName: com.hushtunnel.app
           releaseFiles: ${{ github.workspace }}/release_artifacts/HushTunnel-${{ env.APP_VERSION_NAME }}-playstore.aab
           track: production
           status: completed
+          changesNotSentForReview: false
           releaseName: HushTunnel ${{ env.APP_VERSION_NAME }} (${{ env.APP_VERSION_CODE }})
 
       - name: Upload Artifacts
