@@ -213,6 +213,7 @@ jobs:
           ls -lh ${{ github.workspace }}/release_artifacts/
 
       - name: Upload to Google Play Console
+        if: vars.ENABLE_PLAY_UPLOAD != 'false'
         uses: r0adkll/upload-google-play@935ef9c68bb393a8e6116b1575626a7f5be3a7fb
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
