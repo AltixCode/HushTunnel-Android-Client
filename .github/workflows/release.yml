@@ -89,7 +89,7 @@ jobs:
           fi
 
       - name: Download libv2ray binary
-        uses: robinraju/release-downloader@v1.13
+        uses: robinraju/release-downloader@v1.12
         continue-on-error: true
         with:
           repository: '2dust/AndroidLibXrayLite'
