@@ -169,9 +169,10 @@ jobs:
           cd "${{ github.workspace }}/V2rayNG"
           echo "sdk.dir=${ANDROID_HOME}" > local.properties
           chmod +x gradlew
+          export GRADLE_USER_HOME="${RUNNER_TEMP:-/tmp}/gradle_user_home_${{ github.run_id }}"
           
           # Build signed Play Store APKs
-          ./gradlew assemblePlaystoreRelease --no-daemon \
+          ./gradlew assemblePlaystoreRelease --no-daemon --gradle-user-home "$GRADLE_USER_HOME" \
             "-PhushVersionCode=$APP_BASE_VERSION_CODE" \
             "-PhushVersionName=$APP_VERSION_NAME" \
             "-Pandroid.injected.signing.store.file=$KEYSTORE_PATH" \
@@ -180,7 +181,7 @@ jobs:
             "-Pandroid.injected.signing.key.password=$KEY_PASSWORD"
 
           # Build signed Play Store App Bundle (.aab)
-          ./gradlew bundlePlaystoreRelease --no-daemon \
+          ./gradlew bundlePlaystoreRelease --no-daemon --gradle-user-home "$GRADLE_USER_HOME" \
             "-PhushVersionCode=$APP_BASE_VERSION_CODE" \
             "-PhushVersionName=$APP_VERSION_NAME" \
             "-Pandroid.injected.signing.store.file=$KEYSTORE_PATH" \
